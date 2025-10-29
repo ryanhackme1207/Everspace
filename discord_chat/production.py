@@ -19,17 +19,22 @@ if env_hosts:
     ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(',') if host.strip()])
 
 # Database configuration for production
-if config('DATABASE_URL', default=None):
+DATABASE_URL = config('DATABASE_URL', default=None)
+if DATABASE_URL:
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
+        'default': dj_database_url.parse(DATABASE_URL)
     }
 else:
-    # Fallback to SQLite for development
+    # Use PostgreSQL with environment variables as fallback
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='everspace'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
         }
     }
 
@@ -76,13 +81,17 @@ if REDIS_URL:
         },
     }
 else:
-    # Fallback to in-memory channels and database cache
-    print("WARNING: Redis not configured. Using in-memory backend for channels.")
+    # Fallback to in-memory backends when Redis is not available
+    print("WARNING: Redis not configured. Using fallback backends.")
     
+    # Use locmem cache as it's more reliable than database cache in production
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'django_cache_table',
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'everspace-cache',
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+            }
         }
     }
     
