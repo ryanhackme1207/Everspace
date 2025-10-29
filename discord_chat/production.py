@@ -9,6 +9,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 # Add render.com to allowed hosts
 ALLOWED_HOSTS.extend([
     '.onrender.com',
+    'everspace-izi3.onrender.com',
     'localhost',
     '127.0.0.1',
 ])
