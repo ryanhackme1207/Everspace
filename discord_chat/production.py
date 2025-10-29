@@ -47,16 +47,50 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Redis configuration for production
-REDIS_URL = config('REDIS_URL', default='redis://localhost:6379')
+REDIS_URL = config('REDIS_URL', default=None)
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [REDIS_URL],
+if REDIS_URL:
+    # Redis is available - use for caching and channels
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CONNECTION_POOL_KWARGS': {
+                    'max_connections': 20,
+                    'socket_connect_timeout': 5,
+                    'socket_timeout': 5,
+                }
+            }
+        }
+    }
+
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [REDIS_URL],
+                'capacity': 1500,
+                'expiry': 60,
+            },
         },
-    },
-}
+    }
+else:
+    # Fallback to in-memory channels and database cache
+    print("WARNING: Redis not configured. Using in-memory backend for channels.")
+    
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache_table',
+        }
+    }
+    
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
 
 # Logging configuration
 LOGGING = {
