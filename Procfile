@@ -1,0 +1,2 @@
+web: daphne -b 0.0.0.0 -p $PORT discord_chat.asgi:application
+release: python manage.py migrate --settings=discord_chat.production && python manage.py collectstatic --noinput --settings=discord_chat.production

@@ -15,6 +15,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
+# Set default settings module, but allow override from environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'discord_chat.settings')
 
 # Initialize Django ASGI application early to ensure the AppRegistry

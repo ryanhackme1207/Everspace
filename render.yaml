@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: everspace-chat
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: discord_chat.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+  
+  - type: redis
+    name: everspace-redis
+    ipAllowList: []
