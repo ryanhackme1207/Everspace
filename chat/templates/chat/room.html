@@ -558,8 +558,9 @@
     <!-- Chat Functionality -->
     <script>
         const roomName = "{{ room_name }}";
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+            wsProtocol + '//' + window.location.host + '/ws/chat/' + roomName + '/'
         );
 
         const messagesContainer = document.getElementById('chat-messages');
@@ -770,6 +771,15 @@
 
         chatSocket.onopen = function(e) {
             console.log('Chat socket connected');
+        };
+
+        chatSocket.onerror = function(e) {
+            console.error('Chat socket error:', e);
+            // Show error status
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'alert alert-danger';
+            statusDiv.innerHTML = '<i class="fas fa-times-circle me-2"></i>Failed to connect to chat server. Please refresh the page.';
+            messagesContainer.appendChild(statusDiv);
         };
 
         // Send message function
