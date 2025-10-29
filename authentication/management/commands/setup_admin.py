@@ -6,9 +6,9 @@ class Command(BaseCommand):
     help = 'Create a superuser for admin access'
 
     def add_arguments(self, parser):
-        parser.add_argument('--username', type=str, help='Username for the superuser', default='admin')
-        parser.add_argument('--email', type=str, help='Email for the superuser', default='admin@everspace.chat')
-        parser.add_argument('--password', type=str, help='Password for the superuser', default='admin123456')
+        parser.add_argument('--username', type=str, help='Username for the superuser', default='ryanadmin')
+        parser.add_argument('--email', type=str, help='Email for the superuser', default='admin@everspace.com')
+        parser.add_argument('--password', type=str, help='Password for the superuser', default='ryanadmin12345')
 
     def handle(self, *args, **options):
         username = options['username']
@@ -16,12 +16,12 @@ class Command(BaseCommand):
         password = options['password']
 
         try:
-            # Check if superuser already exists
+            # Delete existing user if exists to ensure clean creation
             if User.objects.filter(username=username).exists():
+                User.objects.filter(username=username).delete()
                 self.stdout.write(
-                    self.style.WARNING(f'Superuser "{username}" already exists.')
+                    self.style.WARNING(f'Deleted existing user "{username}"')
                 )
-                return
 
             # Create superuser
             user = User.objects.create_superuser(
