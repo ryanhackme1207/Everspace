@@ -1,0 +1,94 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block title %}Delete Room - {{ room_name }}{% endblock %}
+
+{% block content %}
+<div class="glass-container">
+    <div class="container-fluid h-100">
+        <div class="row h-100 justify-content-center align-items-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="glass-card p-4">
+                    <div class="text-center mb-4">
+                        <div class="warning-icon mb-3">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b6b;"></i>
+                        </div>
+                        <h2 class="glass-title mb-2">Delete Room</h2>
+                        <p class="text-muted">Are you sure you want to delete this room?</p>
+                    </div>
+
+                    <div class="alert alert-warning glass-alert" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All messages in this room will be permanently deleted.
+                    </div>
+
+                    <div class="room-info glass-card p-3 mb-4">
+                        <h4 class="mb-2">
+                            <i class="fas fa-hashtag me-2"></i>{{ room_name }}
+                        </h4>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-calendar me-2"></i>Created: {{ room_obj.created_at|date:"M d, Y g:i A" }}
+                        </p>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-user me-2"></i>Creator: {{ room_obj.creator.first_name|default:room_obj.creator.username }}
+                        </p>
+                        {% if room_obj.messages.count > 0 %}
+                        <p class="text-muted mb-0 mt-2">
+                            <i class="fas fa-comments me-2"></i>{{ room_obj.messages.count }} message{{ room_obj.messages.count|pluralize }} will be deleted
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" class="text-center">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="{% url 'chat_room' room_name=room_name %}" class="btn btn-secondary btn-lg me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('Are you absolutely sure? This cannot be undone!')">
+                                <i class="fas fa-trash me-2"></i>Delete Room
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.warning-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.room-info {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+}
+
+.glass-alert {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(238, 90, 36, 0.3);
+}
+</style>
+{% endblock %}

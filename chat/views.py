@@ -29,13 +29,38 @@ def room(request, room_name):
     #     messages.error(request, 'Please complete MFA verification to access chat rooms.')
     #     return redirect('auth_mfa_verify')
     
-    room_obj, created = Room.objects.get_or_create(name=room_name)
+    room_obj, created = Room.objects.get_or_create(
+        name=room_name,
+        defaults={'creator': request.user}
+    )
     messages_list = Message.objects.filter(room=room_obj).order_by('timestamp')[:50]  # Last 50 messages
     user_has_mfa = user_has_device(request.user)
     
     return render(request, 'chat/room.html', {
         'room_name': room_name,
+        'room_obj': room_obj,
         'messages': messages_list,
         'user': request.user,
-        'user_has_mfa': user_has_mfa
+        'user_has_mfa': user_has_mfa,
+        'is_room_creator': room_obj.can_delete(request.user)
+    })
+
+@login_required
+def delete_room(request, room_name):
+    """Delete a room - only the creator can delete it"""
+    room_obj = get_object_or_404(Room, name=room_name)
+    
+    if not room_obj.can_delete(request.user):
+        messages.error(request, 'Only the room creator can delete this room.')
+        return redirect('chat_room', room_name=room_name)
+    
+    if request.method == 'POST':
+        room_obj.delete()
+        messages.success(request, f'Room "{room_name}" has been deleted successfully.')
+        return redirect('chat_index')
+    
+    # If GET request, show confirmation page
+    return render(request, 'chat/delete_room.html', {
+        'room_obj': room_obj,
+        'room_name': room_name
     })

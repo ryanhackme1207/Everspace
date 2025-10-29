@@ -510,6 +510,9 @@
                             </div>
                             <div class="room-stats">
                                 <span><i class="fas fa-comments me-1"></i>{{ room.messages.count }} messages</span>
+                                {% if room.creator %}
+                                    <span><i class="fas fa-user me-1"></i>by {{ room.creator.first_name|default:room.creator.username }}</span>
+                                {% endif %}
                                 <span><i class="fas fa-arrow-right"></i></span>
                             </div>
                         </a>

@@ -140,6 +140,19 @@
             transform: translateY(-2px);
         }
 
+        .delete-room-btn {
+            background: rgba(255, 107, 107, 0.1) !important;
+            border: 1px solid rgba(255, 107, 107, 0.3) !important;
+            color: #ff6b6b !important;
+            margin-right: 0.5rem;
+        }
+
+        .delete-room-btn:hover {
+            background: rgba(255, 107, 107, 0.2) !important;
+            color: #ff6b6b !important;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
         .primary-btn {
             background: var(--primary-gradient);
             border: none;
@@ -443,6 +456,11 @@
                             <i class="fas fa-user"></i>
                             {{ user.first_name|default:user.username }}
                         </div>
+                        {% if is_room_creator %}
+                            <a href="{% url 'delete_room' room_name=room_name %}" class="action-btn delete-room-btn" title="Delete Room (Creator Only)">
+                                <i class="fas fa-trash me-1"></i>Delete Room
+                            </a>
+                        {% endif %}
                         <form method="post" action="{% url 'auth_logout' %}" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="action-btn">
