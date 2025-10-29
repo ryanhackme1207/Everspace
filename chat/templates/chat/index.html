@@ -422,10 +422,10 @@
                 </div>
                 <div class="user-actions">
                     <div class="dropdown me-2">
-                        <button class="btn btn-outline-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-outline-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="securityDropdown">
                             <i class="fas fa-shield-alt me-1"></i>Security
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" aria-labelledby="securityDropdown">
                             {% if not user|has_mfa_enabled %}
                                 <li><a class="dropdown-item text-primary" href="{% url 'auth_mfa_setup' %}">
                                     <i class="fas fa-shield-alt me-2"></i>Set Up MFA
@@ -568,7 +568,5 @@
             }
         }
     </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
