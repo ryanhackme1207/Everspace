@@ -11,4 +11,4 @@ python-decouple==3.8
 dj-database-url==2.1.0
 django-ratelimit==4.1.0
 qrcode==7.4.2
-pillow==10.1.0
+pillow==10.4.0
