@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# Set Django settings module for production
+export DJANGO_SETTINGS_MODULE=discord_chat.production
+
 # Run migrations
-python manage.py migrate --settings=discord_chat.production
+python manage.py migrate
 
 # Collect static files
-python manage.py collectstatic --noinput --settings=discord_chat.production
+python manage.py collectstatic --noinput
 
 # Start the ASGI server with daphne
 daphne -b 0.0.0.0 -p $PORT discord_chat.asgi:application

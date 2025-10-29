@@ -4,15 +4,19 @@ from .settings import *
 
 # Production settings
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
-# Add render.com to allowed hosts
-ALLOWED_HOSTS.extend([
+# Configure ALLOWED_HOSTS for production
+ALLOWED_HOSTS = [
     '.onrender.com',
     'everspace-izi3.onrender.com',
     'localhost',
     '127.0.0.1',
-])
+]
+
+# Add any additional hosts from environment variable
+env_hosts = config('ALLOWED_HOSTS', default='')
+if env_hosts:
+    ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(',') if host.strip()])
 
 # Database configuration for production
 if config('DATABASE_URL', default=None):
