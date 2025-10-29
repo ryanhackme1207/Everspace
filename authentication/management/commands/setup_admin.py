@@ -16,7 +16,14 @@ class Command(BaseCommand):
         password = options['password']
 
         try:
-            # Delete existing user if exists to ensure clean creation
+            # Check if superuser already exists
+            if User.objects.filter(username=username, is_superuser=True).exists():
+                self.stdout.write(
+                    self.style.SUCCESS(f'Superuser "{username}" already exists and is active.')
+                )
+                return
+
+            # Delete existing non-superuser with same username
             if User.objects.filter(username=username).exists():
                 User.objects.filter(username=username).delete()
                 self.stdout.write(

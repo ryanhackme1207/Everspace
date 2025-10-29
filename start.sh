@@ -6,6 +6,10 @@ export DJANGO_SETTINGS_MODULE=discord_chat.production
 # Run migrations
 python manage.py migrate
 
+# Create admin user automatically
+echo "Creating admin user..."
+python manage.py setup_admin
+
 # Collect static files
 python manage.py collectstatic --noinput
 
