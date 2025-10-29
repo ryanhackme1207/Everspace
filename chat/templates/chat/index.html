@@ -1,0 +1,571 @@
+{% load mfa_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EverSpace - Chat Rooms</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-bg: #1a1d29;
+            --dark-card: #252837;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+            --border-radius-sm: 12px;
+            --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.3; }
+        }
+
+        /* Modern Navigation */
+        .navbar-modern {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.75rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Main Container */
+        .main-container {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        /* Room Cards */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .room-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            text-decoration: none;
+        }
+
+        .room-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .room-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .room-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .room-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Create Room Section */
+        .create-room-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .create-room-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .room-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-md);
+            padding: 1rem;
+            color: white;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .room-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+
+        .room-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Modern Buttons */
+        .btn-modern {
+            padding: 0.875rem 2rem;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary-modern {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary-modern:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-modern {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .btn-outline-modern:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+
+        /* User Panel */
+        .user-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-weight: 600;
+        }
+
+        .welcome-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-md);
+            backdrop-filter: blur(20px);
+        }
+
+        .dropdown-item {
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+        }
+
+        .dropdown-divider {
+            border-color: var(--glass-border);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .rooms-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .room-card,
+            .create-room-section,
+            .user-panel {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+        .create-room {
+            background-color: #2f3136;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #40444b;
+        }
+        .create-room input {
+            background-color: #40444b;
+            border: 1px solid #72767d;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .create-room button {
+            background-color: #7289da;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .create-room button:hover {
+            background-color: #677bc4;
+        }
+        .user-menu {
+            color: #ffffff;
+        }
+        .btn {
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .btn-outline-primary {
+            border: 1px solid #7289da;
+            color: #7289da;
+        }
+        .btn-outline-primary:hover {
+            background-color: #7289da;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>EverSpace
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="user-info me-3">
+                    <div class="user-avatar">
+                        {{ user.first_name.0|default:user.username.0|upper }}
+                    </div>
+                    <span class="welcome-text">{{ user.first_name|default:user.username }}</span>
+                </div>
+                <div class="user-actions">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-shield-alt me-1"></i>Security
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% if not user|has_mfa_enabled %}
+                                <li><a class="dropdown-item text-primary" href="{% url 'auth_mfa_setup' %}">
+                                    <i class="fas fa-shield-alt me-2"></i>Set Up MFA
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><span class="dropdown-item-text text-muted small">
+                                    <i class="fas fa-info-circle me-1"></i>Enable MFA for enhanced security
+                                </span></li>
+                            {% else %}
+                                <li><div class="dropdown-item-text text-success small">
+                                    <i class="fas fa-check-circle me-1"></i>MFA Enabled
+                                </div></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'auth_view_codes' %}">
+                                    <i class="fas fa-key me-2"></i>View Backup Codes
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'auth_regenerate_codes' %}">
+                                    <i class="fas fa-redo me-2"></i>Generate New Codes
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'auth_mfa_disable' %}">
+                                    <i class="fas fa-times me-2"></i>Disable MFA
+                                </a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <form method="post" action="{% url 'auth_logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-modern btn-sm">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">
+                    <i class="fas fa-comments me-3"></i>Chat Rooms
+                </h1>
+                <p class="hero-subtitle">Connect with others in secure, real-time conversations</p>
+            </div>
+            
+            <!-- Create Room Section -->
+            <div class="create-room-section">
+                <div class="create-room-title">
+                    <i class="fas fa-plus-circle me-2"></i>Create or Join a Room
+                </div>
+                <form onsubmit="joinRoom(event)">
+                    <input type="text" id="room-name-input" class="room-input" placeholder="Enter room name (e.g., general, gaming, tech)" required>
+                    <button type="submit" class="btn btn-primary-modern btn-modern">
+                        <i class="fas fa-rocket me-2"></i>Join Room
+                    </button>
+                </form>
+            </div>
+
+                <!-- Available Rooms -->
+                <div class="rooms-grid">
+                    {% for room in rooms %}
+                        <a href="{% url 'chat_room' room.name %}" class="room-card">
+                            <div class="room-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <div class="room-name">{{ room.name }}</div>
+                            <div class="room-description">
+                                {% if room.name == 'general' %}
+                                    General discussion and community chat
+                                {% elif room.name == 'gaming' %}
+                                    Gaming discussions and team coordination
+                                {% elif room.name == 'tech' %}
+                                    Technology news and development chat
+                                {% elif room.name == 'random' %}
+                                    Random conversations and off-topic discussions
+                                {% else %}
+                                    Join the conversation in {{ room.name }}
+                                {% endif %}
+                            </div>
+                            <div class="room-stats">
+                                <span><i class="fas fa-comments me-1"></i>{{ room.messages.count }} messages</span>
+                                <span><i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="col-12 text-center">
+                            <div class="create-room-section">
+                                <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h4 style="color: rgba(255,255,255,0.8);">No rooms available yet</h4>
+                                <p style="color: rgba(255,255,255,0.6);">Be the first to create a room and start chatting!</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Particles Animation -->
+    <script>
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particles.appendChild(particle);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', createParticles);
+
+        function joinRoom(event) {
+            event.preventDefault();
+            const roomName = document.getElementById('room-name-input').value.trim();
+            if (roomName) {
+                // Add loading animation to button
+                const button = event.target.querySelector('button');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Joining...';
+                button.disabled = true;
+                
+                // Navigate to room
+                setTimeout(() => {
+                    window.location.href = `/chat/${roomName}/`;
+                }, 500);
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Regenerate Backup Codes - Discord Chat{% endblock %}
+
+{% block header %}Generate New Backup Codes{% endblock %}
+{% block subheader %}Replace your current backup codes{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Warning!</strong> Generating new backup codes will invalidate all your current unused codes.
+</div>
+
+<div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-redo fa-2x"></i>
+    </div>
+    <h5 class="mt-2" style="color: #333;">Regenerate Backup Codes</h5>
+    <p class="text-muted">This will create 10 new backup codes and disable any existing unused codes</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="alert alert-info">
+        <h6><i class="fas fa-info-circle"></i> What will happen:</h6>
+        <ul class="mb-0" style="color: #333;">
+            <li>All current unused backup codes will be disabled</li>
+            <li>10 new backup codes will be generated</li>
+            <li>You'll need to save the new codes securely</li>
+            <li>Old codes will no longer work for recovery</li>
+        </ul>
+    </div>
+    
+    <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="confirm-regenerate" required>
+        <label class="form-check-label" for="confirm-regenerate" style="color: #333;">
+            I understand that this will disable my current backup codes
+        </label>
+    </div>
+    
+    <button type="submit" class="btn btn-warning w-100 mb-3">
+        <i class="fas fa-redo"></i> Generate New Backup Codes
+    </button>
+</form>
+
+<div class="auth-links">
+    <p><a href="{% url 'auth_view_codes' %}" style="color: #667eea;">← View Current Codes</a></p>
+    <p><a href="{% url 'chat_index' %}" style="color: #667eea;">← Back to Chat</a></p>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6><i class="fas fa-shield-alt text-success"></i> When to Regenerate</h6>
+    <div class="security-feature">
+        <i class="fas fa-battery-quarter text-warning"></i>
+        <span>When you have few backup codes remaining (2 or less)</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-mobile-alt text-info"></i>
+        <span>After getting a new phone or device</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-calendar text-primary"></i>
+        <span>Periodically for security (every 3-6 months)</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-eye text-danger"></i>
+        <span>If you think your codes may have been compromised</span>
+    </div>
+</div>
+
+<div class="alert alert-success mt-4">
+    <h6><i class="fas fa-lightbulb"></i> Pro Tip</h6>
+    <small style="color: #333;">
+        Consider storing your backup codes in multiple secure locations: 
+        a password manager, a physical safe, or with a trusted family member. 
+        Never store them in plain text on your computer or phone.
+    </small>
+</div>
+{% endblock %}

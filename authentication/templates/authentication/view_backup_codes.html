@@ -1,0 +1,146 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Backup Codes Status - Discord Chat{% endblock %}
+
+{% block header %}Backup Codes Management{% endblock %}
+{% block subheader %}View and manage your recovery codes{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center bg-info text-white rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-key fa-2x"></i>
+    </div>
+    <h5 class="mt-2" style="color: #333;">Backup Codes Status</h5>
+    <p class="text-muted">You have <strong>{{ unused_count }}</strong> unused backup codes remaining</p>
+</div>
+
+{% if unused_count <= 2 %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Low Backup Codes!</strong> You only have {{ unused_count }} codes left. Consider generating new ones.
+</div>
+{% elif unused_count == 0 %}
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    <strong>No Backup Codes!</strong> You have no unused backup codes. Generate new ones immediately!
+</div>
+{% else %}
+<div class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <strong>Good!</strong> You have {{ unused_count }} backup codes available for emergency access.
+</div>
+{% endif %}
+
+<div class="codes-status-container">
+    <h6 class="mb-3" style="color: #333;"><i class="fas fa-list text-primary"></i> Backup Codes History</h6>
+    
+    {% if backup_codes %}
+    <div class="codes-list">
+        {% for code in backup_codes %}
+        <div class="code-item {% if code.used %}used{% else %}available{% endif %}">
+            <div class="code-display">
+                <code>{{ code.code|slice:":4" }}-{{ code.code|slice:"4:" }}</code>
+            </div>
+            <div class="code-status">
+                {% if code.used %}
+                    <span class="badge bg-danger">
+                        <i class="fas fa-times"></i> Used {{ code.used_at|date:"M d, Y" }}
+                    </span>
+                {% else %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check"></i> Available
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center p-4">
+        <p class="text-muted" style="color: #666 !important;">No backup codes found. Generate some now!</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="text-center mt-4">
+    <a href="{% url 'auth_regenerate_codes' %}" class="btn btn-primary me-2">
+        <i class="fas fa-redo"></i> Generate New Codes
+    </a>
+    <a href="{% url 'chat_index' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Chat
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6><i class="fas fa-info-circle text-primary"></i> Backup Code Tips</h6>
+    <div class="security-feature">
+        <i class="fas fa-save text-success"></i>
+        <span>Keep backup codes in a secure location (password manager, safe, etc.)</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-clock text-warning"></i>
+        <span>Generate new codes periodically or after using several</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-ban text-danger"></i>
+        <span>Each code can only be used once - they're automatically disabled</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-mobile-alt text-info"></i>
+        <span>Use backup codes only when you can't access your authenticator app</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.codes-status-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #dee2e6;
+}
+
+.codes-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.code-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background: white;
+}
+
+.code-item.used {
+    background: #f8f9fa;
+    opacity: 0.7;
+}
+
+.code-display code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    background: none;
+    padding: 0;
+    color: #333;
+}
+
+.code-item.used .code-display code {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.badge {
+    font-size: 11px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Login - EverSpace Chat{% endblock %}
+
+{% block header %}Welcome Back to EverSpace{% endblock %}
+
+{% block content %}
+<form method="post" novalidate class="needs-validation">
+    {% csrf_token %}
+    
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">
+                <i class="fas fa-user me-2"></i>Username
+            </label>
+        </div>
+        {% if form.username.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.username.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.password }}
+            <label for="{{ form.password.id_for_label }}">
+                <i class="fas fa-lock me-2"></i>Password
+            </label>
+        </div>
+        {% if form.password.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.password.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger-modern alert-modern">
+            {% for error in form.non_field_errors %}
+                <div><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary-modern btn-modern mb-4">
+        <i class="fas fa-sign-in-alt me-2"></i>Sign In to EverSpace
+    </button>
+</form>
+
+<div class="divider">
+    <span>New to EverSpace?</span>
+</div>
+
+<div class="auth-links">
+    <a href="{% url 'auth_register' %}" class="auth-link">
+        <i class="fas fa-user-plus me-1"></i>Create New Account
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6 class="mb-3">
+        <i class="fas fa-shield-check text-success me-2"></i>Security Features
+    </h6>
+    <div class="security-feature">
+        <i class="fas fa-shield-alt"></i>
+        <span>Rate limiting protection</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-mobile-alt"></i>
+        <span>Optional multi-factor authentication</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-clock"></i>
+        <span>Automatic session management</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-lock"></i>
+        <span>End-to-end encryption</span>
+    </div>
+</div>
+{% endblock %}

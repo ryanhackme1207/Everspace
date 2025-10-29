@@ -1,0 +1,185 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Backup Codes - Discord Chat{% endblock %}
+
+{% block header %}Backup Recovery Codes{% endblock %}
+{% block subheader %}Save these codes in a safe place{% endblock %}
+
+{% block content %}
+<div class="alert alert-success">
+    <i class="fas fa-shield-alt"></i>
+    <strong>Success!</strong> Your backup codes have been generated. These are your lifeline if you lose your device!
+</div>
+
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Important:</strong> Each backup code can only be used once. Save them securely!
+</div>
+
+<div class="backup-codes-container">
+    <h5 class="text-center mb-4" style="color: #333;"><i class="fas fa-key text-primary"></i> Your Backup Codes</h5>
+    
+    <div class="codes-grid">
+        {% for code in backup_codes %}
+        <div class="backup-code">
+            <code>{{ code|slice:":4" }}-{{ code|slice:"4:" }}</code>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <button onclick="printCodes()" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-print"></i> Print Codes
+        </button>
+        <button onclick="copyCodes()" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-copy"></i> Copy All
+        </button>
+        <button onclick="downloadCodes()" class="btn btn-outline-secondary">
+            <i class="fas fa-download"></i> Download
+        </button>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="confirm-saved" required>
+        <label class="form-check-label" for="confirm-saved" style="color: #333;">
+            I have saved these backup codes in a secure location
+        </label>
+    </div>
+    
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+        <i class="fas fa-check-circle"></i> I've Saved My Codes
+    </button>
+</form>
+
+<div class="auth-links">
+    <p><a href="{% url 'chat_index' %}" style="color: #667eea;">Skip for now (Not recommended)</a></p>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6><i class="fas fa-info-circle text-primary"></i> How to Use Backup Codes</h6>
+    <div class="security-feature">
+        <i class="fas fa-mobile-alt-off text-warning"></i>
+        <span>Use when you lose your phone or authenticator app</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-key text-success"></i>
+        <span>Each code works only once - they're automatically disabled after use</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-lock text-primary"></i>
+        <span>Store them safely - treat them like passwords</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-redo text-info"></i>
+        <span>You can generate new codes anytime from your settings</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.backup-codes-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 20px 0;
+    border: 2px dashed #667eea;
+}
+
+.codes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.backup-code {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.backup-code code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    background: none;
+    padding: 0;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .backup-codes-container, .backup-codes-container * {
+        visibility: visible;
+    }
+    .backup-codes-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+function printCodes() {
+    window.print();
+}
+
+function copyCodes() {
+    const codes = [{% for code in backup_codes %}"{{ code|slice:":4" }}-{{ code|slice:"4:" }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    const codeText = codes.join('\n');
+    
+    navigator.clipboard.writeText(codeText).then(function() {
+        alert('Backup codes copied to clipboard!');
+    }).catch(function() {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = codeText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Backup codes copied to clipboard!');
+    });
+}
+
+function downloadCodes() {
+    const codes = [{% for code in backup_codes %}"{{ code|slice:":4" }}-{{ code|slice:"4:" }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    const content = `EverSpace Chat - Backup Recovery Codes
+Generated: ${new Date().toLocaleDateString()}
+
+IMPORTANT: Keep these codes safe and secure!
+Each code can only be used once.
+
+${codes.join('\n')}
+
+Instructions:
+1. Use these codes if you lose access to your authenticator app
+2. Enter any unused code when prompted during login
+3. Generate new codes after using several of them
+`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'everspace-backup-codes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

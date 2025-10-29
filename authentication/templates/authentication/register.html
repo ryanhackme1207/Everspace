@@ -1,0 +1,146 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Join EverSpace - Create Account{% endblock %}
+
+{% block header %}Join the EverSpace Community{% endblock %}
+
+{% block content %}
+<form method="post" novalidate class="needs-validation">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="form-floating">
+                {{ form.first_name }}
+                <label for="{{ form.first_name.id_for_label }}">
+                    <i class="fas fa-user me-2"></i>First Name
+                </label>
+            </div>
+            {% if form.first_name.errors %}
+                <div class="text-danger small mt-2">
+                    {% for error in form.first_name.errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="form-floating">
+                {{ form.last_name }}
+                <label for="{{ form.last_name.id_for_label }}">
+                    <i class="fas fa-user me-2"></i>Last Name
+                </label>
+            </div>
+            {% if form.last_name.errors %}
+                <div class="text-danger small mt-2">
+                    {% for error in form.last_name.errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">
+                <i class="fas fa-at me-2"></i>Username
+            </label>
+        </div>
+        {% if form.username.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.username.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.email }}
+            <label for="{{ form.email.id_for_label }}">
+                <i class="fas fa-envelope me-2"></i>Email Address
+            </label>
+        </div>
+        {% if form.email.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.email.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.password1 }}
+            <label for="{{ form.password1.id_for_label }}">
+                <i class="fas fa-lock me-2"></i>Password
+            </label>
+        </div>
+        {% if form.password1.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.password1.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-4">
+        <div class="form-floating">
+            {{ form.password2 }}
+            <label for="{{ form.password2.id_for_label }}">
+                <i class="fas fa-lock me-2"></i>Confirm Password
+            </label>
+        </div>
+        {% if form.password2.errors %}
+            <div class="text-danger small mt-2">
+                {% for error in form.password2.errors %}
+                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary-modern btn-modern mb-4">
+        <i class="fas fa-rocket me-2"></i>Join EverSpace
+    </button>
+</form>
+
+<div class="divider">
+    <span>Already a member?</span>
+</div>
+
+<div class="auth-links">
+    <a href="{% url 'auth_login' %}" class="auth-link">
+        <i class="fas fa-sign-in-alt me-1"></i>Sign In to Account
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6 class="mb-3">
+        <i class="fas fa-shield-check text-success me-2"></i>Account Security
+    </h6>
+    <div class="security-feature">
+        <i class="fas fa-key"></i>
+        <span>Strong password requirements (12+ characters)</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-mobile-alt"></i>
+        <span>Optional multi-factor authentication</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-user-shield"></i>
+        <span>Account verification and protection</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-eye-slash"></i>
+        <span>Privacy-focused design</span>
+    </div>
+</div>
+{% endblock %}

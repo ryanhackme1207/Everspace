@@ -1,0 +1,91 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}MFA Recovery - Discord Chat{% endblock %}
+
+{% block header %}MFA Recovery Request{% endblock %}
+{% block subheader %}Get help accessing your account{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    <strong>Lost Access?</strong> Submit a recovery request and an administrator will help you regain access.
+</div>
+
+<div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-life-ring fa-2x"></i>
+    </div>
+    <h5 class="mt-2" style="color: #333;">Need Help with MFA?</h5>
+    <p class="text-muted">We'll review your request and contact you via email</p>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <div class="form-floating">
+            {{ form.email }}
+            <label for="{{ form.email.id_for_label }}" style="color: #666;">Email Address</label>
+        </div>
+        {% if form.email.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.email.errors %}
+                    <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="form-text" style="color: #666;">{{ form.email.help_text }}</div>
+    </div>
+
+    <div class="mb-4">
+        <label for="{{ form.reason.id_for_label }}" class="form-label" style="color: #333; font-weight: 600;">Reason for Recovery Request</label>
+        {{ form.reason }}
+        {% if form.reason.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.reason.errors %}
+                    <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="form-text" style="color: #666;">{{ form.reason.help_text }}</div>
+    </div>
+
+    <button type="submit" class="btn btn-warning w-100 mb-3">
+        <i class="fas fa-paper-plane"></i> Submit Recovery Request
+    </button>
+</form>
+
+<div class="auth-links">
+    <p><a href="{% url 'auth_login' %}" style="color: #667eea;">← Back to Login</a></p>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6><i class="fas fa-clock text-primary"></i> What Happens Next?</h6>
+    <div class="security-feature">
+        <i class="fas fa-envelope text-info"></i>
+        <span>We'll review your request within 24 hours</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-user-check text-success"></i>
+        <span>An administrator will verify your identity</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-key text-warning"></i>
+        <span>If approved, we'll help you reset your MFA</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-shield-alt text-primary"></i>
+        <span>Security measures ensure only you can access your account</span>
+    </div>
+</div>
+
+<div class="alert alert-warning mt-4">
+    <h6><i class="fas fa-exclamation-triangle"></i> Important Security Notice</h6>
+    <small>
+        For security reasons, MFA recovery requires manual verification by our administrators. 
+        This process may take 24-48 hours. We appreciate your patience as we ensure your account remains secure.
+    </small>
+</div>
+{% endblock %}
