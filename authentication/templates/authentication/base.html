@@ -103,6 +103,13 @@
             animation: slideUp 0.8s ease-out;
         }
 
+        /* Larger container for registration page */
+        .register-form-container .auth-card,
+        .auth-card.register-card {
+            max-width: 700px;
+            padding: 3.5rem;
+        }
+
         .auth-card::before {
             content: '';
             position: absolute;
@@ -217,30 +224,54 @@
             border-left: 4px solid;
             backdrop-filter: blur(10px);
             margin-bottom: 1.5rem;
+            position: relative;
+            animation: alertSlideIn 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: inherit;
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 0.5rem;
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .btn-close:hover {
+            opacity: 1;
         }
 
         .alert-info-modern {
-            background: rgba(102, 126, 234, 0.1);
-            border-left-color: #667eea;
-            color: #4c63d2;
+            background: rgba(69, 183, 209, 0.15);
+            border: 1px solid rgba(69, 183, 209, 0.3);
+            border-left-color: var(--accent-blue);
+            color: var(--text-primary);
         }
 
         .alert-success-modern {
-            background: rgba(75, 181, 67, 0.1);
-            border-left-color: #4bb543;
-            color: #3a8e3a;
+            background: rgba(78, 205, 196, 0.15);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-left-color: var(--accent-teal);
+            color: var(--text-primary);
         }
 
-        .alert-danger-modern {
-            background: rgba(220, 53, 69, 0.1);
-            border-left-color: #dc3545;
-            color: #b02a37;
+        .alert-danger-modern, .alert-error-modern {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-left-color: var(--accent-coral);
+            color: var(--text-primary);
         }
 
         .alert-warning-modern {
-            background: rgba(255, 193, 7, 0.1);
-            border-left-color: #ffc107;
-            color: #856404;
+            background: rgba(254, 202, 87, 0.15);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            border-left-color: var(--accent-yellow);
+            color: var(--text-primary);
         }
 
         /* QR Code Container */
@@ -498,7 +529,12 @@
 
         .input-group-modern {
             position: relative;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem; /* More space for error messages */
+        }
+
+        /* Special spacing for forms with errors */
+        .input-group-modern:has(.error-message) {
+            margin-bottom: 4rem;
         }
 
         .input-group-modern input {
@@ -575,12 +611,24 @@
         /* Form Row Layouts */
         .name-row, .password-row {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .half-width {
             flex: 1;
+            position: relative;
+        }
+
+        /* Ensure proper spacing for error messages in rows */
+        .name-row .input-group-modern,
+        .password-row .input-group-modern {
+            margin-bottom: 0;
+        }
+
+        .name-row:has(.error-message),
+        .password-row:has(.error-message) {
+            margin-bottom: 4.5rem;
         }
 
         /* Input Validators and Checkers */
@@ -751,24 +799,69 @@
 
         /* Error Messages */
         .error-message {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
             margin-top: 0.5rem;
             color: var(--accent-coral);
             font-size: 0.8rem;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: var(--border-radius-sm);
+            padding: 0.5rem 0.75rem;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            animation: errorSlideIn 0.3s ease;
+        }
+
+        @keyframes errorSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .alert-ultra-modern {
             border: none;
             border-radius: var(--border-radius-md);
             padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
+            margin: 1.5rem 0;
             backdrop-filter: blur(10px);
             border-left: 4px solid;
+            position: relative;
+            animation: alertSlideIn 0.4s ease;
         }
 
         .alert-danger-ultra {
-            background: rgba(255, 107, 107, 0.1);
-            border-left-color: var(--accent-coral);
-            color: var(--accent-coral);
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-left: 4px solid var(--accent-coral);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+        }
+
+        .alert-success-ultra {
+            background: rgba(78, 205, 196, 0.15);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-left: 4px solid var(--accent-teal);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
+        }
+
+        @keyframes alertSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* Security Showcase */
@@ -891,6 +984,13 @@
                 margin: 1rem;
                 padding: 2rem;
                 border-radius: var(--border-radius-md);
+                max-width: 95%;
+            }
+
+            .register-form-container .auth-card,
+            .auth-card.register-card {
+                max-width: 95vw;
+                padding: 2rem 1.5rem;
             }
             
             .brand-title {
@@ -900,10 +1000,17 @@
             .name-row, .password-row {
                 flex-direction: column;
                 gap: 0;
+                margin-bottom: 2rem;
             }
 
             .half-width {
                 flex: none;
+                margin-bottom: 2rem;
+            }
+
+            .name-row:has(.error-message),
+            .password-row:has(.error-message) {
+                margin-bottom: 3rem;
             }
 
             .security-grid, .features-grid {
@@ -919,6 +1026,14 @@
             .ring-1 { width: 80px; height: 80px; }
             .ring-2 { width: 100px; height: 100px; }
             .ring-3 { width: 120px; height: 120px; }
+
+            .input-group-modern {
+                margin-bottom: 2.5rem;
+            }
+
+            .input-group-modern:has(.error-message) {
+                margin-bottom: 3.5rem;
+            }
         }
     </style>
 </head>
