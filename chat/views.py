@@ -38,6 +38,28 @@ def room(request, room_name):
         messages.error(request, f'Room "{room_name}" does not exist. Please create it first or join an existing room.')
         return redirect('chat_index')
     
+    # Handle private room password checking
+    if room_obj.is_private():
+        # Check if password is provided in POST request
+        if request.method == 'POST':
+            provided_password = request.POST.get('room_password', '')
+            if room_obj.check_password(provided_password):
+                # Store successful password verification in session
+                request.session[f'room_access_{room_name}'] = True
+            else:
+                messages.error(request, 'Incorrect password for private room.')
+                return render(request, 'chat/room_password.html', {
+                    'room_obj': room_obj,
+                    'room_name': room_name
+                })
+        else:
+            # Check if user already provided correct password or is the creator
+            if not request.session.get(f'room_access_{room_name}') and room_obj.creator != request.user:
+                return render(request, 'chat/room_password.html', {
+                    'room_obj': room_obj,
+                    'room_name': room_name
+                })
+    
     messages_list = Message.objects.filter(room=room_obj).order_by('timestamp')[:50]  # Last 50 messages
     user_has_mfa = user_has_device(request.user)
     
@@ -53,27 +75,35 @@ def room(request, room_name):
 @login_required
 @require_POST
 def create_room(request):
-    """Create a new room with duplicate checking"""
+    """Create a new room with duplicate checking and 7-digit validation"""
     room_name = request.POST.get('room_name', '').strip()
     
     if not room_name:
         return JsonResponse({
             'success': False, 
-            'message': 'Room name is required.'
+            'message': 'Room number is required.'
+        })
+    
+    # Validate 7-digit requirement
+    if len(room_name) != 7 or not room_name.isdigit():
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room number must be exactly 7 digits (0-9 only).'
         })
     
     # Check if room already exists
     if Room.objects.filter(name=room_name).exists():
         return JsonResponse({
             'success': False, 
-            'message': f'Room "{room_name}" already exists. Please choose a different name.'
+            'message': f'Room "{room_name}" already exists. Please choose a different number.'
         })
     
     # Create the room
     try:
         room = Room.objects.create(
             name=room_name,
-            creator=request.user
+            creator=request.user,
+            description=''  # Initially empty, will be set via description modal
         )
         return JsonResponse({
             'success': True, 
@@ -84,6 +114,119 @@ def create_room(request):
         return JsonResponse({
             'success': False, 
             'message': 'An error occurred while creating the room. Please try again.'
+        })
+
+@login_required
+@require_POST
+def finalize_room(request):
+    """Finalize room setup with description, visibility, and password"""
+    room_name = request.POST.get('room_name', '').strip()
+    description = request.POST.get('description', '').strip()
+    visibility = request.POST.get('visibility', 'public').strip()
+    password = request.POST.get('password', '').strip()
+    
+    if not room_name:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room name is required.'
+        })
+    
+    # Validate 7-digit requirement
+    if len(room_name) != 7 or not room_name.isdigit():
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room number must be exactly 7 digits.'
+        })
+    
+    # Validate visibility
+    if visibility not in ['public', 'private']:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Invalid visibility option.'
+        })
+    
+    # Validate private room password
+    if visibility == 'private':
+        if not password:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Password is required for private rooms.'
+            })
+        if len(password) < 4:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Password must be at least 4 characters long.'
+            })
+    
+    try:
+        room = Room.objects.get(name=room_name)
+        
+        # Only creator can finalize room setup
+        if room.creator != request.user:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Only the room creator can finalize the setup.'
+            })
+        
+        # Update room settings
+        room.description = description
+        room.visibility = visibility
+        room.password = password if visibility == 'private' else ''
+        room.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Room {room_name} setup completed successfully!'
+        })
+        
+    except Room.DoesNotExist:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room not found.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'An error occurred while finalizing the room setup.'
+        })
+
+@login_required
+@require_POST
+def delete_room_ajax(request):
+    """Delete a room via AJAX (for cancellation)"""
+    room_name = request.POST.get('room_name', '').strip()
+    
+    if not room_name:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room name is required.'
+        })
+    
+    try:
+        room = Room.objects.get(name=room_name)
+        
+        # Only creator can delete
+        if room.creator != request.user:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Only the room creator can delete this room.'
+            })
+        
+        room.delete()
+        return JsonResponse({
+            'success': True, 
+            'message': f'Room {room_name} deleted successfully.'
+        })
+        
+    except Room.DoesNotExist:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room not found.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'An error occurred while deleting the room.'
         })
 
 @login_required

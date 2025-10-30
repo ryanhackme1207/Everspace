@@ -586,75 +586,351 @@
             color: var(--accent-mint);
         }
 
-        /* Enhanced Footer */
+        /* Ultra Modern Footer */
         .footer {
-            background: var(--dark-bg);
-            border-top: 1px solid var(--accent-teal);
+            position: relative;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-card) 50%, var(--dark-card) 100%);
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--primary-gradient);
+            animation: footerGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes footerGlow {
+            0% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.3); }
+            100% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.4); }
+        }
+
+        .footer-waves {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
         }
 
         .footer-content {
+            position: relative;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 4rem 2rem 2rem;
+            padding: 5rem 2rem 3rem;
             display: grid;
             grid-template-columns: 1fr 2fr;
-            gap: 3rem;
+            gap: 4rem;
+            z-index: 2;
         }
 
         .footer-brand {
-            max-width: 300px;
+            max-width: 350px;
+            position: relative;
         }
 
         .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-logo i {
+            color: var(--accent-coral);
+            filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5));
+            animation: rocketFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes rocketFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
         }
 
         .footer-description {
             color: var(--text-secondary);
             line-height: 1.6;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .social-link:hover::before {
+            opacity: 1;
+        }
+
+        .social-link:hover {
+            color: var(--text-primary);
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+            border-color: transparent;
         }
 
         .footer-links {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-section {
+            position: relative;
+        }
+
+        .footer-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 30px;
+            background: var(--secondary-gradient);
+            border-radius: 2px;
+            opacity: 0.7;
         }
 
         .footer-section h4 {
             color: var(--text-primary);
-            margin-bottom: 1rem;
-            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-left: 1rem;
+            position: relative;
         }
 
         .footer-section ul {
             list-style: none;
+            padding-left: 1rem;
         }
 
         .footer-section ul li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            position: relative;
         }
 
         .footer-section ul li a {
             color: var(--text-secondary);
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            position: relative;
+        }
+
+        .footer-section ul li a::before {
+            content: '';
+            width: 0;
+            height: 2px;
+            background: var(--accent-teal);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        .footer-section ul li a:hover::before {
+            width: 100%;
         }
 
         .footer-section ul li a:hover {
             color: var(--accent-teal);
+            transform: translateX(5px);
+        }
+
+        .footer-newsletter {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--darker-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .newsletter-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .newsletter-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            background: var(--dark-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-input:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+        }
+
+        .newsletter-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .newsletter-btn {
+            background: var(--secondary-gradient);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(150, 206, 180, 0.4);
         }
 
         .footer-bottom {
+            position: relative;
+            background: var(--dark-bg);
             border-top: 1px solid var(--glass-border);
-            padding: 2rem;
+            padding: 2.5rem 2rem;
             text-align: center;
+        }
+
+        .footer-bottom-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-copyright {
             color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-badges {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .footer-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-badge:hover {
+            border-color: var(--accent-mint);
+            color: var(--accent-mint);
+            transform: translateY(-2px);
+        }
+
+        .footer-badge i {
+            font-size: 0.9rem;
+        }
+
+        .footer-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .footer-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
+            border-radius: 50%;
+            animation: footerFloat 8s infinite ease-in-out;
+            opacity: 0.3;
+        }
+
+        .footer-particle {
+            position: absolute;
+            background: linear-gradient(45deg, var(--coral), var(--teal));
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: footerFloat linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes footerFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.7; }
         }
 
         /* Mobile Responsiveness */
@@ -711,11 +987,32 @@
 
             .footer-content {
                 grid-template-columns: 1fr;
-                gap: 2rem;
+                gap: 3rem;
+                padding: 3rem 1rem 2rem;
             }
 
             .footer-links {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .footer-badges {
+                flex-wrap: wrap;
+                justify-content: center;
             }
         }
 
@@ -957,46 +1254,134 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Ultra Modern Footer -->
     <footer class="footer">
+        <div class="footer-waves"></div>
+        <div class="footer-particles" id="footer-particles"></div>
+        
         <div class="footer-content">
             <div class="footer-brand">
                 <div class="footer-logo">
                     <i class="fas fa-rocket"></i> EverSpace
                 </div>
                 <p class="footer-description">
-                    The next generation of secure, real-time communication.
+                    Revolutionizing communication with cutting-edge technology, military-grade security, 
+                    and stunning design. Join the future of chat today.
                 </p>
+                
+                <div class="footer-social">
+                    <a href="#" class="social-link" title="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Discord">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link" title="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+
+                <div class="footer-newsletter">
+                    <h4 class="newsletter-title">Stay Updated</h4>
+                    <p class="newsletter-description">Get the latest updates and security insights</p>
+                    <div class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="your@email.com">
+                        <button class="newsletter-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
+            
             <div class="footer-links">
                 <div class="footer-section">
-                    <h4>Product</h4>
+                    <h4><i class="fas fa-cube"></i> Product</h4>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="{% url 'auth_register' %}">Get Started</a></li>
-                        <li><a href="{% url 'auth_login' %}">Sign In</a></li>
+                        <li><a href="#features">
+                            <i class="fas fa-star"></i> Features
+                        </a></li>
+                        <li><a href="{% url 'auth_register' %}">
+                            <i class="fas fa-rocket"></i> Get Started
+                        </a></li>
+                        <li><a href="{% url 'auth_login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-mobile-alt"></i> Mobile App
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-desktop"></i> Desktop App
+                        </a></li>
                     </ul>
                 </div>
+                
                 <div class="footer-section">
-                    <h4>Security</h4>
+                    <h4><i class="fas fa-shield-alt"></i> Security</h4>
                     <ul>
-                        <li><a href="#">Multi-Factor Auth</a></li>
-                        <li><a href="#">End-to-End Encryption</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">
+                            <i class="fas fa-key"></i> Multi-Factor Auth
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-lock"></i> End-to-End Encryption
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-user-shield"></i> Privacy Policy
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-certificate"></i> Security Audit
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-bug"></i> Report Vulnerability
+                        </a></li>
                     </ul>
                 </div>
+                
                 <div class="footer-section">
-                    <h4>Support</h4>
+                    <h4><i class="fas fa-headset"></i> Support</h4>
                     <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">System Status</a></li>
+                        <li><a href="#">
+                            <i class="fas fa-question-circle"></i> Help Center
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-envelope"></i> Contact Us
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-chart-line"></i> System Status
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-book"></i> Documentation
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-video"></i> Video Tutorials
+                        </a></li>
                     </ul>
                 </div>
             </div>
         </div>
+        
         <div class="footer-bottom">
-            <p>&copy; 2025 EverSpace. Built with ❤️ and cutting-edge technology.</p>
+            <div class="footer-bottom-content">
+                <div class="footer-copyright">
+                    &copy; 2025 EverSpace. Built with ❤️ and cutting-edge technology.
+                </div>
+                <div class="footer-badges">
+                    <div class="footer-badge">
+                        <i class="fas fa-shield-check"></i>
+                        <span>SOC 2 Compliant</span>
+                    </div>
+                    <div class="footer-badge">
+                        <i class="fas fa-award"></i>  
+                        <span>ISO 27001</span>
+                    </div>
+                    <div class="footer-badge">
+                        <i class="fas fa-globe"></i>
+                        <span>GDPR Ready</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -1084,9 +1469,32 @@
             }
         }
 
+        // Create footer particles
+        function createFooterParticles() {
+            const footerParticles = document.getElementById('footer-particles');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('footer-particle');
+                
+                // Random size and position
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                
+                footerParticles.appendChild(particle);
+            }
+        }
+
         // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
+            createFooterParticles();
             handleScrollAnimations();
             
             // Animate numbers when stats section is visible

@@ -204,6 +204,28 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
+        .room-number {
+            color: var(--accent-teal) !important;
+            font-weight: 600 !important;
+            font-family: 'Courier New', monospace !important;
+            background: rgba(78, 205, 196, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .room-privacy-badge {
+            display: inline-block;
+            background: rgba(252, 70, 107, 0.2);
+            color: var(--accent-coral);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(252, 70, 107, 0.3);
+            margin-left: 0.5rem;
+        }
+
         /* Create Room Section */
         .create-room-section {
             background: var(--glass-bg);
@@ -422,6 +444,408 @@
             margin: 8px 0;
         }
 
+        /* Room Creation Enhancements */
+        .input-group-room {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .room-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: var(--border-radius-md);
+            width: 100%;
+        }
+
+        .room-input:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .room-input.invalid {
+            border-color: var(--accent-coral);
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .room-input.valid {
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.4);
+            background: rgba(78, 205, 196, 0.05);
+        }
+
+        .input-helper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .input-helper i {
+            color: var(--accent-teal);
+        }
+
+        /* Digit Progress Bar */
+        .digit-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-coral), var(--accent-teal));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        /* Room Setup Modal */
+        .room-setup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 20, 25, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-content-large {
+            background: var(--dark-card);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-elevated);
+            border: 1px solid var(--accent-teal);
+            max-width: 600px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        .room-created-success {
+            text-align: center;
+            padding: 1rem 0 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--success-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+            color: white;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        .room-created-success h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .room-created-success p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 201, 255, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 201, 255, 0); }
+        }
+
+        /* Setup Form */
+        .setup-form {
+            padding: 0 1rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .description-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-md);
+            color: var(--text-primary);
+            padding: 1rem;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .description-textarea:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        /* Visibility Options */
+        .visibility-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .visibility-option {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .visibility-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .visibility-option.active {
+            border-color: var(--accent-teal);
+            background: rgba(78, 205, 196, 0.1);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.2);
+        }
+
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .visibility-option.active .option-icon {
+            background: var(--success-gradient);
+            animation: iconGlow 2s ease-in-out infinite alternate;
+        }
+
+        .option-content h5 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Password Section */
+        .password-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+        }
+
+        .password-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-md);
+            color: var(--text-primary);
+            padding: 1rem 3rem 1rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-teal);
+        }
+
+        .password-match-indicator {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-match-indicator.match {
+            background: rgba(0, 201, 255, 0.1);
+            color: var(--accent-teal);
+            border: 1px solid rgba(0, 201, 255, 0.3);
+        }
+
+        .password-match-indicator.no-match {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--accent-coral);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(69, 183, 209, 0.1));
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--accent-coral);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-body p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .description-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-md);
+            color: var(--text-primary);
+            padding: 1rem;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .description-textarea:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .btn-secondary-modern {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-secondary-modern:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .hero-title {
@@ -576,13 +1000,113 @@
                 <div class="create-room-title">
                     <i class="fas fa-plus-circle me-2"></i>Create or Join a Room
                 </div>
-                <form onsubmit="joinRoom(event)">
+                <form onsubmit="joinRoom(event)" id="room-creation-form">
                     {% csrf_token %}
-                    <input type="text" id="room-name-input" class="room-input" placeholder="Enter room name (e.g., general, gaming, tech)" required>
+                    <div class="input-group-room">
+                        <input type="text" id="room-name-input" class="room-input" placeholder="Enter exactly 7 digits (e.g., 1234567)" maxlength="7" pattern="[0-9]{7}" required>
+                        <div class="input-helper">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="digit-counter">0/7 digits entered</span>
+                        </div>
+                        <div class="digit-progress">
+                            <div class="progress-bar" id="digit-progress-bar"></div>
+                        </div>
+                    </div>
                     <button type="submit" class="btn btn-primary-modern btn-modern">
                         <i class="fas fa-rocket me-2"></i>Create Room
                     </button>
                 </form>
+            </div>
+
+            <!-- Room Setup Modal -->
+            <div class="room-setup-modal" id="room-setup-modal" style="display: none;">
+                <div class="modal-content-large">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-cog me-2"></i>Setup Your Room</h3>
+                        <button type="button" class="close-modal" onclick="closeSetupModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="room-created-success">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h4>Room <span id="created-room-name"></span> Created!</h4>
+                            <p>Now let's set up your room with some details.</p>
+                        </div>
+
+                        <div class="setup-form">
+                            <!-- Description Section -->
+                            <div class="form-section">
+                                <label class="form-label">
+                                    <i class="fas fa-edit me-2"></i>Room Description
+                                </label>
+                                <textarea id="room-description-input" class="description-textarea" placeholder="Describe what this room is about... (optional)" rows="3"></textarea>
+                            </div>
+
+                            <!-- Visibility Section -->
+                            <div class="form-section">
+                                <label class="form-label">
+                                    <i class="fas fa-eye me-2"></i>Room Visibility
+                                </label>
+                                <div class="visibility-options">
+                                    <div class="visibility-option active" data-value="public">
+                                        <div class="option-icon">
+                                            <i class="fas fa-globe"></i>
+                                        </div>
+                                        <div class="option-content">
+                                            <h5>Public Room</h5>
+                                            <p>Anyone can join this room</p>
+                                        </div>
+                                    </div>
+                                    <div class="visibility-option" data-value="private">
+                                        <div class="option-icon">
+                                            <i class="fas fa-lock"></i>
+                                        </div>
+                                        <div class="option-content">
+                                            <h5>Private Room</h5>
+                                            <p>Password required to join</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="room-visibility" value="public">
+                            </div>
+
+                            <!-- Password Section (Hidden by default) -->
+                            <div class="form-section password-section" id="password-section" style="display: none;">
+                                <label class="form-label">
+                                    <i class="fas fa-key me-2"></i>Room Password
+                                </label>
+                                <div class="password-inputs">
+                                    <div class="password-group">
+                                        <input type="password" id="room-password" class="password-input" placeholder="Enter room password">
+                                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('room-password')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-group">
+                                        <input type="password" id="room-password-confirm" class="password-input" placeholder="Confirm room password">
+                                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('room-password-confirm')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="password-match-indicator" id="password-match-indicator">
+                                    <i class="fas fa-info-circle me-2"></i>Passwords must match
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary-modern" onclick="cancelRoomCreation()">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary-modern" onclick="finalizeRoomCreation()" id="finalize-btn">
+                            <i class="fas fa-rocket me-2"></i>Create & Enter Room
+                        </button>
+                    </div>
+                </div>
             </div>
 
                 <!-- Available Rooms -->
@@ -590,11 +1114,24 @@
                     {% for room in rooms %}
                         <a href="{% url 'chat_room' room.name %}" class="room-card">
                             <div class="room-icon">
-                                <i class="fas fa-hashtag"></i>
+                                {% if room.is_private %}
+                                    <i class="fas fa-lock"></i>
+                                {% else %}
+                                    <i class="fas fa-hashtag"></i>
+                                {% endif %}
                             </div>
-                            <div class="room-name">{{ room.name }}</div>
+                            <div class="room-name">
+                                {{ room.name }}
+                                {% if room.is_private %}
+                                    <span class="room-privacy-badge">
+                                        <i class="fas fa-lock"></i> Private
+                                    </span>
+                                {% endif %}
+                            </div>
                             <div class="room-description">
-                                {% if room.name == 'general' %}
+                                {% if room.description %}
+                                    {{ room.description }}
+                                {% elif room.name == 'general' %}
                                     General discussion and community chat
                                 {% elif room.name == 'gaming' %}
                                     Gaming discussions and team coordination
@@ -603,7 +1140,11 @@
                                 {% elif room.name == 'random' %}
                                     Random conversations and off-topic discussions
                                 {% else %}
-                                    Join the conversation in {{ room.name }}
+                                    {% if room.description %}
+                                        {{ room.description }}
+                                    {% else %}
+                                        Join the conversation in room {{ room.name }}
+                                    {% endif %}
                                 {% endif %}
                             </div>
                             <div class="room-stats">
@@ -611,6 +1152,7 @@
                                 {% if room.creator %}
                                     <span><i class="fas fa-user me-1"></i>by {{ room.creator.first_name|default:room.creator.username }}</span>
                                 {% endif %}
+                                <span class="room-number">#{{ room.name }}</span>
                                 <span><i class="fas fa-arrow-right"></i></span>
                             </div>
                         </a>
@@ -649,51 +1191,303 @@
         
         document.addEventListener('DOMContentLoaded', createParticles);
 
+        // Store current room for description modal
+        let currentCreatedRoom = null;
+
+        // Real-time input validation for exactly 7 digits
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomInput = document.getElementById('room-name-input');
+            const digitCounter = document.getElementById('digit-counter');
+            const progressBar = document.getElementById('digit-progress-bar');
+            
+            roomInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/[^0-9]/g, '');
+                
+                // Limit to 7 digits
+                if (this.value.length > 7) {
+                    this.value = this.value.slice(0, 7);
+                }
+                
+                const currentLength = this.value.length;
+                const progress = (currentLength / 7) * 100;
+                
+                // Update counter and progress bar
+                digitCounter.textContent = `${currentLength}/7 digits entered`;
+                progressBar.style.width = progress + '%';
+                
+                // Update placeholder and styling based on input
+                if (currentLength === 0) {
+                    this.placeholder = 'Enter exactly 7 digits (e.g., 1234567)';
+                    this.classList.remove('valid', 'invalid');
+                } else if (currentLength < 7) {
+                    this.placeholder = `${7 - currentLength} more digits needed`;
+                    this.classList.add('invalid');
+                    this.classList.remove('valid');
+                } else {
+                    this.placeholder = 'Perfect! Ready to create room';
+                    this.classList.add('valid');
+                    this.classList.remove('invalid');
+                }
+            });
+
+            roomInput.addEventListener('keypress', function(e) {
+                // Only allow digits
+                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Initialize visibility option handlers
+            document.querySelectorAll('.visibility-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.visibility-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('room-visibility').value = this.dataset.value;
+                    
+                    const passwordSection = document.getElementById('password-section');
+                    if (this.dataset.value === 'private') {
+                        passwordSection.style.display = 'block';
+                    } else {
+                        passwordSection.style.display = 'none';
+                        document.getElementById('room-password').value = '';
+                        document.getElementById('room-password-confirm').value = '';
+                    }
+                });
+            });
+
+            // Password matching validation
+            function validatePasswords() {
+                const password = document.getElementById('room-password').value;
+                const confirmPassword = document.getElementById('room-password-confirm').value;
+                const indicator = document.getElementById('password-match-indicator');
+                const finalizeBtn = document.getElementById('finalize-btn');
+                
+                if (password && confirmPassword) {
+                    if (password === confirmPassword) {
+                        indicator.textContent = '✓ Passwords match';
+                        indicator.className = 'password-match-indicator match';
+                        finalizeBtn.disabled = false;
+                    } else {
+                        indicator.textContent = '✗ Passwords do not match';
+                        indicator.className = 'password-match-indicator no-match';
+                        finalizeBtn.disabled = true;
+                    }
+                } else {
+                    indicator.textContent = 'Passwords must match';
+                    indicator.className = 'password-match-indicator';
+                    finalizeBtn.disabled = false;
+                }
+            }
+
+            document.getElementById('room-password').addEventListener('input', validatePasswords);
+            document.getElementById('room-password-confirm').addEventListener('input', validatePasswords);
+        });
+
         function joinRoom(event) {
             event.preventDefault();
             const roomName = document.getElementById('room-name-input').value.trim();
-            if (roomName) {
-                // Add loading animation to button
-                const button = event.target.querySelector('button');
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Room...';
-                button.disabled = true;
+            
+            // Strictly validate exactly 7 digits
+            if (roomName.length !== 7 || !/^\d{7}$/.test(roomName)) {
+                showNotification('You must enter exactly 7 digits! Current: ' + roomName.length + ' digits', 'error');
+                return;
+            }
+            
+            // Add loading animation to button
+            const button = event.target.querySelector('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking Room...';
+            button.disabled = true;
+            
+            // Check if room already exists first
+            fetch('/chat/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `room_name=${encodeURIComponent(roomName)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store room info for setup modal
+                    currentCreatedRoom = {
+                        name: roomName,
+                        redirect_url: data.redirect_url
+                    };
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                    
+                    // Show setup modal after short delay
+                    setTimeout(() => {
+                        showSetupModal(roomName);
+                    }, 800);
+                    
+                    // Reset form
+                    resetRoomForm();
+                } else {
+                    // Show error message
+                    showNotification(data.message, 'error');
+                }
                 
-                // Create room with duplicate checking
-                fetch('/chat/create/', {
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred while creating the room. Please try again.', 'error');
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        function resetRoomForm() {
+            const roomInput = document.getElementById('room-name-input');
+            const digitCounter = document.getElementById('digit-counter');
+            const progressBar = document.getElementById('digit-progress-bar');
+            
+            roomInput.value = '';
+            roomInput.placeholder = 'Enter exactly 7 digits (e.g., 1234567)';
+            roomInput.classList.remove('valid', 'invalid');
+            digitCounter.textContent = '0/7 digits entered';
+            progressBar.style.width = '0%';
+        }
+
+        function showSetupModal(roomName) {
+            document.getElementById('created-room-name').textContent = roomName;
+            document.getElementById('room-setup-modal').style.display = 'flex';
+            document.getElementById('room-description-input').focus();
+        }
+
+        function closeSetupModal() {
+            document.getElementById('room-setup-modal').style.display = 'none';
+            resetSetupForm();
+        }
+
+        function resetSetupForm() {
+            document.getElementById('room-description-input').value = '';
+            document.getElementById('room-visibility').value = 'public';
+            document.getElementById('room-password').value = '';
+            document.getElementById('room-password-confirm').value = '';
+            document.getElementById('password-section').style.display = 'none';
+            
+            // Reset visibility options
+            document.querySelectorAll('.visibility-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector('.visibility-option[data-value="public"]').classList.add('active');
+            
+            // Reset password indicator
+            const indicator = document.getElementById('password-match-indicator');
+            indicator.textContent = 'Passwords must match';
+            indicator.className = 'password-match-indicator';
+        }
+
+        function cancelRoomCreation() {
+            if (currentCreatedRoom) {
+                // Delete the created room since user cancelled
+                fetch('/chat/delete-room/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
-                    body: `room_name=${encodeURIComponent(roomName)}`
+                    body: `room_name=${encodeURIComponent(currentCreatedRoom.name)}`
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        showNotification(data.message, 'success');
-                        // Navigate to room after short delay
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url;
-                        }, 1000);
-                    } else {
-                        // Show error message
-                        showNotification(data.message, 'error');
-                        // Reset button
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('An error occurred while creating the room. Please try again.', 'error');
-                    // Reset button
-                    button.innerHTML = originalText;
-                    button.disabled = false;
+                .then(() => {
+                    showNotification('Room creation cancelled', 'info');
                 });
             }
+            closeSetupModal();
+            currentCreatedRoom = null;
         }
+
+        function finalizeRoomCreation() {
+            const description = document.getElementById('room-description-input').value.trim();
+            const visibility = document.getElementById('room-visibility').value;
+            const password = document.getElementById('room-password').value;
+            const confirmPassword = document.getElementById('room-password-confirm').value;
+            
+            // Validate private room password
+            if (visibility === 'private') {
+                if (!password) {
+                    showNotification('Password is required for private rooms!', 'error');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    showNotification('Passwords do not match!', 'error');
+                    return;
+                }
+                if (password.length < 4) {
+                    showNotification('Password must be at least 4 characters!', 'error');
+                    return;
+                }
+            }
+            
+            if (!currentCreatedRoom) return;
+            
+            // Disable button during processing
+            const finalizeBtn = document.getElementById('finalize-btn');
+            const originalText = finalizeBtn.innerHTML;
+            finalizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Setting up room...';
+            finalizeBtn.disabled = true;
+            
+            // Update room with all settings
+            fetch('/chat/finalize-room/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `room_name=${encodeURIComponent(currentCreatedRoom.name)}&description=${encodeURIComponent(description)}&visibility=${visibility}&password=${encodeURIComponent(password)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Room setup complete! Entering room...', 'success');
+                    closeSetupModal();
+                    
+                    // Navigate to room after short delay
+                    setTimeout(() => {
+                        window.location.href = currentCreatedRoom.redirect_url;
+                    }, 1000);
+                } else {
+                    showNotification(data.message || 'Failed to setup room', 'error');
+                    finalizeBtn.innerHTML = originalText;
+                    finalizeBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error setting up room. Please try again.', 'error');
+                finalizeBtn.innerHTML = originalText;
+                finalizeBtn.disabled = false;
+            });
+        }
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('room-description-modal').style.display === 'flex') {
+                skipDescription();
+            }
+        });
 
         // Function to show notifications
         function showNotification(message, type) {

@@ -3,8 +3,15 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 class Room(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    VISIBILITY_CHOICES = [
+        ('public', 'Public'),
+        ('private', 'Private'),
+    ]
+    
+    name = models.CharField(max_length=7, unique=True)  # Exactly 7 digits
     description = models.TextField(blank=True)
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
+    password = models.CharField(max_length=128, blank=True)  # For private rooms
     created_at = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_rooms', null=True, blank=True)
     
@@ -14,6 +21,14 @@ class Room(models.Model):
     def can_delete(self, user):
         """Check if user can delete this room (only creator can)"""
         return self.creator == user
+    
+    def is_private(self):
+        """Check if room is private"""
+        return self.visibility == 'private'
+    
+    def check_password(self, password):
+        """Check if provided password matches room password"""
+        return self.password == password if self.is_private() else True
     
     class Meta:
         ordering = ['name']

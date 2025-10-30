@@ -5,85 +5,125 @@
 {% block header %}Welcome Back to EverSpace{% endblock %}
 
 {% block content %}
-<form method="post" novalidate class="needs-validation">
-    {% csrf_token %}
-    
-    <div class="mb-4">
-        <div class="form-floating">
+<div class="login-form-container">
+    <!-- Animated Logo -->
+    <div class="login-logo-container">
+        <div class="login-logo">
+            <i class="fas fa-rocket"></i>
+        </div>
+        <div class="logo-rings">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+        </div>
+    </div>
+
+    <form method="post" novalidate class="ultra-modern-form">
+        {% csrf_token %}
+        
+        <div class="input-group-modern mb-4">
+            <div class="input-icon">
+                <i class="fas fa-user"></i>
+            </div>
             {{ form.username }}
-            <label for="{{ form.username.id_for_label }}">
-                <i class="fas fa-user me-2"></i>Username
-            </label>
+            <label for="{{ form.username.id_for_label }}" class="floating-label">Username</label>
+            <div class="input-underline"></div>
+            {% if form.username.errors %}
+                <div class="error-message">
+                    {% for error in form.username.errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        {% if form.username.errors %}
-            <div class="text-danger small mt-2">
-                {% for error in form.username.errors %}
-                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
 
-    <div class="mb-4">
-        <div class="form-floating">
+        <div class="input-group-modern mb-4">
+            <div class="input-icon">
+                <i class="fas fa-lock"></i>
+            </div>
             {{ form.password }}
-            <label for="{{ form.password.id_for_label }}">
-                <i class="fas fa-lock me-2"></i>Password
-            </label>
+            <label for="{{ form.password.id_for_label }}" class="floating-label">Password</label>
+            <div class="input-underline"></div>
+            <div class="password-toggle" onclick="togglePassword()">
+                <i class="fas fa-eye" id="password-eye"></i>
+            </div>
+            {% if form.password.errors %}
+                <div class="error-message">
+                    {% for error in form.password.errors %}
+                        <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        {% if form.password.errors %}
-            <div class="text-danger small mt-2">
-                {% for error in form.password.errors %}
-                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+
+        {% if form.non_field_errors %}
+            <div class="alert-ultra-modern alert-danger-ultra">
+                {% for error in form.non_field_errors %}
+                    <div><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
                 {% endfor %}
             </div>
         {% endif %}
+
+        <button type="submit" class="btn-ultra-modern btn-login">
+            <span class="btn-text">
+                <i class="fas fa-rocket me-2"></i>Launch Into EverSpace
+            </span>
+            <div class="btn-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </button>
+    </form>
+
+    <div class="auth-divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">New to EverSpace?</span>
+        <div class="divider-line"></div>
     </div>
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger-modern alert-modern">
-            {% for error in form.non_field_errors %}
-                <div><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <button type="submit" class="btn btn-primary-modern btn-modern mb-4">
-        <i class="fas fa-sign-in-alt me-2"></i>Sign In to EverSpace
-    </button>
-</form>
-
-<div class="divider">
-    <span>New to EverSpace?</span>
-</div>
-
-<div class="auth-links">
-    <a href="{% url 'auth_register' %}" class="auth-link">
-        <i class="fas fa-user-plus me-1"></i>Create New Account
+    <a href="{% url 'auth_register' %}" class="btn-ultra-modern btn-register">
+        <span class="btn-text">
+            <i class="fas fa-user-plus me-2"></i>Create New Account
+        </span>
+        <div class="btn-gradient-overlay"></div>
     </a>
 </div>
 {% endblock %}
 
 {% block extra_content %}
-<div class="security-features">
-    <h6 class="mb-3">
-        <i class="fas fa-shield-check text-success me-2"></i>Security Features
-    </h6>
-    <div class="security-feature">
-        <i class="fas fa-shield-alt"></i>
-        <span>Rate limiting protection</span>
+<div class="security-showcase">
+    <div class="security-header">
+        <div class="security-icon">
+            <i class="fas fa-shield-check"></i>
+        </div>
+        <h6>Ultra-Secure Platform</h6>
     </div>
-    <div class="security-feature">
-        <i class="fas fa-mobile-alt"></i>
-        <span>Optional multi-factor authentication</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-clock"></i>
-        <span>Automatic session management</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-lock"></i>
-        <span>End-to-end encryption</span>
+    <div class="security-grid">
+        <div class="security-item">
+            <div class="security-badge">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span>Advanced Protection</span>
+        </div>
+        <div class="security-item">
+            <div class="security-badge">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <span>2FA Authentication</span>
+        </div>
+        <div class="security-item">
+            <div class="security-badge">
+                <i class="fas fa-clock"></i>
+            </div>
+            <span>Smart Sessions</span>
+        </div>
+        <div class="security-item">
+            <div class="security-badge">
+                <i class="fas fa-lock"></i>
+            </div>
+            <span>End-to-End Encryption</span>
+        </div>
     </div>
 </div>
 {% endblock %}
