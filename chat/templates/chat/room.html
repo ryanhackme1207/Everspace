@@ -55,6 +55,9 @@
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         /* Particles Background */
@@ -103,6 +106,11 @@
             z-index: 100;
             min-height: 120px;
             overflow: visible;
+            margin-top: 15px;
+        }
+
+        .min-vh-10 {
+            min-height: 10vh;
         }
 
         .room-title {
@@ -126,7 +134,7 @@
         }
 
         .room-info {
-            margin-top: 0.25rem;
+            margin-top: 0.5rem;
         }
 
         .online-count {
@@ -260,7 +268,7 @@
 
         /* Main Chat Layout */
         .chat-container {
-            height: calc(100vh - 120px);
+            height: calc(100vh - 135px);
             display: flex;
             margin-top: 0;
         }
@@ -496,7 +504,7 @@
             }
             
             .chat-container {
-                height: calc(100vh - 120px);
+                height: calc(100vh - 135px);
             }
             
             .user-info {
@@ -556,8 +564,8 @@
     
     <!-- Header -->
     <header class="chat-header">
-        <div class="container-fluid px-3">
-            <div class="row align-items-start g-2">
+        <div class="container-fluid px-4 py-2">
+            <div class="row align-items-center g-3 min-vh-10">
                 <div class="col-12 col-md-4 col-lg-3">
                     <div class="room-title">
                         <div class="room-title-main">
