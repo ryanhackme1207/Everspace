@@ -2,6 +2,83 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+from PIL import Image
+import os
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    cover_image = models.ImageField(upload_to='cover_images/', null=True, blank=True)
+    bio = models.TextField(max_length=500, blank=True, default='')
+    pixel_avatar = models.CharField(max_length=50, blank=True, default='')
+    username_changes_count = models.IntegerField(default=0)
+    username_changes_year = models.IntegerField(default=timezone.now().year)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+    def can_change_username(self):
+        """Check if user can change username (max 3 times per year)"""
+        current_year = timezone.now().year
+        if self.username_changes_year != current_year:
+            # Reset counter for new year
+            self.username_changes_year = current_year
+            self.username_changes_count = 0
+            self.save()
+        return self.username_changes_count < 3
+
+    def record_username_change(self):
+        """Record a username change"""
+        current_year = timezone.now().year
+        if self.username_changes_year != current_year:
+            self.username_changes_year = current_year
+            self.username_changes_count = 0
+        self.username_changes_count += 1
+        self.save()
+
+    def get_profile_picture_url(self):
+        """Get profile picture URL, fallback to pixel avatar or default"""
+        if self.profile_picture:
+            return self.profile_picture.url
+        elif self.pixel_avatar:
+            return f'/static/chat/images/pixel_avatars/{self.pixel_avatar}.png'
+        else:
+            return '/static/chat/images/default_avatar.png'
+
+    def get_cover_image_url(self):
+        """Get cover image URL or default"""
+        if self.cover_image:
+            return self.cover_image.url
+        else:
+            return '/static/chat/images/default_cover.jpg'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        # Resize profile picture if it exists
+        if self.profile_picture:
+            self._resize_image(self.profile_picture.path, (300, 300))
+        
+        # Resize cover image if it exists
+        if self.cover_image:
+            self._resize_image(self.cover_image.path, (1200, 400))
+
+    def _resize_image(self, image_path, size):
+        """Resize image to specified size"""
+        try:
+            with Image.open(image_path) as img:
+                img.thumbnail(size, Image.Resampling.LANCZOS)
+                img.save(image_path, optimize=True, quality=85)
+        except Exception as e:
+            print(f"Error resizing image: {e}")
+
+
 class Room(models.Model):
     VISIBILITY_CHOICES = [
         ('public', 'Public'),

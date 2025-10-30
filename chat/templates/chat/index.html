@@ -1117,6 +1117,9 @@
                     <span class="welcome-text">{{ user.first_name|default:user.username }}</span>
                 </div>
                 <div class="user-actions">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="Edit Profile">
+                        <i class="fas fa-user-edit me-1"></i>Profile
+                    </a>
                     <div class="dropdown me-2">
                         <button class="btn btn-outline-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="securityDropdown">
                             <i class="fas fa-shield-alt me-1"></i>Security

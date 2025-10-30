@@ -7,7 +7,12 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from django.db import models
-from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.utils import timezone
+from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage, UserProfile
+import os
+import json
 
 def landing_page(request):
     """Modern landing page with animations and introduction"""
@@ -819,3 +824,188 @@ def send_private_message(request):
             'success': False,
             'message': 'An error occurred while sending the message.'
         })
+
+
+# Profile Management Views
+@login_required
+def edit_profile(request):
+    """Display and handle profile editing"""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    # Define available pixel avatars
+    pixel_avatars = [
+        'robot', 'alien', 'knight', 'wizard', 'ninja', 'pirate', 'cat', 'dog',
+        'dragon', 'unicorn', 'ghost', 'monster', 'astronaut', 'viking', 'samurai', 'mage'
+    ]
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'update_basic_info':
+            # Update basic info (username, first name, last name)
+            new_username = request.POST.get('username', '').strip()
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            
+            # Validate username change
+            if new_username != request.user.username:
+                if not profile.can_change_username():
+                    messages.error(request, 'You have reached the maximum number of username changes for this year (3).')
+                    return redirect('edit_profile')
+                
+                # Check if username is available
+                if User.objects.filter(username=new_username).exclude(id=request.user.id).exists():
+                    messages.error(request, 'Username is already taken.')
+                    return redirect('edit_profile')
+                
+                # Validate username format
+                if len(new_username) < 3 or len(new_username) > 30:
+                    messages.error(request, 'Username must be between 3 and 30 characters.')
+                    return redirect('edit_profile')
+                
+                if not new_username.replace('_', '').replace('-', '').isalnum():
+                    messages.error(request, 'Username can only contain letters, numbers, underscores, and hyphens.')
+                    return redirect('edit_profile')
+                
+                # Update username and record change
+                request.user.username = new_username
+                profile.record_username_change()
+            
+            # Update names
+            request.user.first_name = first_name
+            request.user.last_name = last_name
+            request.user.save()
+            
+            messages.success(request, 'Basic information updated successfully!')
+            
+        elif action == 'update_bio':
+            # Update bio
+            bio = request.POST.get('bio', '').strip()
+            if len(bio) > 500:
+                messages.error(request, 'Bio cannot exceed 500 characters.')
+            else:
+                profile.bio = bio
+                profile.save()
+                messages.success(request, 'Bio updated successfully!')
+                
+        elif action == 'set_pixel_avatar':
+            # Set pixel avatar
+            pixel_avatar = request.POST.get('pixel_avatar')
+            if pixel_avatar in pixel_avatars:
+                profile.pixel_avatar = pixel_avatar
+                # Clear uploaded profile picture when setting pixel avatar
+                if profile.profile_picture:
+                    profile.profile_picture.delete()
+                    profile.profile_picture = None
+                profile.save()
+                messages.success(request, 'Pixel avatar updated successfully!')
+            else:
+                messages.error(request, 'Invalid pixel avatar selection.')
+        
+        return redirect('edit_profile')
+    
+    context = {
+        'profile': profile,
+        'pixel_avatars': pixel_avatars,
+        'remaining_username_changes': 3 - profile.username_changes_count if profile.can_change_username() else 0,
+        'can_change_username': profile.can_change_username(),
+    }
+    
+    return render(request, 'chat/edit_profile.html', context)
+
+
+@login_required
+@require_POST
+def upload_profile_picture(request):
+    """Handle profile picture upload"""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if 'profile_picture' not in request.FILES:
+        return JsonResponse({'success': False, 'message': 'No file uploaded.'})
+    
+    file = request.FILES['profile_picture']
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        return JsonResponse({'success': False, 'message': 'Only JPEG, PNG, GIF, and WebP images are allowed.'})
+    
+    # Validate file size (max 5MB)
+    if file.size > 5 * 1024 * 1024:
+        return JsonResponse({'success': False, 'message': 'File size cannot exceed 5MB.'})
+    
+    try:
+        # Delete old profile picture if exists
+        if profile.profile_picture:
+            profile.profile_picture.delete()
+        
+        # Clear pixel avatar when uploading custom picture
+        profile.pixel_avatar = ''
+        profile.profile_picture = file
+        profile.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Profile picture updated successfully!',
+            'image_url': profile.get_profile_picture_url()
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
+
+
+@login_required
+@require_POST
+def upload_cover_image(request):
+    """Handle cover image upload"""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if 'cover_image' not in request.FILES:
+        return JsonResponse({'success': False, 'message': 'No file uploaded.'})
+    
+    file = request.FILES['cover_image']
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        return JsonResponse({'success': False, 'message': 'Only JPEG, PNG, GIF, and WebP images are allowed.'})
+    
+    # Validate file size (max 10MB)
+    if file.size > 10 * 1024 * 1024:
+        return JsonResponse({'success': False, 'message': 'File size cannot exceed 10MB.'})
+    
+    try:
+        # Delete old cover image if exists
+        if profile.cover_image:
+            profile.cover_image.delete()
+        
+        profile.cover_image = file
+        profile.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Cover image updated successfully!',
+            'image_url': profile.get_cover_image_url()
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
+
+
+@login_required
+def view_profile(request, username=None):
+    """View a user's profile"""
+    if username:
+        user = get_object_or_404(User, username=username)
+    else:
+        user = request.user
+    
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    
+    context = {
+        'profile_user': user,
+        'profile': profile,
+        'is_own_profile': user == request.user,
+    }
+    
+    return render(request, 'chat/view_profile.html', context)
