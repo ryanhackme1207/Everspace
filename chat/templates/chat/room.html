@@ -567,6 +567,12 @@
             }
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
@@ -999,6 +1005,46 @@
                 
                 messagesContainer.appendChild(messageElement);
                 scrollToBottom();
+            } else if (data.type === 'room_deleted') {
+                // Handle room deletion - notify user and redirect
+                const deleteElement = document.createElement('div');
+                deleteElement.className = 'alert alert-danger text-center';
+                deleteElement.style.cssText = `
+                    margin: 1rem;
+                    padding: 1rem;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(185, 28, 28, 0.1));
+                    border: 2px solid rgba(239, 68, 68, 0.3);
+                    color: #dc2626;
+                    font-weight: 600;
+                    animation: shake 0.5s ease-in-out;
+                `;
+                deleteElement.innerHTML = `
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Room Deleted
+                    </div>
+                    <div style="margin-bottom: 1rem;">${data.message}</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">
+                        You will be redirected to the rooms list in 3 seconds...
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(deleteElement);
+                scrollToBottom();
+                
+                // Disable message input
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                messageInput.placeholder = "Room has been deleted...";
+                
+                // Close WebSocket connection
+                chatSocket.close();
+                
+                // Redirect to rooms list after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '{% url "chat_index" %}';
+                }, 3000);
             }
         };
 

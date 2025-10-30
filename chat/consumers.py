@@ -22,6 +22,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'chat_{self.room_name}'
         self.user = self.scope["user"]
 
+        # Check if room still exists
+        room_exists = await self.check_room_exists()
+        if not room_exists:
+            await self.close()
+            return
+
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -151,8 +157,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             username = self.user.username
             display_name = f"{self.user.first_name} {self.user.last_name}".strip() or username
 
-            # Save message to database
-            await self.save_message(self.user, self.room_name, message)
+            # Save message to database - check if room still exists
+            message_saved = await self.save_message(self.user, self.room_name, message)
+            
+            if not message_saved:
+                # Room no longer exists or user is banned - disconnect user
+                await self.send(text_data=json.dumps({
+                    'type': 'room_deleted',
+                    'message': 'This room has been deleted or you have been banned.'
+                }))
+                await self.close()
+                return
 
             # Send message to room group
             await self.channel_layer.group_send(
@@ -221,10 +236,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'users': users,
         }))
 
+    # Handle room deletion event
+    async def room_deleted(self, event):
+        message = event.get('message', 'This room has been deleted.')
+        
+        # Send room deletion notification to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'room_deleted',
+            'message': message
+        }))
+        
+        # Close the connection
+        await self.close()
+
+    @database_sync_to_async
+    def check_room_exists(self):
+        try:
+            Room.objects.get(name=self.room_name)
+            return True
+        except Room.DoesNotExist:
+            return False
+
     @database_sync_to_async
     def save_message(self, user, room_name, message):
-        room, created = Room.objects.get_or_create(name=room_name)
-        Message.objects.create(user=user, room=room, content=message)
+        try:
+            room = Room.objects.get(name=room_name)
+            # Check if user is banned from this room
+            if room.is_user_banned(user):
+                return False
+            Message.objects.create(user=user, room=room, content=message)
+            return True
+        except Room.DoesNotExist:
+            # Room no longer exists
+            return False
 
     def get_timestamp(self):
         from django.utils import timezone

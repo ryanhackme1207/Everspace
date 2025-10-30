@@ -37,7 +37,7 @@ def room(request, room_name):
     try:
         room_obj = Room.objects.get(name=room_name)
     except Room.DoesNotExist:
-        messages.error(request, f'Room "{room_name}" does not exist. Please create it first or join an existing room.')
+        messages.error(request, f'Room "{room_name}" does not exist or has been deleted.')
         return redirect('chat_index')
     
     # Check if user is banned from this room
@@ -226,6 +226,9 @@ def finalize_room(request):
 @require_POST
 def delete_room_ajax(request):
     """Delete a room via AJAX (for cancellation)"""
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    
     room_name = request.POST.get('room_name', '').strip()
     
     if not room_name:
@@ -243,6 +246,23 @@ def delete_room_ajax(request):
                 'success': False, 
                 'message': 'Only the room creator can delete this room.'
             })
+        
+        # Notify all connected users before deleting the room
+        channel_layer = get_channel_layer()
+        room_group_name = f'chat_{room_name}'
+        
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'room_deleted',
+                'message': f'Room "{room_name}" has been deleted by the creator.'
+            }
+        )
+        
+        # Clear active users from cache
+        from django.core.cache import cache
+        cache_key = f"active_users_{room_name}"
+        cache.delete(cache_key)
         
         room.delete()
         return JsonResponse({
@@ -264,6 +284,9 @@ def delete_room_ajax(request):
 @login_required
 def delete_room(request, room_name):
     """Delete a room - only the creator can delete it"""
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    
     room_obj = get_object_or_404(Room, name=room_name)
     
     if not room_obj.can_delete(request.user):
@@ -271,6 +294,23 @@ def delete_room(request, room_name):
         return redirect('chat_room', room_name=room_name)
     
     if request.method == 'POST':
+        # Notify all connected users before deleting the room
+        channel_layer = get_channel_layer()
+        room_group_name = f'chat_{room_name}'
+        
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'room_deleted',
+                'message': f'Room "{room_name}" has been deleted by the creator.'
+            }
+        )
+        
+        # Clear active users from cache
+        from django.core.cache import cache
+        cache_key = f"active_users_{room_name}"
+        cache.delete(cache_key)
+        
         room_obj.delete()
         messages.success(request, f'Room "{room_name}" has been deleted successfully.')
         return redirect('chat_index')
