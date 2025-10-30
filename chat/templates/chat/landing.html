@@ -132,7 +132,7 @@
         .logo {
             font-size: 1.8rem;
             font-weight: 800;
-            background: var(--gradient-1);
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -140,8 +140,8 @@
         }
 
         @keyframes logoGlow {
-            0% { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.5)); }
-            100% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.8)); }
+            0% { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5)); }
+            100% { filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.8)); }
         }
 
         .nav-buttons {
@@ -162,20 +162,26 @@
         }
 
         .btn-primary {
-            background: var(--gradient-1);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: var(--dark-card);
+            color: var(--accent-teal);
+            border: 2px solid var(--accent-teal);
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-teal);
+            color: var(--dark-bg);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
         }
 
         .btn::before {
@@ -213,11 +219,12 @@
             font-size: clamp(3rem, 8vw, 6rem);
             font-weight: 800;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #ffffff 0%, #f093fb 50%, #4facfe 100%);
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: titleFloat 6s ease-in-out infinite;
+            text-shadow: 0 0 50px rgba(255, 107, 107, 0.3);
         }
 
         @keyframes titleFloat {
@@ -230,7 +237,7 @@
             margin-bottom: 2rem;
             opacity: 1;
             animation: fadeInUp 1s ease 0.5s both;
-            color: #ffffff;
+            color: var(--text-secondary);
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
@@ -242,8 +249,9 @@
             margin-left: auto;
             margin-right: auto;
             animation: fadeInUp 1s ease 0.7s both;
-            color: #ffffff;
+            color: var(--text-primary);
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            line-height: 1.6;
         }
 
         @keyframes fadeInUp {
@@ -274,16 +282,22 @@
         }
 
         .btn-hero-primary {
-            background: var(--gradient-2);
-            color: white;
-            box-shadow: 0 8px 30px rgba(240, 147, 251, 0.4);
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4);
         }
 
         .btn-hero-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: var(--dark-card);
+            color: var(--accent-teal);
+            border: 2px solid var(--accent-teal);
             backdrop-filter: blur(10px);
+        }
+
+        .btn-hero-secondary:hover {
+            background: var(--accent-teal);
+            color: var(--dark-bg);
+            box-shadow: 0 8px 30px rgba(78, 205, 196, 0.4);
         }
 
         /* Features Section */
@@ -298,7 +312,7 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 4rem;
-            background: var(--gradient-1);
+            background: var(--secondary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -311,14 +325,15 @@
         }
 
         .feature-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--dark-card);
             backdrop-filter: blur(20px);
             padding: 2rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--glass-border);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-glass);
         }
 
         .feature-card::before {
@@ -327,8 +342,8 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: var(--gradient-1);
+            height: 3px;
+            background: var(--primary-gradient);
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -339,13 +354,14 @@
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--accent-teal);
         }
 
         .feature-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
-            background: var(--gradient-2);
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -355,13 +371,13 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         .feature-description {
             opacity: 0.95;
             line-height: 1.6;
-            color: #e2e8f0;
+            color: var(--text-secondary);
         }
 
         /* Stats Section */
@@ -386,7 +402,7 @@
         .stat-number {
             font-size: 3rem;
             font-weight: 800;
-            background: var(--gradient-3);
+            background: var(--success-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -396,15 +412,249 @@
         .stat-label {
             font-size: 1rem;
             opacity: 0.95;
-            color: #e2e8f0;
+            color: var(--text-secondary);
         }
 
-        /* Footer */
+        /* Testimonials Section */
+        .testimonials {
+            padding: 8rem 2rem;
+            background: linear-gradient(135deg, var(--dark-card) 0%, var(--darker-card) 100%);
+        }
+
+        .testimonials-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            background: var(--warning-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glass);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--accent-mint);
+        }
+
+        .testimonial-content {
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .author-role {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Call to Action Section */
+        .cta-section {
+            padding: 8rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--darker-card) 0%, var(--dark-bg) 100%);
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn-cta-primary {
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            border: none;
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.6);
+            filter: brightness(1.1);
+        }
+
+        .btn-cta-secondary {
+            background: var(--dark-card);
+            color: var(--accent-teal);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            border: 2px solid var(--accent-teal);
+            transition: all 0.3s ease;
+        }
+
+        .btn-cta-secondary:hover {
+            background: var(--accent-teal);
+            color: var(--dark-bg);
+            box-shadow: 0 8px 30px rgba(78, 205, 196, 0.4);
+        }
+
+        .cta-features {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .cta-feature i {
+            color: var(--accent-mint);
+        }
+
+        /* Enhanced Footer */
         .footer {
+            background: var(--dark-bg);
+            border-top: 1px solid var(--accent-teal);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .footer-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul li a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: var(--accent-teal);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--glass-border);
             padding: 2rem;
             text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-muted);
         }
 
         /* Mobile Responsiveness */
@@ -433,6 +683,39 @@
             
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-cta-primary,
+            .btn-cta-secondary {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .cta-features {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -477,10 +760,11 @@
     <section class="hero">
         <div class="hero-content">
             <h1 class="hero-title">EverSpace</h1>
-            <p class="hero-subtitle">The Future of Real-Time Communication</p>
+            <p class="hero-subtitle">Where Conversations Come Alive</p>
             <p class="hero-description">
-                Experience next-generation chat with military-grade security, lightning-fast messaging, 
-                and immersive animations. Connect with friends in a whole new dimension.
+                Experience the next generation of secure, real-time communication. With military-grade security, 
+                lightning-fast messaging, and stunning visual design, EverSpace transforms how you connect with others. 
+                Join a community that values privacy, speed, and beautiful design.
             </p>
             <div class="hero-cta">
                 <a href="{% url 'auth_register' %}" class="btn btn-hero btn-hero-primary">
@@ -587,9 +871,133 @@
         </div>
     </section>
 
+    <!-- Testimonials Section -->
+    <section class="testimonials scroll-fade">
+        <div class="testimonials-container">
+            <h2 class="section-title">What Our Users Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"EverSpace has revolutionized how our team communicates. The security features give us peace of mind, and the interface is absolutely beautiful!"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="author-info">
+                            <div class="author-name">Sarah Johnson</div>
+                            <div class="author-role">Tech Lead, InnovateCorp</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"The real-time messaging is incredibly fast, and I love the modern design. It makes chatting feel like a premium experience."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="author-info">
+                            <div class="author-name">Alex Chen</div>
+                            <div class="author-role">Software Engineer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Multi-factor authentication and room management features are exactly what we needed for our organization. Highly recommended!"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="author-info">
+                            <div class="author-name">Maria Rodriguez</div>
+                            <div class="author-role">Security Manager</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta-section scroll-fade">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Transform Your Communication?</h2>
+            <p class="cta-description">
+                Join thousands of users who have already discovered the future of chat. 
+                Get started today and experience the difference.
+            </p>
+            <div class="cta-buttons">
+                <a href="{% url 'auth_register' %}" class="btn btn-cta-primary">
+                    <i class="fas fa-rocket"></i> Start Chatting Now
+                </a>
+                <a href="{% url 'auth_login' %}" class="btn btn-cta-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+            </div>
+            <div class="cta-features">
+                <div class="cta-feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Free to get started</span>
+                </div>
+                <div class="cta-feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>No credit card required</span>
+                </div>
+                <div class="cta-feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Setup in under 2 minutes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2025 EverSpace. Built with ❤️ and cutting-edge technology.</p>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <i class="fas fa-rocket"></i> EverSpace
+                </div>
+                <p class="footer-description">
+                    The next generation of secure, real-time communication.
+                </p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="{% url 'auth_register' %}">Get Started</a></li>
+                        <li><a href="{% url 'auth_login' %}">Sign In</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Security</h4>
+                    <ul>
+                        <li><a href="#">Multi-Factor Auth</a></li>
+                        <li><a href="#">End-to-End Encryption</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">System Status</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 EverSpace. Built with ❤️ and cutting-edge technology.</p>
+        </div>
     </footer>
 
     <script>
