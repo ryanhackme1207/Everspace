@@ -99,6 +99,9 @@
             border-bottom: 1px solid var(--accent-teal);
             padding: 1rem 0;
             box-shadow: var(--shadow-glass);
+            position: relative;
+            z-index: 100;
+            min-height: 80px;
         }
 
         .room-title {
@@ -110,10 +113,15 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.5rem;
             flex-direction: column;
-            align-items: flex-start;
+        }
+
+        .room-title-main {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .room-info {
@@ -151,9 +159,13 @@
         }
 
         .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
+            justify-content: flex-end !important;
+            min-height: 50px !important;
+            width: 100% !important;
         }
 
         .user-badge {
@@ -169,14 +181,23 @@
         }
 
         .action-btn {
-            background: var(--dark-card);
-            border: 1px solid var(--accent-blue);
-            color: var(--accent-blue);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius-sm);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
+            background: var(--dark-card) !important;
+            border: 2px solid var(--accent-blue) !important;
+            color: var(--accent-blue) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--border-radius-sm) !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+            font-size: 0.9rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            white-space: nowrap !important;
+            position: relative !important;
+            z-index: 100 !important;
+            min-width: 80px !important;
+            height: 40px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         .action-btn:hover {
@@ -192,6 +213,8 @@
             border: 1px solid var(--accent-coral) !important;
             color: var(--accent-coral) !important;
             margin-right: 0.5rem;
+            position: relative;
+            z-index: 10;
         }
 
         .delete-room-btn:hover {
@@ -205,6 +228,8 @@
             border: 1px solid var(--accent-teal) !important;
             color: var(--accent-teal) !important;
             margin-right: 0.5rem;
+            position: relative;
+            z-index: 10;
         }
 
         .settings-btn:hover {
@@ -470,6 +495,20 @@
                 align-items: flex-end;
                 gap: 0.5rem;
             }
+
+            .action-btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                white-space: nowrap;
+            }
+
+            .chat-header {
+                padding: 0.8rem 0;
+            }
+
+            .room-title {
+                font-size: 1.2rem;
+            }
             
             .user-badge {
                 font-size: 0.8rem;
@@ -500,21 +539,23 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="room-title">
-                        <div class="room-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="roomGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:rgba(255,255,255,0.7);stop-opacity:1" />
-                                    </linearGradient>
-                                </defs>
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="url(#roomGradient)" stroke-width="2" fill="none"/>
-                                <circle cx="9" cy="12" r="1" fill="url(#roomGradient)"/>
-                                <circle cx="12" cy="12" r="1" fill="url(#roomGradient)"/>
-                                <circle cx="15" cy="12" r="1" fill="url(#roomGradient)"/>
-                            </svg>
+                        <div class="room-title-main">
+                            <div class="room-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="roomGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:rgba(255,255,255,0.7);stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="url(#roomGradient)" stroke-width="2" fill="none"/>
+                                    <circle cx="9" cy="12" r="1" fill="url(#roomGradient)"/>
+                                    <circle cx="12" cy="12" r="1" fill="url(#roomGradient)"/>
+                                    <circle cx="15" cy="12" r="1" fill="url(#roomGradient)"/>
+                                </svg>
+                            </div>
+                            {{ room_name }}
                         </div>
-                        {{ room_name }}
                         <div class="room-info">
                             <span class="online-count">
                                 <i class="fas fa-circle text-success"></i>
