@@ -30,13 +30,13 @@ def index(request):
     if request.user.is_authenticated:
         # Get accepted friendships
         friends_relationships = Friendship.objects.filter(
-            models.Q(user1=request.user) | models.Q(user2=request.user),
+            models.Q(sender=request.user) | models.Q(receiver=request.user),
             status='accepted'
         )
         
         friends = []
         for friendship in friends_relationships:
-            friend = friendship.user2 if friendship.user1 == request.user else friendship.user1
+            friend = friendship.receiver if friendship.sender == request.user else friendship.sender
             friends.append(friend)
         
         # Get pending incoming requests
