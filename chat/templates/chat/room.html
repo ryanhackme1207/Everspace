@@ -16,17 +16,30 @@
     
     <style>
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --accent-color: #f093fb;
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --dark-bg: #0f0f23;
-            --border-radius-lg: 16px;
-            --border-radius-md: 12px;
-            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* Modern Ocean & Sunset Theme */
+            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+            --secondary-gradient: linear-gradient(135deg, #96CEB4 0%, #FECA57 100%);
+            --success-gradient: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+            --warning-gradient: linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%);
+            --glass-bg: rgba(20, 25, 40, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --dark-bg: #0F1419;
+            --dark-card: #1A202C;
+            --darker-card: #2D3748;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --text-muted: #718096;
+            --accent-coral: #FF6B6B;
+            --accent-teal: #4ECDC4;
+            --accent-blue: #45B7D1;
+            --accent-mint: #96CEB4;
+            --accent-yellow: #FECA57;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+            --border-radius-sm: 12px;
+            --shadow-glass: 0 8px 32px rgba(15, 20, 25, 0.4);
+            --shadow-elevated: 0 20px 40px rgba(15, 20, 25, 0.6);
         }
 
         * {
@@ -37,9 +50,9 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
             background-attachment: fixed;
-            color: white;
+            color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
         }
@@ -56,9 +69,10 @@
 
         .particle {
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
             border-radius: 50%;
             animation: float 8s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
         }
 
         .particle:nth-child(odd) {
@@ -69,7 +83,8 @@
         .particle:nth-child(even) {
             width: 6px;
             height: 6px;
-            background: rgba(255, 255, 255, 0.05);
+            background: linear-gradient(45deg, var(--accent-teal), var(--accent-blue));
+            box-shadow: 0 0 8px rgba(78, 205, 196, 0.3);
         }
 
         @keyframes float {
@@ -79,17 +94,21 @@
 
         /* Header */
         .chat-header {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--dark-card);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--accent-teal);
             padding: 1rem 0;
+            box-shadow: var(--shadow-glass);
         }
 
         .room-title {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
             font-size: 1.5rem;
-            color: white;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -116,51 +135,56 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--dark-card);
+            border: 1px solid var(--accent-teal);
             padding: 0.5rem 1rem;
             border-radius: 25px;
             font-size: 0.9rem;
+            color: var(--accent-teal);
         }
 
         .action-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: var(--dark-card);
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 0.9rem;
         }
 
         .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            background: var(--accent-blue);
+            color: var(--dark-bg);
             text-decoration: none;
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(69, 183, 209, 0.3);
         }
 
         .delete-room-btn {
-            background: rgba(255, 107, 107, 0.1) !important;
-            border: 1px solid rgba(255, 107, 107, 0.3) !important;
-            color: #ff6b6b !important;
+            background: var(--dark-card) !important;
+            border: 1px solid var(--accent-coral) !important;
+            color: var(--accent-coral) !important;
             margin-right: 0.5rem;
         }
 
         .delete-room-btn:hover {
-            background: rgba(255, 107, 107, 0.2) !important;
-            color: #ff6b6b !important;
+            background: var(--accent-coral) !important;
+            color: var(--dark-bg) !important;
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
         }
 
         .primary-btn {
             background: var(--primary-gradient);
             border: none;
+            color: var(--text-primary);
         }
 
         .primary-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            filter: brightness(1.1);
         }
 
         /* Main Chat Layout */
@@ -171,11 +195,12 @@
 
         .sidebar {
             width: 280px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--dark-card);
             backdrop-filter: blur(15px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid var(--accent-teal);
             padding: 1.5rem;
             overflow-y: auto;
+            box-shadow: var(--shadow-glass);
         }
 
         .sidebar h5 {
@@ -229,7 +254,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--dark-bg);
         }
 
         .messages-container {
@@ -242,18 +267,20 @@
         }
 
         .message {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--dark-card);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
             border-radius: var(--border-radius-md);
             padding: 1rem;
             transition: all 0.3s ease;
             word-wrap: break-word;
+            box-shadow: var(--shadow-glass);
         }
 
         .message:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: var(--darker-card);
             transform: translateY(-2px);
+            border-color: var(--accent-teal);
         }
 
         .message-header {
@@ -265,25 +292,26 @@
 
         .username {
             font-weight: 600;
-            color: var(--accent-color);
+            color: var(--accent-coral);
         }
 
         .timestamp {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
         }
 
         .message-content {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
             line-height: 1.5;
         }
 
         /* Message Input */
         .input-container {
             padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--dark-card);
             backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--accent-teal);
+            box-shadow: var(--shadow-glass);
         }
 
         .input-form {
@@ -294,9 +322,9 @@
 
         .message-input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: var(--darker-card);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
             padding: 0.75rem 1rem;
             border-radius: var(--border-radius-md);
             font-size: 1rem;
@@ -305,13 +333,14 @@
 
         .message-input:focus {
             outline: none;
-            border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--accent-teal);
+            background: var(--dark-bg);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            transform: translateY(-2px);
         }
 
         .message-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-muted);
         }
 
         .send-button {
