@@ -93,20 +93,26 @@
             background: var(--dark-card);
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-elevated);
-            padding: 3rem;
+            padding: 3.5rem;
             backdrop-filter: blur(20px);
             border: 1px solid var(--accent-teal);
-            max-width: 480px;
+            max-width: 600px;
             width: 100%;
             position: relative;
             overflow: hidden;
             animation: slideUp 0.8s ease-out;
         }
 
-        /* Larger container for registration page */
+        /* Even larger container for registration page */
         .register-form-container .auth-card,
         .auth-card.register-card {
-            max-width: 700px;
+            max-width: 800px;
+            padding: 4rem;
+        }
+
+        /* Specific sizing for login forms */
+        .login-form-container .auth-card {
+            max-width: 650px;
             padding: 3.5rem;
         }
 
@@ -122,7 +128,8 @@
 
         .auth-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
         }
 
         .brand-title {
@@ -132,14 +139,16 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: 700;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.8rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
         }
 
         .brand-subtitle {
             color: var(--text-secondary);
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            margin-bottom: 0;
         }
 
         /* Modern Form Styling */
@@ -539,14 +548,15 @@
 
         .input-group-modern input {
             width: 100%;
-            padding: 1.2rem 1rem 1.2rem 3.5rem;
+            padding: 1.4rem 1.2rem 1.4rem 4rem;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: var(--border-radius-md);
             color: var(--text-primary);
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            min-height: 60px;
         }
 
         .input-group-modern input:focus {
@@ -558,11 +568,11 @@
 
         .input-icon {
             position: absolute;
-            left: 1rem;
+            left: 1.2rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-secondary);
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             z-index: 2;
             transition: all 0.3s ease;
         }
@@ -574,11 +584,11 @@
 
         .floating-label {
             position: absolute;
-            left: 3.5rem;
+            left: 4rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 1.1rem;
             pointer-events: none;
             transition: all 0.3s ease;
             background: transparent;
@@ -586,12 +596,13 @@
 
         .input-group-modern input:focus + .floating-label,
         .input-group-modern input:not(:placeholder-shown) + .floating-label {
-            top: 0;
-            left: 1rem;
-            font-size: 0.8rem;
+            top: -2px;
+            left: 1.2rem;
+            font-size: 0.85rem;
             color: var(--accent-teal);
             background: var(--dark-card);
-            padding: 0 0.5rem;
+            padding: 0 0.75rem;
+            font-weight: 600;
         }
 
         .input-underline {
@@ -676,11 +687,11 @@
         /* Ultra-Modern Buttons */
         .btn-ultra-modern {
             position: relative;
-            padding: 1rem 2rem;
+            padding: 1.3rem 2.5rem;
             border: none;
             border-radius: var(--border-radius-md);
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: white;
             cursor: pointer;
             overflow: hidden;
@@ -689,7 +700,11 @@
             display: block;
             text-align: center;
             width: 100%;
-            margin-bottom: 1rem;
+            margin: 2rem 0 1.5rem 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-login {
@@ -780,8 +795,9 @@
         .auth-divider {
             display: flex;
             align-items: center;
-            margin: 2rem 0;
-            gap: 1rem;
+            margin: 2.5rem 0;
+            gap: 1.5rem;
+            padding: 0 1rem;
         }
 
         .divider-line {
@@ -792,9 +808,11 @@
 
         .divider-text {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 500;
             white-space: nowrap;
+            padding: 0 1rem;
+            background: var(--dark-card);
         }
 
         /* Error Messages */
@@ -868,8 +886,8 @@
         .security-showcase, .features-showcase {
             background: rgba(255, 255, 255, 0.05);
             border-radius: var(--border-radius-lg);
-            padding: 2rem;
-            margin-top: 2rem;
+            padding: 2.5rem;
+            margin-top: 3rem;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -978,11 +996,47 @@
             margin: 0;
         }
 
+        /* Large Screen Optimizations */
+        @media (min-width: 1200px) {
+            .auth-card {
+                max-width: 700px;
+                padding: 4rem;
+            }
+
+            .register-form-container .auth-card,
+            .auth-card.register-card {
+                max-width: 900px;
+                padding: 4.5rem;
+            }
+
+            .login-form-container .auth-card {
+                max-width: 750px;
+                padding: 4rem;
+            }
+
+            .brand-title {
+                font-size: 3.2rem;
+            }
+
+            .brand-subtitle {
+                font-size: 1.3rem;
+            }
+
+            .input-group-modern {
+                margin-bottom: 3.5rem;
+            }
+
+            .auth-header {
+                margin-bottom: 3.5rem;
+                padding-bottom: 1.5rem;
+            }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .auth-card {
                 margin: 1rem;
-                padding: 2rem;
+                padding: 2rem 1.5rem;
                 border-radius: var(--border-radius-md);
                 max-width: 95%;
             }
@@ -992,9 +1046,18 @@
                 max-width: 95vw;
                 padding: 2rem 1.5rem;
             }
+
+            .login-form-container .auth-card {
+                max-width: 95vw;
+                padding: 2rem 1.5rem;
+            }
             
             .brand-title {
-                font-size: 2rem;
+                font-size: 2.2rem;
+            }
+
+            .brand-subtitle {
+                font-size: 1rem;
             }
 
             .name-row, .password-row {
