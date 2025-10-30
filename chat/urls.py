@@ -9,4 +9,8 @@ urlpatterns = [
     path('chat/delete-room/', views.delete_room_ajax, name='delete_room_ajax'),
     path('chat/<str:room_name>/', views.room, name='chat_room'),
     path('chat/<str:room_name>/delete/', views.delete_room, name='delete_room'),
+    path('chat/<str:room_name>/settings/', views.room_settings, name='room_settings'),
+    path('chat/kick-member/', views.kick_member, name='kick_member'),
+    path('chat/ban-member/', views.ban_member, name='ban_member'),
+    path('chat/unban-member/', views.unban_member, name='unban_member'),
 ]

@@ -5,7 +5,8 @@ from django_otp.decorators import otp_required
 from django_otp import user_has_device
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Room, Message
+from django.contrib.auth.models import User
+from .models import Room, Message, RoomMember, RoomBan
 
 def landing_page(request):
     """Modern landing page with animations and introduction"""
@@ -38,6 +39,11 @@ def room(request, room_name):
         messages.error(request, f'Room "{room_name}" does not exist. Please create it first or join an existing room.')
         return redirect('chat_index')
     
+    # Check if user is banned from this room
+    if room_obj.is_user_banned(request.user):
+        messages.error(request, f'You are banned from room "{room_name}". Contact the room host if you believe this is an error.')
+        return redirect('chat_index')
+    
     # Handle private room password checking
     if room_obj.is_private():
         # Check if password is provided in POST request
@@ -60,8 +66,26 @@ def room(request, room_name):
                     'room_name': room_name
                 })
     
+    # Add user as a member if not already added and create host if needed
+    if room_obj.creator == request.user:
+        # Ensure room creator is added as host member
+        room_obj.add_member(request.user, role='host')
+    else:
+        # Add regular user as member
+        room_obj.add_member(request.user, role='member')
+    
+    # Mark user as online in this room
+    try:
+        member = RoomMember.objects.get(room=room_obj, user=request.user)
+        member.set_online()
+    except RoomMember.DoesNotExist:
+        pass
+    
     messages_list = Message.objects.filter(room=room_obj).order_by('timestamp')[:50]  # Last 50 messages
     user_has_mfa = user_has_device(request.user)
+    
+    # Get online members for display
+    online_members = room_obj.get_online_members()
     
     return render(request, 'chat/room.html', {
         'room_name': room_name,
@@ -69,7 +93,10 @@ def room(request, room_name):
         'messages': messages_list,
         'user': request.user,
         'user_has_mfa': user_has_mfa,
-        'is_room_creator': room_obj.can_delete(request.user)
+        'is_room_creator': room_obj.can_delete(request.user),
+        'is_room_host': room_obj.is_host(request.user),
+        'online_members': online_members,
+        'online_count': online_members.count(),
     })
 
 @login_required
@@ -105,6 +132,10 @@ def create_room(request):
             creator=request.user,
             description=''  # Initially empty, will be set via description modal
         )
+        
+        # Automatically add the creator as host member
+        room.add_member(request.user, role='host')
+        
         return JsonResponse({
             'success': True, 
             'message': f'Room "{room_name}" created successfully!',
@@ -248,3 +279,183 @@ def delete_room(request, room_name):
         'room_obj': room_obj,
         'room_name': room_name
     })
+
+
+@login_required  
+def room_settings(request, room_name):
+    """Room settings page for hosts to manage room, members, and settings"""
+    room_obj = get_object_or_404(Room, name=room_name)
+    
+    # Only room host can access settings
+    if not room_obj.is_host(request.user):
+        messages.error(request, 'Only the room host can access room settings.')
+        return redirect('chat_room', room_name=room_name)
+    
+    # Get room statistics
+    online_members = room_obj.get_online_members()
+    all_members = room_obj.get_all_members()
+    banned_users = room_obj.banned_users.filter(is_active=True)
+    
+    # Handle description update
+    if request.method == 'POST' and 'update_description' in request.POST:
+        new_description = request.POST.get('description', '').strip()
+        room_obj.update_description(new_description)
+        messages.success(request, 'Room description updated successfully!')
+        return redirect('room_settings', room_name=room_name)
+    
+    return render(request, 'chat/room_settings.html', {
+        'room_obj': room_obj,
+        'room_name': room_name,
+        'online_members': online_members,
+        'all_members': all_members,
+        'banned_users': banned_users,
+        'total_members': all_members.count(),
+        'online_count': online_members.count(),
+        'banned_count': banned_users.count(),
+    })
+
+
+@login_required
+@require_POST
+def kick_member(request):
+    """Kick a member from the room"""
+    room_name = request.POST.get('room_name', '').strip()
+    username = request.POST.get('username', '').strip()
+    
+    if not room_name or not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room name and username are required.'
+        })
+    
+    try:
+        room_obj = get_object_or_404(Room, name=room_name)
+        user_to_kick = get_object_or_404(User, username=username)
+        
+        # Only room host can kick members
+        if not room_obj.is_host(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'Only the room host can kick members.'
+            })
+        
+        # Cannot kick the host
+        if user_to_kick == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot kick yourself.'
+            })
+        
+        # Kick the user
+        room_obj.kick_user(user_to_kick)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{username} has been kicked from the room.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while kicking the member.'
+        })
+
+
+@login_required
+@require_POST
+def ban_member(request):
+    """Ban a member from the room"""
+    room_name = request.POST.get('room_name', '').strip()
+    username = request.POST.get('username', '').strip()
+    reason = request.POST.get('reason', '').strip()
+    
+    if not room_name or not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room name and username are required.'
+        })
+    
+    try:
+        room_obj = get_object_or_404(Room, name=room_name)
+        user_to_ban = get_object_or_404(User, username=username)
+        
+        # Only room host can ban members
+        if not room_obj.is_host(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'Only the room host can ban members.'
+            })
+        
+        # Cannot ban the host
+        if user_to_ban == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot ban yourself.'
+            })
+        
+        # Check if user is already banned
+        if room_obj.is_user_banned(user_to_ban):
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} is already banned from this room.'
+            })
+        
+        # Ban the user
+        room_obj.ban_user(user_to_ban, request.user, reason)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{username} has been banned from the room.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while banning the member.'
+        })
+
+
+@login_required
+@require_POST
+def unban_member(request):
+    """Unban a member from the room"""
+    room_name = request.POST.get('room_name', '').strip()
+    username = request.POST.get('username', '').strip()
+    
+    if not room_name or not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room name and username are required.'
+        })
+    
+    try:
+        room_obj = get_object_or_404(Room, name=room_name)
+        user_to_unban = get_object_or_404(User, username=username)
+        
+        # Only room host can unban members
+        if not room_obj.is_host(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'Only the room host can unban members.'
+            })
+        
+        # Check if user is actually banned
+        if not room_obj.is_user_banned(user_to_unban):
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} is not banned from this room.'
+            })
+        
+        # Unban the user
+        room_obj.unban_user(user_to_unban)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{username} has been unbanned from the room.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while unbanning the member.'
+        })

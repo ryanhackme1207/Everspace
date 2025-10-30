@@ -1,0 +1,646 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Settings - {{ room_name }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --ocean-coral: #FF6B6B;
+            --ocean-teal: #4ECDC4;
+            --ocean-blue: #45B7D1;
+            --ocean-mint: #96CEB4;
+            --ocean-yellow: #FECA57;
+            --ocean-purple: #A8E6CF;
+            --ocean-light: #F8FBFF;
+            --ocean-dark: #2C3E50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--ocean-teal) 50%, var(--ocean-mint) 100%);
+            min-height: 100vh;
+            color: var(--ocean-dark);
+        }
+
+        .settings-container {
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--ocean-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .room-title i {
+            color: var(--ocean-coral);
+        }
+
+        .room-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(var(--ocean-teal), 0.1);
+            border-radius: 50px;
+            border: 1px solid var(--ocean-teal);
+        }
+
+        .stat-item i {
+            color: var(--ocean-teal);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .settings-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--ocean-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title i {
+            color: var(--ocean-coral);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--ocean-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(var(--ocean-teal), 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--ocean-teal);
+            box-shadow: 0 0 0 4px rgba(var(--ocean-teal), 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--ocean-coral), var(--ocean-blue));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .members-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(var(--ocean-mint), 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(var(--ocean-mint), 0.3);
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--ocean-coral), var(--ocean-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .member-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: var(--ocean-dark);
+        }
+
+        .member-status {
+            font-size: 0.8rem;
+            color: var(--ocean-teal);
+        }
+
+        .member-role {
+            background: var(--ocean-yellow);
+            color: var(--ocean-dark);
+            padding: 0.2rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-kick {
+            background: var(--ocean-yellow);
+            color: var(--ocean-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-ban {
+            background: var(--ocean-coral);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-unban {
+            background: var(--ocean-mint);
+            color: var(--ocean-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-kick:hover, .btn-ban:hover, .btn-unban:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 1rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ocean-dark);
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .banned-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .banned-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(var(--ocean-coral), 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(var(--ocean-coral), 0.3);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1050;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .room-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .member-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="{% url 'chat_room' room_name %}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <div class="container-fluid settings-container">
+        <!-- Settings Header -->
+        <div class="settings-header">
+            <h1 class="room-title">
+                <i class="fas fa-cog"></i>
+                Room {{ room_name }} Settings
+            </h1>
+            <div class="room-stats">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span>{{ total_members }} Members</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-circle text-success"></i>
+                    <span>{{ online_count }} Online</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-ban"></i>
+                    <span>{{ banned_count }} Banned</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="settings-grid">
+            <!-- Room Settings -->
+            <div class="settings-card">
+                <h2 class="card-title">
+                    <i class="fas fa-edit"></i>
+                    Room Settings
+                </h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Room Description</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Enter room description...">{{ room_obj.description }}</textarea>
+                    </div>
+                    <button type="submit" name="update_description" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Description
+                    </button>
+                </form>
+            </div>
+
+            <!-- Online Members -->
+            <div class="settings-card">
+                <h2 class="card-title">
+                    <i class="fas fa-users"></i>
+                    Online Members ({{ online_count }})
+                </h2>
+                
+                <div class="members-list">
+                    {% for member in online_members %}
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar">
+                                {{ member.user.username|first|upper }}
+                            </div>
+                            <div class="member-details">
+                                <span class="member-name">{{ member.user.username }}</span>
+                                <span class="member-status">
+                                    <i class="fas fa-circle text-success"></i> Online
+                                </span>
+                            </div>
+                            {% if member.is_host %}
+                            <span class="member-role">HOST</span>
+                            {% endif %}
+                        </div>
+                        {% if not member.is_host %}
+                        <div class="member-actions">
+                            <button class="btn-kick" onclick="kickMember('{{ member.user.username }}')">
+                                <i class="fas fa-user-times"></i> Kick
+                            </button>
+                            <button class="btn-ban" onclick="banMember('{{ member.user.username }}')">
+                                <i class="fas fa-ban"></i> Ban
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No online members</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- All Members -->
+            <div class="settings-card">
+                <h2 class="card-title">
+                    <i class="fas fa-address-book"></i>
+                    All Members ({{ total_members }})
+                </h2>
+                
+                <div class="members-list">
+                    {% for member in all_members %}
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar">
+                                {{ member.user.username|first|upper }}
+                            </div>
+                            <div class="member-details">
+                                <span class="member-name">{{ member.user.username }}</span>
+                                <span class="member-status">
+                                    {% if member.status == 'online' %}
+                                        <i class="fas fa-circle text-success"></i> Online
+                                    {% else %}
+                                        <i class="fas fa-circle text-muted"></i> Offline
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if member.is_host %}
+                            <span class="member-role">HOST</span>
+                            {% endif %}
+                        </div>
+                        {% if not member.is_host %}
+                        <div class="member-actions">
+                            <button class="btn-kick" onclick="kickMember('{{ member.user.username }}')">
+                                <i class="fas fa-user-times"></i> Kick
+                            </button>
+                            <button class="btn-ban" onclick="banMember('{{ member.user.username }}')">
+                                <i class="fas fa-ban"></i> Ban
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No members</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Banned Users -->
+            <div class="settings-card">
+                <h2 class="card-title">
+                    <i class="fas fa-user-slash"></i>
+                    Banned Users ({{ banned_count }})
+                </h2>
+                
+                <div class="banned-list">
+                    {% for ban in banned_users %}
+                    <div class="banned-item">
+                        <div class="member-info">
+                            <div class="member-avatar">
+                                {{ ban.user.username|first|upper }}
+                            </div>
+                            <div class="member-details">
+                                <span class="member-name">{{ ban.user.username }}</span>
+                                <span class="member-status">
+                                    Banned {{ ban.banned_at|timesince }} ago
+                                </span>
+                            </div>
+                        </div>
+                        <div class="member-actions">
+                            <button class="btn-unban" onclick="unbanMember('{{ ban.user.username }}')">
+                                <i class="fas fa-user-check"></i> Unban
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No banned users</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.id = toastId;
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // Kick member
+        function kickMember(username) {
+            if (!confirm(`Are you sure you want to kick ${username}?`)) {
+                return;
+            }
+
+            fetch('{% url "kick_member" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: `room_name={{ room_name }}&username=${username}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while kicking the member.', 'error');
+            });
+        }
+
+        // Ban member
+        function banMember(username) {
+            const reason = prompt(`Enter reason for banning ${username} (optional):`);
+            if (reason === null) return; // User canceled
+
+            fetch('{% url "ban_member" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: `room_name={{ room_name }}&username=${username}&reason=${encodeURIComponent(reason)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while banning the member.', 'error');
+            });
+        }
+
+        // Unban member
+        function unbanMember(username) {
+            if (!confirm(`Are you sure you want to unban ${username}?`)) {
+                return;
+            }
+
+            fetch('{% url "unban_member" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: `room_name={{ room_name }}&username=${username}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while unbanning the member.', 'error');
+            });
+        }
+    </script>
+</body>
+</html>

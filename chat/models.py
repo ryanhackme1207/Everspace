@@ -30,6 +30,92 @@ class Room(models.Model):
         """Check if provided password matches room password"""
         return self.password == password if self.is_private() else True
     
+    def is_host(self, user):
+        """Check if user is the host of this room"""
+        # Check if user has host role in the room members
+        try:
+            member = self.members.get(user=user, role='host')
+            return True
+        except RoomMember.DoesNotExist:
+            # Fallback: check if user is the creator (for backwards compatibility)
+            return self.creator == user
+    
+    def get_host_member(self):
+        """Get the host member object"""
+        try:
+            return self.members.get(role='host')
+        except:
+            return None
+    
+    def get_online_members(self):
+        """Get all currently online members"""
+        return self.members.filter(status='online')
+    
+    def get_all_members(self):
+        """Get all members (online and offline)"""
+        return self.members.all()
+    
+    def is_user_banned(self, user):
+        """Check if user is banned from this room"""
+        return self.banned_users.filter(user=user, is_active=True).exists()
+    
+    def ban_user(self, user, banned_by, reason=""):
+        """Ban a user from the room"""
+        # Remove user from room members if they are in it
+        self.members.filter(user=user).delete()
+        
+        # Create or update ban record
+        ban, created = RoomBan.objects.get_or_create(
+            room=self,
+            user=user,
+            defaults={
+                'banned_by': banned_by,
+                'reason': reason,
+                'is_active': True
+            }
+        )
+        if not created:
+            ban.banned_by = banned_by
+            ban.reason = reason
+            ban.is_active = True
+            ban.banned_at = timezone.now()
+            ban.save()
+        
+        return ban
+    
+    def unban_user(self, user):
+        """Unban a user from the room"""
+        bans = self.banned_users.filter(user=user, is_active=True)
+        for ban in bans:
+            ban.unban()
+    
+    def kick_user(self, user):
+        """Kick a user from the room (remove but don't ban)"""
+        self.members.filter(user=user).delete()
+    
+    def add_member(self, user, role='member'):
+        """Add a user as a member of the room"""
+        # Check if user is banned
+        if self.is_user_banned(user):
+            return None
+        
+        member, created = RoomMember.objects.get_or_create(
+            room=self,
+            user=user,
+            defaults={'role': role}
+        )
+        
+        if created and role == 'host':
+            # If this is a new host, make sure there's only one host
+            self.members.filter(role='host').exclude(id=member.id).update(role='member')
+        
+        return member
+    
+    def update_description(self, new_description):
+        """Update room description"""
+        self.description = new_description
+        self.save()
+    
     class Meta:
         ordering = ['name']
 
@@ -44,3 +130,68 @@ class Message(models.Model):
     
     class Meta:
         ordering = ['timestamp']
+
+
+class RoomMember(models.Model):
+    """Track users who have joined a room and their status"""
+    ROLE_CHOICES = [
+        ('host', 'Host'),
+        ('member', 'Member'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('online', 'Online'),
+        ('offline', 'Offline'),
+    ]
+    
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_memberships')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='offline')
+    joined_at = models.DateTimeField(default=timezone.now)
+    last_seen = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        unique_together = ['room', 'user']
+        ordering = ['-last_seen']
+    
+    def __str__(self):
+        return f'{self.user.username} in {self.room.name} ({self.role})'
+    
+    def is_host(self):
+        """Check if user is the room host"""
+        return self.role == 'host'
+    
+    def set_online(self):
+        """Mark user as online in the room"""
+        self.status = 'online'
+        self.last_seen = timezone.now()
+        self.save()
+    
+    def set_offline(self):
+        """Mark user as offline in the room"""
+        self.status = 'offline'
+        self.last_seen = timezone.now()
+        self.save()
+
+
+class RoomBan(models.Model):
+    """Track users banned from rooms"""
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='banned_users')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_bans')
+    banned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='issued_bans')
+    reason = models.TextField(blank=True)
+    banned_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ['room', 'user']
+        ordering = ['-banned_at']
+    
+    def __str__(self):
+        return f'{self.user.username} banned from {self.room.name}'
+    
+    def unban(self):
+        """Unban the user"""
+        self.is_active = False
+        self.save()

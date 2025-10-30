@@ -112,6 +112,31 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .room-info {
+            margin-top: 0.25rem;
+        }
+
+        .online-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+
+        .online-count i {
+            font-size: 0.6rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .room-icon {
@@ -173,6 +198,19 @@
             background: var(--accent-coral) !important;
             color: var(--dark-bg) !important;
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .settings-btn {
+            background: var(--dark-card) !important;
+            border: 1px solid var(--accent-teal) !important;
+            color: var(--accent-teal) !important;
+            margin-right: 0.5rem;
+        }
+
+        .settings-btn:hover {
+            background: var(--accent-teal) !important;
+            color: var(--dark-bg) !important;
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
         }
 
         .primary-btn {
@@ -477,6 +515,12 @@
                             </svg>
                         </div>
                         {{ room_name }}
+                        <div class="room-info">
+                            <span class="online-count">
+                                <i class="fas fa-circle text-success"></i>
+                                {{ online_count }} online
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -485,6 +529,11 @@
                             <i class="fas fa-user"></i>
                             {{ user.first_name|default:user.username }}
                         </div>
+                        {% if is_room_host %}
+                            <a href="{% url 'room_settings' room_name=room_name %}" class="action-btn settings-btn" title="Room Settings (Host Only)">
+                                <i class="fas fa-cog me-1"></i>Settings
+                            </a>
+                        {% endif %}
                         {% if is_room_creator %}
                             <a href="{% url 'delete_room' room_name=room_name %}" class="action-btn delete-room-btn" title="Delete Room (Creator Only)">
                                 <i class="fas fa-trash me-1"></i>Delete Room
