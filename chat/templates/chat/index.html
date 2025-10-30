@@ -1521,22 +1521,18 @@
                 const password = document.getElementById('room-password').value;
                 const confirmPassword = document.getElementById('room-password-confirm').value;
                 const indicator = document.getElementById('password-match-indicator');
-                const finalizeBtn = document.getElementById('finalize-btn');
                 
                 if (password && confirmPassword) {
                     if (password === confirmPassword) {
                         indicator.textContent = '✓ Passwords match';
                         indicator.className = 'password-match-indicator match';
-                        finalizeBtn.disabled = false;
                     } else {
                         indicator.textContent = '✗ Passwords do not match';
                         indicator.className = 'password-match-indicator no-match';
-                        finalizeBtn.disabled = true;
                     }
                 } else {
                     indicator.textContent = 'Passwords must match';
                     indicator.className = 'password-match-indicator';
-                    finalizeBtn.disabled = false;
                 }
             }
 
@@ -1687,7 +1683,10 @@
                 }
             }
             
-            if (!currentCreatedRoom) return;
+            if (!currentCreatedRoom) {
+                showNotification('Error: Room information not found. Please try creating the room again.', 'error');
+                return;
+            }
             
             // Disable button during processing
             const finalizeBtn = document.getElementById('finalize-btn');
