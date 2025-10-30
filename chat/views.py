@@ -21,9 +21,42 @@ def index(request):
     user_has_mfa = user_has_device(request.user)
     
     rooms = Room.objects.all()
+    
+    # Get friends data if user is authenticated
+    friends = []
+    incoming_requests = []
+    outgoing_requests = []
+    
+    if request.user.is_authenticated:
+        # Get accepted friendships
+        friends_relationships = Friendship.objects.filter(
+            models.Q(user1=request.user) | models.Q(user2=request.user),
+            status='accepted'
+        )
+        
+        friends = []
+        for friendship in friends_relationships:
+            friend = friendship.user2 if friendship.user1 == request.user else friendship.user1
+            friends.append(friend)
+        
+        # Get pending incoming requests
+        incoming_requests = Friendship.objects.filter(
+            receiver=request.user,
+            status='pending'
+        ).select_related('sender')
+        
+        # Get pending outgoing requests
+        outgoing_requests = Friendship.objects.filter(
+            sender=request.user,
+            status='pending'
+        ).select_related('receiver')
+    
     return render(request, 'chat/index.html', {
         'rooms': rooms,
-        'user_has_mfa': user_has_mfa
+        'user_has_mfa': user_has_mfa,
+        'friends': friends,
+        'incoming_requests': incoming_requests,
+        'outgoing_requests': outgoing_requests,
     })
 
 @login_required
@@ -583,28 +616,38 @@ def send_friend_request(request):
 @require_POST
 def respond_friend_request(request):
     """Accept or decline a friend request"""
-    friendship_id = request.POST.get('friendship_id')
-    action = request.POST.get('action')  # 'accept' or 'decline'
+    request_id = request.POST.get('request_id')
+    status = request.POST.get('status')  # 'accepted', 'declined', or 'cancelled'
     
-    if not friendship_id or not action:
+    if not request_id or not status:
         return JsonResponse({
             'success': False,
             'message': 'Invalid request parameters.'
         })
     
     try:
-        friendship = get_object_or_404(Friendship, id=friendship_id, receiver=request.user, status='pending')
+        if status == 'cancelled':
+            # User is cancelling their own outgoing request
+            friendship = get_object_or_404(Friendship, id=request_id, sender=request.user, status='pending')
+            friendship.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Friend request cancelled.'
+            })
+        else:
+            # User is responding to an incoming request
+            friendship = get_object_or_404(Friendship, id=request_id, receiver=request.user, status='pending')
         
-        if action == 'accept':
+        if status == 'accepted':
             friendship.accept()
             message = f'You are now friends with {friendship.sender.username}!'
-        elif action == 'decline':
+        elif status == 'declined':
             friendship.decline()
             message = f'Friend request from {friendship.sender.username} declined.'
         else:
             return JsonResponse({
                 'success': False,
-                'message': 'Invalid action.'
+                'message': 'Invalid status.'
             })
         
         return JsonResponse({

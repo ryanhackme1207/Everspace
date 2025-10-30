@@ -514,6 +514,181 @@
             border-radius: 2px;
         }
 
+        /* Friends Section */
+        .friends-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .friends-subsection {
+            margin-bottom: 2rem;
+        }
+
+        .subsection-title {
+            color: var(--accent-coral);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .friend-requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .friends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .friend-request-card,
+        .friend-card {
+            background: var(--dark-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-glass);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .friend-request-card:hover,
+        .friend-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--accent-teal);
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-info h6 {
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+            font-weight: 600;
+        }
+
+        .friend-status {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .btn-friend-accept,
+        .btn-friend-decline,
+        .btn-friend-chat,
+        .btn-friend-remove {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-friend-accept {
+            background: linear-gradient(135deg, var(--accent-mint), #A8E6CF);
+            color: white;
+        }
+
+        .btn-friend-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(150, 206, 180, 0.4);
+        }
+
+        .btn-friend-decline,
+        .btn-friend-remove {
+            background: linear-gradient(135deg, var(--accent-coral), #FF8E8E);
+            color: white;
+        }
+
+        .btn-friend-decline:hover,
+        .btn-friend-remove:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-friend-chat {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
+            color: white;
+        }
+
+        .btn-friend-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(69, 183, 209, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .empty-friends {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--accent-coral);
+            opacity: 0.5;
+        }
+
+        .empty-friends h5 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
         /* Room Setup Modal */
         .room-setup-modal {
             position: fixed;
@@ -1109,6 +1284,91 @@
                 </div>
             </div>
 
+            <!-- Friends Section -->
+            {% if user.is_authenticated %}
+            <div class="friends-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-users me-3"></i>Friends
+                    </h2>
+                    <p class="section-subtitle">Connect and chat with your friends</p>
+                </div>
+
+                <!-- Friend Requests -->
+                {% if incoming_requests %}
+                <div class="friends-subsection">
+                    <h4 class="subsection-title">
+                        <i class="fas fa-user-clock me-2"></i>
+                        Friend Requests ({{ incoming_requests|length }})
+                    </h4>
+                    <div class="friend-requests-grid">
+                        {% for request in incoming_requests %}
+                        <div class="friend-request-card">
+                            <div class="friend-avatar">
+                                {{ request.sender.username|slice:":1"|upper }}
+                            </div>
+                            <div class="friend-info">
+                                <h6>{{ request.sender.username }}</h6>
+                                <p class="friend-status">{{ request.created_at|timesince }} ago</p>
+                            </div>
+                            <div class="friend-actions">
+                                <button class="btn-friend-accept" onclick="respondToRequest({{ request.id }}, 'accepted')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn-friend-decline" onclick="respondToRequest({{ request.id }}, 'declined')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Friends List -->
+                <div class="friends-subsection">
+                    <h4 class="subsection-title">
+                        <i class="fas fa-user-friends me-2"></i>
+                        My Friends ({{ friends|length }})
+                    </h4>
+                    
+                    {% if friends %}
+                        <div class="friends-grid">
+                            {% for friend in friends %}
+                            <div class="friend-card">
+                                <div class="friend-avatar">
+                                    {{ friend.username|slice:":1"|upper }}
+                                </div>
+                                <div class="friend-info">
+                                    <h6>{{ friend.username }}</h6>
+                                    <p class="friend-status">
+                                        <i class="fas fa-circle text-success me-1"></i>Online
+                                    </p>
+                                </div>
+                                <div class="friend-actions">
+                                    <a href="{% url 'private_chat' friend.username %}" class="btn-friend-chat">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                    <button class="btn-friend-remove" onclick="removeFriend('{{ friend.username }}')">
+                                        <i class="fas fa-user-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-friends">
+                            <div class="empty-icon">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <h5>No Friends Yet</h5>
+                            <p>Start making friends by joining chat rooms!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
                 <!-- Available Rooms -->
                 <div class="rooms-grid">
                     {% for room in rooms %}
@@ -1515,6 +1775,77 @@
                     notification.remove();
                 }
             }, 5000);
+        }
+
+        // Friend Request Functions
+        function respondToRequest(requestId, status) {
+            fetch('{% url "respond_friend_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `request_id=${requestId}&status=${status}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('An error occurred while responding to the request.', 'error');
+            });
+        }
+
+        function removeFriend(username) {
+            if (!confirm(`Are you sure you want to remove ${username} from your friends?`)) {
+                return;
+            }
+
+            fetch('{% url "send_friend_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `username=${username}&action=remove`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('An error occurred while removing the friend.', 'error');
+            });
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     </script>
 </body>
