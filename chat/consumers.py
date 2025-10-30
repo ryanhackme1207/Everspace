@@ -96,7 +96,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             asyncio.create_task(self._handle_delayed_disconnect())
 
     async def _heartbeat(self):
-        """Send periodic heartbeat to keep user active"""
+        """Send periodic heartbeat to keep user active and sync user lists"""
         try:
             while True:
                 await asyncio.sleep(30)  # Heartbeat every 30 seconds
@@ -105,6 +105,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if hasattr(self, 'room_name') and hasattr(self, 'user'):
                     last_seen_key = f"last_seen_{self.room_name}_{self.user.username}"
                     cache.set(last_seen_key, time.time(), 3600)
+                    
+                    # Send updated active users list to keep everyone in sync
+                    cache_key = f"active_users_{self.room_name}"
+                    active_users = cache.get(cache_key, {})
+                    
+                    # Clean up users who haven't been seen recently (more than 2 minutes)
+                    current_time = time.time()
+                    users_to_remove = []
+                    
+                    for username in active_users.keys():
+                        user_last_seen_key = f"last_seen_{self.room_name}_{username}"
+                        user_last_seen = cache.get(user_last_seen_key, 0)
+                        if (current_time - user_last_seen) > 120:  # 2 minutes
+                            users_to_remove.append(username)
+                    
+                    # Remove inactive users
+                    for username in users_to_remove:
+                        user_data = active_users.get(username, {})
+                        del active_users[username]
+                        
+                        # Send leave notification
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'user_leave',
+                                'username': username,
+                                'display_name': user_data.get('display_name', username),
+                            }
+                        )
+                    
+                    # Update cache if users were removed
+                    if users_to_remove:
+                        cache.set(cache_key, active_users, 3600)
+                        
+                        # Send updated active users list
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'active_users_update',
+                                'users': list(active_users.values())
+                            }
+                        )
                 else:
                     break  # Exit if connection is gone
         except asyncio.CancelledError:
