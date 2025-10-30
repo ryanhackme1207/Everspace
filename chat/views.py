@@ -6,7 +6,8 @@ from django_otp import user_has_device
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
-from .models import Room, Message, RoomMember, RoomBan
+from django.db import models
+from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage
 
 def landing_page(request):
     """Modern landing page with animations and introduction"""
@@ -458,4 +459,280 @@ def unban_member(request):
         return JsonResponse({
             'success': False,
             'message': 'An error occurred while unbanning the member.'
+        })
+
+
+@login_required
+@require_POST
+def send_friend_request(request):
+    """Send a friend request to another user or remove a friend"""
+    username = request.POST.get('username', '').strip()
+    action = request.POST.get('action', 'add')  # 'add' or 'remove'
+    
+    if not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Username is required.'
+        })
+    
+    try:
+        target_user = get_object_or_404(User, username=username)
+        
+        # Cannot perform action on yourself
+        if target_user == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot perform this action on yourself.'
+            })
+        
+        if action == 'remove':
+            # Remove friendship
+            existing_friendship = Friendship.get_friendship(request.user, target_user)
+            if existing_friendship and existing_friendship.status == 'accepted':
+                existing_friendship.delete()
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{username} has been removed from your friends.'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You are not friends with this user.'
+                })
+        
+        else:  # action == 'add'
+            # Check if friendship already exists
+            existing_friendship = Friendship.get_friendship(request.user, target_user)
+            if existing_friendship:
+                if existing_friendship.status == 'accepted':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'You are already friends with {username}.'
+                    })
+                elif existing_friendship.status == 'pending':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Friend request to {username} is already pending.'
+                    })
+                elif existing_friendship.status == 'blocked':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'You cannot send a friend request to {username}.'
+                    })
+            
+            # Create friend request
+            friendship = Friendship.objects.create(
+                sender=request.user,
+                receiver=target_user,
+                status='pending'
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Friend request sent to {username}!'
+            })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while processing your request.'
+        })
+
+
+@login_required
+@require_POST
+def respond_friend_request(request):
+    """Accept or decline a friend request"""
+    friendship_id = request.POST.get('friendship_id')
+    action = request.POST.get('action')  # 'accept' or 'decline'
+    
+    if not friendship_id or not action:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid request parameters.'
+        })
+    
+    try:
+        friendship = get_object_or_404(Friendship, id=friendship_id, receiver=request.user, status='pending')
+        
+        if action == 'accept':
+            friendship.accept()
+            message = f'You are now friends with {friendship.sender.username}!'
+        elif action == 'decline':
+            friendship.decline()
+            message = f'Friend request from {friendship.sender.username} declined.'
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid action.'
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'message': message
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while processing the friend request.'
+        })
+
+
+@login_required
+@require_POST
+def transfer_ownership(request):
+    """Transfer room ownership to another user"""
+    room_name = request.POST.get('room_name', '').strip()
+    username = request.POST.get('username', '').strip()
+    
+    if not room_name or not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room name and username are required.'
+        })
+    
+    try:
+        room_obj = get_object_or_404(Room, name=room_name)
+        new_owner = get_object_or_404(User, username=username)
+        
+        # Only current owner can transfer ownership
+        if not room_obj.is_host(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'Only the room owner can transfer ownership.'
+            })
+        
+        # Cannot transfer to yourself
+        if new_owner == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot transfer ownership to yourself.'
+            })
+        
+        # New owner must be a member of the room
+        if not room_obj.members.filter(user=new_owner).exists():
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} must be a member of the room first.'
+            })
+        
+        # Transfer ownership
+        room_obj.transfer_ownership(new_owner)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Room ownership transferred to {username} successfully!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while transferring ownership.'
+        })
+
+
+@login_required
+def friends_list(request):
+    """Display user's friends list"""
+    # Get accepted friendships
+    friends = []
+    friendships = Friendship.objects.filter(
+        models.Q(sender=request.user, status='accepted') |
+        models.Q(receiver=request.user, status='accepted')
+    )
+    
+    for friendship in friendships:
+        friend = friendship.receiver if friendship.sender == request.user else friendship.sender
+        friends.append({
+            'user': friend,
+            'is_online': False,  # TODO: Implement online status tracking
+            'unread_count': PrivateMessage.objects.filter(
+                sender=friend, receiver=request.user, is_read=False
+            ).count()
+        })
+    
+    # Get pending friend requests
+    pending_requests = Friendship.objects.filter(
+        receiver=request.user, status='pending'
+    )
+    
+    return render(request, 'chat/friends.html', {
+        'friends': friends,
+        'pending_requests': pending_requests,
+    })
+
+
+@login_required
+def private_chat(request, username):
+    """Private chat with a friend"""
+    friend = get_object_or_404(User, username=username)
+    
+    # Check if users are friends
+    if not Friendship.are_friends(request.user, friend):
+        messages.error(request, f'You are not friends with {username}.')
+        return redirect('friends_list')
+    
+    # Get conversation messages
+    messages_list = PrivateMessage.objects.filter(
+        models.Q(sender=request.user, receiver=friend) |
+        models.Q(sender=friend, receiver=request.user)
+    ).order_by('timestamp')[:50]
+    
+    # Mark messages from friend as read
+    PrivateMessage.objects.filter(
+        sender=friend, receiver=request.user, is_read=False
+    ).update(is_read=True)
+    
+    return render(request, 'chat/private_chat.html', {
+        'friend': friend,
+        'messages': messages_list,
+    })
+
+
+@login_required
+@require_POST
+def send_private_message(request):
+    """Send a private message to a friend"""
+    username = request.POST.get('username', '').strip()
+    content = request.POST.get('content', '').strip()
+    
+    if not username or not content:
+        return JsonResponse({
+            'success': False,
+            'message': 'Username and message content are required.'
+        })
+    
+    try:
+        receiver = get_object_or_404(User, username=username)
+        
+        # Check if users are friends
+        if not Friendship.are_friends(request.user, receiver):
+            return JsonResponse({
+                'success': False,
+                'message': 'You can only send messages to friends.'
+            })
+        
+        # Create private message
+        message = PrivateMessage.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            content=content
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Message sent successfully!',
+            'message_data': {
+                'id': message.id,
+                'content': message.content,
+                'timestamp': message.timestamp.isoformat(),
+                'sender': message.sender.username
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while sending the message.'
         })

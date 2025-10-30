@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends - ChatRoom</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --coral: #FF6B6B;
+            --teal: #4ECDC4;
+            --blue: #45B7D1;
+            --mint: #96CEB4;
+            --yellow: #FECA57;
+            --light-coral: #FFE0E0;
+            --light-teal: #E0F9F7;
+            --light-blue: #E0F3FF;
+            --light-mint: #F0F9F5;
+            --light-yellow: #FFF7E0;
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8F9FA;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-blue) 0%, var(--light-mint) 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--coral) 0%, var(--teal) 100%);
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: white;
+            color: white;
+        }
+
+        .container {
+            margin-top: 2rem;
+        }
+
+        .friends-header {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .friends-section {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            color: var(--coral);
+            font-weight: 600;
+            border-bottom: 2px solid var(--light-coral);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .friend-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .friend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .friend-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--coral), var(--teal));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .friend-details h6 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .friend-status {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-chat {
+            background: linear-gradient(135deg, var(--blue), var(--teal));
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-chat:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(69, 183, 209, 0.4);
+            color: white;
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, var(--coral), #FF8E8E);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            color: white;
+        }
+
+        .btn-accept {
+            background: linear-gradient(135deg, var(--mint), #A8E6CF);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-accept:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(150, 206, 180, 0.4);
+            color: white;
+        }
+
+        .btn-decline {
+            background: linear-gradient(135deg, var(--text-secondary), #95A5A6);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-decline:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(127, 140, 141, 0.4);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--light-coral);
+        }
+
+        .toast-container {
+            z-index: 1055;
+        }
+
+        @media (max-width: 768px) {
+            .friend-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .friend-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'chat_list' %}">
+                <i class="fas fa-comments me-2"></i>ChatRoom
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="btn btn-outline-light me-2" href="{% url 'chat_list' %}">
+                    <i class="fas fa-home me-2"></i>Rooms
+                </a>
+                <a class="btn btn-outline-light" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="friends-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2 class="mb-0">
+                        <i class="fas fa-users me-2" style="color: var(--coral);"></i>
+                        My Friends
+                    </h2>
+                    <p class="text-muted mb-0">Connect and chat with your friends</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friend Requests -->
+        {% if incoming_requests %}
+        <div class="friends-section">
+            <h4 class="section-title">
+                <i class="fas fa-user-clock me-2"></i>
+                Friend Requests ({{ incoming_requests|length }})
+            </h4>
+            {% for request in incoming_requests %}
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-avatar">
+                        {{ request.sender.username|slice:":1"|upper }}
+                    </div>
+                    <div class="friend-details">
+                        <h6>{{ request.sender.username }}</h6>
+                        <p class="friend-status">Sent {{ request.created_at|timesince }} ago</p>
+                    </div>
+                </div>
+                <div class="friend-actions">
+                    <button class="btn btn-accept" onclick="respondToRequest({{ request.id }}, 'accepted')">
+                        <i class="fas fa-check me-1"></i>Accept
+                    </button>
+                    <button class="btn btn-decline" onclick="respondToRequest({{ request.id }}, 'declined')">
+                        <i class="fas fa-times me-1"></i>Decline
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Sent Requests -->
+        {% if outgoing_requests %}
+        <div class="friends-section">
+            <h4 class="section-title">
+                <i class="fas fa-paper-plane me-2"></i>
+                Sent Requests ({{ outgoing_requests|length }})
+            </h4>
+            {% for request in outgoing_requests %}
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-avatar">
+                        {{ request.receiver.username|slice:":1"|upper }}
+                    </div>
+                    <div class="friend-details">
+                        <h6>{{ request.receiver.username }}</h6>
+                        <p class="friend-status">Sent {{ request.created_at|timesince }} ago</p>
+                    </div>
+                </div>
+                <div class="friend-actions">
+                    <button class="btn btn-decline" onclick="cancelRequest({{ request.id }})">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Friends List -->
+        <div class="friends-section">
+            <h4 class="section-title">
+                <i class="fas fa-user-friends me-2"></i>
+                Friends ({{ friends|length }})
+            </h4>
+            
+            {% if friends %}
+                {% for friend in friends %}
+                <div class="friend-item">
+                    <div class="friend-info">
+                        <div class="friend-avatar">
+                            {{ friend.username|slice:":1"|upper }}
+                        </div>
+                        <div class="friend-details">
+                            <h6>{{ friend.username }}</h6>
+                            <p class="friend-status">
+                                <i class="fas fa-circle text-success me-1"></i>Online
+                            </p>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <a href="{% url 'private_chat' friend.username %}" class="btn btn-chat">
+                            <i class="fas fa-comment me-1"></i>Chat
+                        </a>
+                        <button class="btn btn-remove" onclick="removeFriend('{{ friend.username }}')">
+                            <i class="fas fa-user-minus me-1"></i>Remove
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-user-friends"></i>
+                    <h5>No Friends Yet</h5>
+                    <p>Start making friends by joining chat rooms and sending friend requests!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Friend Request Functions
+        function respondToRequest(requestId, status) {
+            fetch('{% url "respond_friend_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `request_id=${requestId}&status=${status}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while responding to the request.', 'error');
+            });
+        }
+
+        function cancelRequest(requestId) {
+            if (!confirm('Are you sure you want to cancel this friend request?')) {
+                return;
+            }
+
+            fetch('{% url "respond_friend_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `request_id=${requestId}&status=cancelled`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while cancelling the request.', 'error');
+            });
+        }
+
+        function removeFriend(username) {
+            if (!confirm(`Are you sure you want to remove ${username} from your friends?`)) {
+                return;
+            }
+
+            fetch('{% url "send_friend_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `username=${username}&action=remove`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred while removing the friend.', 'error');
+            });
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.id = toastId;
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

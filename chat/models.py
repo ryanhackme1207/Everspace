@@ -116,6 +116,24 @@ class Room(models.Model):
         self.description = new_description
         self.save()
     
+    def transfer_ownership(self, new_owner):
+        """Transfer room ownership to another user"""
+        # Remove host role from current owner
+        if self.creator:
+            old_host = self.members.filter(user=self.creator, role='host').first()
+            if old_host:
+                old_host.role = 'member'
+                old_host.save()
+        
+        # Set new owner as creator
+        self.creator = new_owner
+        self.save()
+        
+        # Add new owner as host member
+        self.add_member(new_owner, role='host')
+        
+        return True
+    
     class Meta:
         ordering = ['name']
 
@@ -194,4 +212,81 @@ class RoomBan(models.Model):
     def unban(self):
         """Unban the user"""
         self.is_active = False
+        self.save()
+
+
+class Friendship(models.Model):
+    """Track friendships between users"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+        ('blocked', 'Blocked'),
+    ]
+    
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_friend_requests')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_friend_requests')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['sender', 'receiver']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f'{self.sender.username} -> {self.receiver.username} ({self.status})'
+    
+    def accept(self):
+        """Accept the friend request"""
+        self.status = 'accepted'
+        self.save()
+    
+    def decline(self):
+        """Decline the friend request"""
+        self.status = 'declined'
+        self.save()
+    
+    def block(self):
+        """Block the user"""
+        self.status = 'blocked'
+        self.save()
+    
+    @classmethod
+    def are_friends(cls, user1, user2):
+        """Check if two users are friends"""
+        return cls.objects.filter(
+            models.Q(sender=user1, receiver=user2, status='accepted') |
+            models.Q(sender=user2, receiver=user1, status='accepted')
+        ).exists()
+    
+    @classmethod
+    def get_friendship(cls, user1, user2):
+        """Get friendship between two users"""
+        try:
+            return cls.objects.get(
+                models.Q(sender=user1, receiver=user2) |
+                models.Q(sender=user2, receiver=user1)
+            )
+        except cls.DoesNotExist:
+            return None
+
+
+class PrivateMessage(models.Model):
+    """Private messages between friends"""
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_private_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_private_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+    is_read = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['timestamp']
+    
+    def __str__(self):
+        return f'{self.sender.username} -> {self.receiver.username}: {self.content[:50]}'
+    
+    def mark_as_read(self):
+        """Mark message as read"""
+        self.is_read = True
         self.save()
