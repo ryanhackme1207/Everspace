@@ -12,17 +12,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --text-primary: #2d3748;
-            --text-secondary: #4a5568;
+            /* Modern Ocean & Sunset Theme */
+            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+            --secondary-gradient: linear-gradient(135deg, #96CEB4 0%, #FECA57 100%);
+            --success-gradient: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+            --warning-gradient: linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%);
+            --glass-bg: rgba(20, 25, 40, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --dark-bg: #0F1419;
+            --dark-card: #1A202C;
+            --darker-card: #2D3748;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --text-muted: #718096;
+            --text-dark: #2D3748;
+            --accent-coral: #FF6B6B;
+            --accent-teal: #4ECDC4;
+            --accent-blue: #45B7D1;
+            --accent-mint: #96CEB4;
+            --accent-yellow: #FECA57;
             --border-radius-lg: 24px;
             --border-radius-md: 16px;
             --border-radius-sm: 12px;
-            --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-glass: 0 8px 32px rgba(15, 20, 25, 0.4);
+            --shadow-elevated: 0 20px 40px rgba(15, 20, 25, 0.6);
         }
 
         * {
@@ -33,9 +47,11 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             overflow-x: hidden;
+            color: var(--text-primary);
         }
 
         /* Animated Background */
@@ -53,9 +69,10 @@
             position: absolute;
             width: 4px;
             height: 4px;
-            background: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
         }
 
         @keyframes float {
@@ -73,12 +90,12 @@
         }
 
         .auth-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--dark-card);
             border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-glass);
+            box-shadow: var(--shadow-elevated);
             padding: 3rem;
             backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--accent-teal);
             max-width: 480px;
             width: 100%;
             position: relative;

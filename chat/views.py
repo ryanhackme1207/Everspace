@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django_otp.decorators import otp_required
 from django_otp import user_has_device
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from .models import Room, Message
 
 def landing_page(request):
@@ -29,10 +31,13 @@ def room(request, room_name):
     #     messages.error(request, 'Please complete MFA verification to access chat rooms.')
     #     return redirect('auth_mfa_verify')
     
-    room_obj, created = Room.objects.get_or_create(
-        name=room_name,
-        defaults={'creator': request.user}
-    )
+    # Check if room exists, redirect to index if not
+    try:
+        room_obj = Room.objects.get(name=room_name)
+    except Room.DoesNotExist:
+        messages.error(request, f'Room "{room_name}" does not exist. Please create it first or join an existing room.')
+        return redirect('chat_index')
+    
     messages_list = Message.objects.filter(room=room_obj).order_by('timestamp')[:50]  # Last 50 messages
     user_has_mfa = user_has_device(request.user)
     
@@ -44,6 +49,42 @@ def room(request, room_name):
         'user_has_mfa': user_has_mfa,
         'is_room_creator': room_obj.can_delete(request.user)
     })
+
+@login_required
+@require_POST
+def create_room(request):
+    """Create a new room with duplicate checking"""
+    room_name = request.POST.get('room_name', '').strip()
+    
+    if not room_name:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Room name is required.'
+        })
+    
+    # Check if room already exists
+    if Room.objects.filter(name=room_name).exists():
+        return JsonResponse({
+            'success': False, 
+            'message': f'Room "{room_name}" already exists. Please choose a different name.'
+        })
+    
+    # Create the room
+    try:
+        room = Room.objects.create(
+            name=room_name,
+            creator=request.user
+        )
+        return JsonResponse({
+            'success': True, 
+            'message': f'Room "{room_name}" created successfully!',
+            'redirect_url': f'/chat/{room_name}/'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'An error occurred while creating the room. Please try again.'
+        })
 
 @login_required
 def delete_room(request, room_name):

@@ -13,19 +13,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --dark-bg: #1a1d29;
-            --dark-card: #252837;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
+            /* Modern Ocean & Sunset Theme */
+            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+            --secondary-gradient: linear-gradient(135deg, #96CEB4 0%, #FECA57 100%);
+            --success-gradient: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+            --warning-gradient: linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%);
+            --glass-bg: rgba(20, 25, 40, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --dark-bg: #0F1419;
+            --dark-card: #1A202C;
+            --darker-card: #2D3748;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --text-muted: #718096;
+            --accent-coral: #FF6B6B;
+            --accent-teal: #4ECDC4;
+            --accent-blue: #45B7D1;
+            --accent-mint: #96CEB4;
+            --accent-yellow: #FECA57;
             --border-radius-lg: 24px;
             --border-radius-md: 16px;
             --border-radius-sm: 12px;
-            --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-glass: 0 8px 32px rgba(15, 20, 25, 0.4);
+            --shadow-elevated: 0 20px 40px rgba(15, 20, 25, 0.6);
         }
 
         * {
@@ -36,9 +47,11 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             overflow-x: hidden;
+            color: var(--text-primary);
         }
 
         /* Animated Background */
@@ -54,11 +67,12 @@
 
         .particle {
             position: absolute;
-            width: 3px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.3);
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
             border-radius: 50%;
             animation: float 8s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
         }
 
         @keyframes float {
@@ -82,6 +96,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
         }
 
         /* Main Container */
@@ -97,16 +112,21 @@
 
         .hero-title {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 700;
-            color: white;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
+            text-shadow: 0 0 50px rgba(255, 107, 107, 0.3);
         }
 
         .hero-subtitle {
             font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             margin-bottom: 2rem;
+            font-weight: 400;
         }
 
         /* Room Cards */
@@ -118,11 +138,12 @@
         }
 
         .room-card {
-            background: var(--glass-bg);
+            background: var(--dark-card);
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: var(--border-radius-lg);
             padding: 2rem;
+            box-shadow: var(--shadow-glass);
             text-decoration: none;
             color: white;
             transition: all 0.3s ease;
@@ -142,10 +163,11 @@
 
         .room-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
+            box-shadow: var(--shadow-elevated);
+            background: var(--darker-card);
+            color: var(--text-primary);
             text-decoration: none;
+            border-color: var(--accent-teal);
         }
 
         .room-icon {
@@ -164,12 +186,14 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: var(--text-primary);
         }
 
         .room-description {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             font-size: 0.95rem;
             margin-bottom: 1rem;
+            line-height: 1.5;
         }
 
         .room-stats {
@@ -189,36 +213,78 @@
             padding: 2.5rem;
             text-align: center;
             margin-bottom: 3rem;
+            position: relative;
+        }
+
+        /* Room Notifications */
+        .room-notification {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideInFromTop 0.5s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-notification.success {
+            background: linear-gradient(135deg, rgba(150, 206, 180, 0.2), rgba(78, 205, 196, 0.2));
+            color: var(--accent-mint);
+            border-color: var(--accent-teal);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.2);
+        }
+
+        .room-notification.error {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(252, 70, 107, 0.2));
+            color: var(--accent-coral);
+            border-color: var(--accent-coral);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.2);
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .create-room-title {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 600;
-            color: white;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
         }
 
         .room-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid transparent;
+            background: var(--dark-card);
+            border: 2px solid var(--glass-border);
             border-radius: var(--border-radius-md);
             padding: 1rem;
-            color: white;
+            color: var(--text-primary);
             width: 100%;
             max-width: 400px;
             margin: 0 auto 1.5rem;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .room-input:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #667eea;
+            background: var(--darker-card);
+            border-color: var(--accent-teal);
             outline: none;
-            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            box-shadow: 0 0 0 0.25rem rgba(78, 205, 196, 0.25);
+            transform: translateY(-2px);
         }
 
         .room-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
         }
 
         /* Modern Buttons */
@@ -250,24 +316,29 @@
 
         .btn-primary-modern {
             background: var(--primary-gradient);
-            color: white;
+            color: var(--text-primary);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
         }
 
         .btn-primary-modern:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+            filter: brightness(1.1);
         }
 
         .btn-outline-modern {
-            background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
+            background: var(--dark-card);
+            border: 2px solid var(--accent-teal);
+            color: var(--accent-teal);
+            backdrop-filter: blur(10px);
         }
 
         .btn-outline-modern:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-            color: white;
+            background: var(--accent-teal);
+            border-color: var(--accent-teal);
+            color: var(--dark-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
         }
 
         /* User Panel */
@@ -313,24 +384,42 @@
 
         /* Dropdown */
         .dropdown-menu {
-            background: var(--dark-card);
-            border: 1px solid var(--glass-border);
+            background: var(--darker-card);
+            border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
             backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-elevated);
         }
 
         .dropdown-item {
-            color: white;
+            color: var(--text-primary);
             transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 2px;
         }
 
         .dropdown-item:hover {
-            background: rgba(102, 126, 234, 0.2);
-            color: white;
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+            color: var(--dark-bg);
+            transform: translateX(5px);
+        }
+
+        .dropdown-item.text-primary {
+            color: var(--accent-teal) !important;
+        }
+
+        .dropdown-item.text-danger {
+            color: var(--accent-coral) !important;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: var(--danger-gradient);
+            color: var(--text-primary) !important;
         }
 
         .dropdown-divider {
             border-color: var(--glass-border);
+            margin: 8px 0;
         }
 
         /* Responsive Design */
@@ -387,19 +476,27 @@
             display: inline-block;
         }
         .btn-outline-primary {
-            border: 1px solid #7289da;
-            color: #7289da;
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+            background: var(--dark-card);
+            transition: all 0.3s ease;
         }
         .btn-outline-primary:hover {
-            background-color: #7289da;
-            color: white;
+            background: var(--accent-blue);
+            color: var(--dark-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(69, 183, 209, 0.3);
         }
         .btn-danger {
-            background-color: #dc3545;
-            color: white;
+            background: var(--danger-gradient);
+            color: var(--text-primary);
+            border: none;
+            transition: all 0.3s ease;
         }
         .btn-danger:hover {
-            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(252, 70, 107, 0.4);
+            filter: brightness(1.1);
         }
     </style>
 </head>
@@ -480,9 +577,10 @@
                     <i class="fas fa-plus-circle me-2"></i>Create or Join a Room
                 </div>
                 <form onsubmit="joinRoom(event)">
+                    {% csrf_token %}
                     <input type="text" id="room-name-input" class="room-input" placeholder="Enter room name (e.g., general, gaming, tech)" required>
                     <button type="submit" class="btn btn-primary-modern btn-modern">
-                        <i class="fas fa-rocket me-2"></i>Join Room
+                        <i class="fas fa-rocket me-2"></i>Create Room
                     </button>
                 </form>
             </div>
@@ -558,14 +656,71 @@
                 // Add loading animation to button
                 const button = event.target.querySelector('button');
                 const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Joining...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Room...';
                 button.disabled = true;
                 
-                // Navigate to room
-                setTimeout(() => {
-                    window.location.href = `/chat/${roomName}/`;
-                }, 500);
+                // Create room with duplicate checking
+                fetch('/chat/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `room_name=${encodeURIComponent(roomName)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showNotification(data.message, 'success');
+                        // Navigate to room after short delay
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1000);
+                    } else {
+                        // Show error message
+                        showNotification(data.message, 'error');
+                        // Reset button
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while creating the room. Please try again.', 'error');
+                    // Reset button
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
             }
+        }
+
+        // Function to show notifications
+        function showNotification(message, type) {
+            // Remove existing notification if any
+            const existingNotification = document.querySelector('.room-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `room-notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                ${message}
+            `;
+            
+            // Insert notification above the form
+            const createSection = document.querySelector('.create-room-section');
+            createSection.insertBefore(notification, createSection.firstChild);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
         }
     </script>
 </body>
