@@ -11,6 +11,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage, UserProfile
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import os
 import json
 
@@ -401,8 +403,6 @@ def kick_member(request):
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     
-    print(f"Kick request: room={room_name}, username={username}, by={request.user.username}")  # Debug
-    
     if not room_name or not username:
         return JsonResponse({
             'success': False,
@@ -411,14 +411,10 @@ def kick_member(request):
     
     try:
         room_obj = Room.objects.get(name=room_name)
-        print(f"Room found: {room_obj}")  # Debug
-        
         user_to_kick = User.objects.get(username=username)
-        print(f"User to kick found: {user_to_kick}")  # Debug
         
         # Only room host can kick members
         if not room_obj.is_host(request.user):
-            print(f"Permission denied: {request.user} is not host")  # Debug
             return JsonResponse({
                 'success': False,
                 'message': 'Only the room host can kick members.'
@@ -440,7 +436,18 @@ def kick_member(request):
         
         # Kick the user
         room_obj.kick_user(user_to_kick)
-        print(f"User {username} kicked successfully")  # Debug
+        
+        # Send WebSocket notification to kick user from the room
+        channel_layer = get_channel_layer()
+        room_group_name = f'chat_{room_name}'
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'user_kicked',
+                'username': username,
+                'message': 'You have been kicked from this room.'
+            }
+        )
         
         return JsonResponse({
             'success': True,
@@ -458,7 +465,6 @@ def kick_member(request):
             'message': 'User not found.'
         })
     except Exception as e:
-        print(f"Kick error: {e}")  # Debug
         return JsonResponse({
             'success': False,
             'message': f'An error occurred while kicking the member: {str(e)}'
@@ -472,8 +478,6 @@ def ban_member(request):
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     reason = request.POST.get('reason', '').strip()
-    
-    print(f"Ban request: room={room_name}, username={username}, reason={reason}, by={request.user.username}")  # Debug
     
     if not room_name or not username:
         return JsonResponse({
@@ -508,7 +512,18 @@ def ban_member(request):
         
         # Ban the user
         room_obj.ban_user(user_to_ban, request.user, reason)
-        print(f"User {username} banned successfully")  # Debug
+        
+        # Send WebSocket notification to ban user from the room
+        channel_layer = get_channel_layer()
+        room_group_name = f'chat_{room_name}'
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'user_banned',
+                'username': username,
+                'message': f'You have been banned from this room. Reason: {reason}' if reason else 'You have been banned from this room.'
+            }
+        )
         
         return JsonResponse({
             'success': True,
@@ -526,7 +541,6 @@ def ban_member(request):
             'message': 'User not found.'
         })
     except Exception as e:
-        print(f"Ban error: {e}")  # Debug
         return JsonResponse({
             'success': False,
             'message': f'An error occurred while banning the member: {str(e)}'

@@ -291,6 +291,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Close the connection
         await self.close()
 
+    # Handle user kicked event
+    async def user_kicked(self, event):
+        username = event['username']
+        message = event['message']
+        
+        # Check if this is the kicked user
+        if self.user.username == username:
+            # Send kick notification and disconnect
+            await self.send(text_data=json.dumps({
+                'type': 'user_kicked',
+                'message': message
+            }))
+            await self.close()
+        else:
+            # Notify other users about the kick
+            await self.send(text_data=json.dumps({
+                'type': 'user_leave',
+                'username': username,
+                'display_name': username,
+            }))
+
+    # Handle user banned event  
+    async def user_banned(self, event):
+        username = event['username']
+        message = event['message']
+        
+        # Check if this is the banned user
+        if self.user.username == username:
+            # Send ban notification and disconnect
+            await self.send(text_data=json.dumps({
+                'type': 'user_banned',
+                'message': message
+            }))
+            await self.close()
+        else:
+            # Notify other users about the ban
+            await self.send(text_data=json.dumps({
+                'type': 'user_leave',
+                'username': username,
+                'display_name': username,
+            }))
+
     @database_sync_to_async
     def check_room_exists(self):
         try:
@@ -305,6 +347,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = Room.objects.get(name=room_name)
             # Check if user is banned from this room
             if room.is_user_banned(user):
+                return False
+            # Check if user is still a member of the room (not kicked)
+            if not room.members.filter(user=user).exists():
                 return False
             Message.objects.create(user=user, room=room, content=message)
             return True
