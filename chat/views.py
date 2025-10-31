@@ -400,6 +400,22 @@ def room_settings(request, room_name):
 @require_POST
 def kick_member(request):
     """Kick a member from the room"""
+    
+    print("[KICK DEBUG] ====== KICK_MEMBER VIEW CALLED ======")
+    # Debug: Check if user is authenticated
+    print(f"[KICK DEBUG] User authenticated: {request.user.is_authenticated}")
+    print(f"[KICK DEBUG] Request method: {request.method}")
+    print(f"[KICK DEBUG] Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
+    print(f"[KICK DEBUG] Content-Type: {request.content_type}")
+    
+    # Additional check for AJAX requests - return JSON instead of redirect
+    if not request.user.is_authenticated:
+        print("[KICK DEBUG] User not authenticated, returning JSON error")
+        return JsonResponse({
+            'success': False,
+            'message': 'Authentication required. Please log in.'
+        })
+    
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     
@@ -482,6 +498,18 @@ def kick_member(request):
 @require_POST
 def ban_member(request):
     """Ban a member from the room"""
+    
+    # Debug: Check if user is authenticated
+    print(f"[BAN DEBUG] User authenticated: {request.user.is_authenticated}")
+    print(f"[BAN DEBUG] Request method: {request.method}")
+    
+    # Additional check for AJAX requests - return JSON instead of redirect
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Authentication required. Please log in.'
+        })
+    
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     reason = request.POST.get('reason', '').strip()

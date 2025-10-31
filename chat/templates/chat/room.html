@@ -1486,22 +1486,32 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: requestBody
             })
             .then(response => {
                 console.log('Raw response status:', response.status);
-                console.log('Raw response headers:', response.headers);
                 console.log('Response OK:', response.ok);
                 
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.log('Error response body:', text);
+                // Always get text first to see what we're dealing with
+                return response.text().then(text => {
+                    console.log('Raw response text:', text);
+                    
+                    if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
-                    });
-                }
-                return response.json();
+                    }
+                    
+                    // Try to parse as JSON
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e);
+                        console.error('Response was:', text);
+                        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+                    }
+                });
             })
             .then(data => {
                 console.log('Kick response data:', data);
@@ -1549,22 +1559,32 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: requestBody
             })
             .then(response => {
                 console.log('Raw response status:', response.status);
-                console.log('Raw response headers:', response.headers);
                 console.log('Response OK:', response.ok);
                 
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.log('Error response body:', text);
+                // Always get text first to see what we're dealing with
+                return response.text().then(text => {
+                    console.log('Raw response text:', text);
+                    
+                    if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
-                    });
-                }
-                return response.json();
+                    }
+                    
+                    // Try to parse as JSON
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e);
+                        console.error('Response was:', text);
+                        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+                    }
+                });
             })
             .then(data => {
                 console.log('Ban response data:', data);
