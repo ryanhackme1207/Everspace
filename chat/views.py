@@ -771,57 +771,21 @@ def respond_friend_request(request):
         })
 
 
-@login_required
-@require_POST
+@csrf_exempt
 def transfer_ownership(request):
     """Transfer room ownership to another user"""
-    room_name = request.POST.get('room_name', '').strip()
-    username = request.POST.get('username', '').strip()
     
-    if not room_name or not username:
-        return JsonResponse({
-            'success': False,
-            'message': 'Room name and username are required.'
-        })
+    print("[TRANSFER DEBUG] ====== TRANSFER_OWNERSHIP VIEW CALLED ======")
+    print(f"[TRANSFER DEBUG] Request method: {request.method}")
+    print(f"[TRANSFER DEBUG] User authenticated: {request.user.is_authenticated}")
     
-    try:
-        room_obj = get_object_or_404(Room, name=room_name)
-        new_owner = get_object_or_404(User, username=username)
-        
-        # Only current owner can transfer ownership
-        if not room_obj.is_host(request.user):
-            return JsonResponse({
-                'success': False,
-                'message': 'Only the room owner can transfer ownership.'
-            })
-        
-        # Cannot transfer to yourself
-        if new_owner == request.user:
-            return JsonResponse({
-                'success': False,
-                'message': 'You cannot transfer ownership to yourself.'
-            })
-        
-        # New owner must be a member of the room
-        if not room_obj.members.filter(user=new_owner).exists():
-            return JsonResponse({
-                'success': False,
-                'message': f'{username} must be a member of the room first.'
-            })
-        
-        # Transfer ownership
-        room_obj.transfer_ownership(new_owner)
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Room ownership transferred to {username} successfully!'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': 'An error occurred while transferring ownership.'
-        })
+    # Simplified response for testing
+    return JsonResponse({
+        'success': True,
+        'message': 'Transfer ownership function reached successfully (test mode)',
+        'user': str(request.user),
+        'method': request.method
+    })
 
 
 @login_required

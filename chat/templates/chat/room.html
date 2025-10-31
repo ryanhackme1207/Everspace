@@ -1686,32 +1686,74 @@
         }
 
         function transferOwnership(username) {
+            console.log('transferOwnership function called with username:', username);
+            
             // Hide modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('transferOwnershipModal'));
             modal.hide();
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            console.log('Transfer CSRF token found:', csrfToken ? 'Yes' : 'No');
+            
+            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
+            console.log('Transfer request body:', requestBody);
+            console.log('Making request to URL:', '{% url "transfer_ownership" %}');
             
             fetch('{% url "transfer_ownership" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`
+                body: requestBody
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Transfer response status:', response.status);
+                console.log('Transfer response OK:', response.ok);
+                
+                return response.text().then(text => {
+                    console.log('Transfer raw response text:', text);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
+                    }
+                    
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse transfer JSON:', e);
+                        console.error('Transfer response was:', text);
+                        
+                        if (text.includes('login') || text.includes('Login')) {
+                            throw new Error('Authentication required - redirected to login page');
+                        }
+                        if (text.includes('CSRF') || text.includes('Forbidden')) {
+                            throw new Error('CSRF token error - please refresh the page');
+                        }
+                        if (text.includes('Not Found')) {
+                            throw new Error('Endpoint not found - URL routing issue');
+                        }
+                        
+                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
+                    }
+                });
+            })
             .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
+                console.log('Transfer response data:', data);
+                if (data && data.success) {
+                    showToast(data.message || 'Ownership transferred successfully', 'success');
                     // Refresh page after successful transfer
                     setTimeout(() => {
                         location.reload();
                     }, 2000);
                 } else {
-                    showToast(data.message, 'error');
+                    showToast(data && data.message ? data.message : 'Failed to transfer ownership', 'error');
                 }
             })
             .catch(error => {
-                showToast('An error occurred while transferring ownership.', 'error');
+                console.error('Transfer error:', error);
+                showToast(`Error transferring ownership: ${error.message}`, 'error');
             });
         }
 
