@@ -13,6 +13,7 @@ urlpatterns = [
     path('chat/kick-member/', views.kick_member, name='kick_member'),
     path('chat/ban-member/', views.ban_member, name='ban_member'),
     path('chat/unban-member/', views.unban_member, name='unban_member'),
+    path('test-ajax/', views.test_endpoint, name='test_endpoint'),
     path('chat/transfer-ownership/', views.transfer_ownership, name='transfer_ownership'),
     path('friends/', views.friends_list, name='friends_list'),
     path('friends/send-request/', views.send_friend_request, name='send_friend_request'),

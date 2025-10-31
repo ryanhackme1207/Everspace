@@ -1508,8 +1508,24 @@
                         return JSON.parse(text);
                     } catch (e) {
                         console.error('Failed to parse JSON:', e);
-                        console.error('Response was:', text);
-                        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+                        console.error('Full response was:', text);
+                        
+                        // Check if it's a login page redirect
+                        if (text.includes('login') || text.includes('Login') || text.includes('Sign in')) {
+                            throw new Error('Authentication required - redirected to login page');
+                        }
+                        
+                        // Check if it's a CSRF error
+                        if (text.includes('CSRF') || text.includes('Forbidden')) {
+                            throw new Error('CSRF token error - please refresh the page');
+                        }
+                        
+                        // Check if it's a 404
+                        if (text.includes('404') || text.includes('Not Found')) {
+                            throw new Error('Endpoint not found - URL routing issue');
+                        }
+                        
+                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
                     }
                 });
             })
@@ -1581,8 +1597,24 @@
                         return JSON.parse(text);
                     } catch (e) {
                         console.error('Failed to parse JSON:', e);
-                        console.error('Response was:', text);
-                        throw new Error(`Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}...`);
+                        console.error('Full response was:', text);
+                        
+                        // Check if it's a login page redirect
+                        if (text.includes('login') || text.includes('Login') || text.includes('Sign in')) {
+                            throw new Error('Authentication required - redirected to login page');
+                        }
+                        
+                        // Check if it's a CSRF error
+                        if (text.includes('CSRF') || text.includes('Forbidden')) {
+                            throw new Error('CSRF token error - please refresh the page');
+                        }
+                        
+                        // Check if it's a 404
+                        if (text.includes('Not Found')) {
+                            throw new Error('Endpoint not found - URL routing issue');
+                        }
+                        
+                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
                     }
                 });
             })
