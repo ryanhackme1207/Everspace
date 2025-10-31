@@ -1378,63 +1378,101 @@
 
         // Room Management Functions
         function kickUser(username) {
+            console.log('Attempting to kick user:', username);
+            console.log('Current user is host:', {{ is_room_host|yesno:"true,false" }});
+            console.log('Room name:', '{{ room_name }}');
+            
             hideContextMenu();
             
             if (!confirm(`Are you sure you want to kick ${username}?`)) {
                 return;
             }
 
+            const csrfToken = getCookie('csrftoken');
+            if (!csrfToken) {
+                showToast('CSRF token not found. Please refresh the page.', 'error');
+                return;
+            }
+
+            console.log('Sending kick request with CSRF token:', csrfToken);
+
             fetch('{% url "kick_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': csrfToken
                 },
-                body: `room_name={{ room_name }}&username=${username}`
+                body: `room_name={{ room_name }}&username=${encodeURIComponent(username)}`
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Kick response:', data);
                 if (data.success) {
                     showToast(data.message, 'success');
                     // Remove user from active users list
                     activeUsers.delete(username);
                     updateUsersList();
                 } else {
-                    showToast(data.message, 'error');
+                    showToast(data.message || 'Failed to kick user', 'error');
                 }
             })
             .catch(error => {
-                showToast('An error occurred while kicking the user.', 'error');
+                console.error('Kick error:', error);
+                showToast(`Error kicking user: ${error.message}`, 'error');
             });
         }
 
         function banUser(username) {
+            console.log('Attempting to ban user:', username);
+            console.log('Current user is host:', {{ is_room_host|yesno:"true,false" }});
+            console.log('Room name:', '{{ room_name }}');
+            
             hideContextMenu();
             
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
             if (reason === null) return; // User canceled
 
+            const csrfToken = getCookie('csrftoken');
+            if (!csrfToken) {
+                showToast('CSRF token not found. Please refresh the page.', 'error');
+                return;
+            }
+
+            console.log('Sending ban request with CSRF token:', csrfToken);
+
             fetch('{% url "ban_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': csrfToken
                 },
-                body: `room_name={{ room_name }}&username=${username}&reason=${encodeURIComponent(reason)}`
+                body: `room_name={{ room_name }}&username=${encodeURIComponent(username)}&reason=${encodeURIComponent(reason || '')}`
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Ban response:', data);
                 if (data.success) {
                     showToast(data.message, 'success');
                     // Remove user from active users list
                     activeUsers.delete(username);
                     updateUsersList();
                 } else {
-                    showToast(data.message, 'error');
+                    showToast(data.message || 'Failed to ban user', 'error');
                 }
             })
             .catch(error => {
-                showToast('An error occurred while banning the user.', 'error');
+                console.error('Ban error:', error);
+                showToast(`Error banning user: ${error.message}`, 'error');
             });
         }
 
@@ -1631,6 +1669,8 @@
             }
             return cookieValue;
         }
+
+
     </script>
 </body>
 </html>

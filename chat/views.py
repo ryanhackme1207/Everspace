@@ -401,6 +401,8 @@ def kick_member(request):
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     
+    print(f"Kick request: room={room_name}, username={username}, by={request.user.username}")  # Debug
+    
     if not room_name or not username:
         return JsonResponse({
             'success': False,
@@ -408,11 +410,15 @@ def kick_member(request):
         })
     
     try:
-        room_obj = get_object_or_404(Room, name=room_name)
-        user_to_kick = get_object_or_404(User, username=username)
+        room_obj = Room.objects.get(name=room_name)
+        print(f"Room found: {room_obj}")  # Debug
+        
+        user_to_kick = User.objects.get(username=username)
+        print(f"User to kick found: {user_to_kick}")  # Debug
         
         # Only room host can kick members
         if not room_obj.is_host(request.user):
+            print(f"Permission denied: {request.user} is not host")  # Debug
             return JsonResponse({
                 'success': False,
                 'message': 'Only the room host can kick members.'
@@ -425,18 +431,37 @@ def kick_member(request):
                 'message': 'You cannot kick yourself.'
             })
         
+        # Check if user is actually a member
+        if not room_obj.members.filter(user=user_to_kick).exists():
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} is not a member of this room.'
+            })
+        
         # Kick the user
         room_obj.kick_user(user_to_kick)
+        print(f"User {username} kicked successfully")  # Debug
         
         return JsonResponse({
             'success': True,
             'message': f'{username} has been kicked from the room.'
         })
         
-    except Exception as e:
+    except Room.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'message': 'An error occurred while kicking the member.'
+            'message': 'Room not found.'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'User not found.'
+        })
+    except Exception as e:
+        print(f"Kick error: {e}")  # Debug
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while kicking the member: {str(e)}'
         })
 
 
@@ -448,6 +473,8 @@ def ban_member(request):
     username = request.POST.get('username', '').strip()
     reason = request.POST.get('reason', '').strip()
     
+    print(f"Ban request: room={room_name}, username={username}, reason={reason}, by={request.user.username}")  # Debug
+    
     if not room_name or not username:
         return JsonResponse({
             'success': False,
@@ -455,8 +482,8 @@ def ban_member(request):
         })
     
     try:
-        room_obj = get_object_or_404(Room, name=room_name)
-        user_to_ban = get_object_or_404(User, username=username)
+        room_obj = Room.objects.get(name=room_name)
+        user_to_ban = User.objects.get(username=username)
         
         # Only room host can ban members
         if not room_obj.is_host(request.user):
@@ -481,16 +508,28 @@ def ban_member(request):
         
         # Ban the user
         room_obj.ban_user(user_to_ban, request.user, reason)
+        print(f"User {username} banned successfully")  # Debug
         
         return JsonResponse({
             'success': True,
             'message': f'{username} has been banned from the room.'
         })
         
-    except Exception as e:
+    except Room.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'message': 'An error occurred while banning the member.'
+            'message': 'Room not found.'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'User not found.'
+        })
+    except Exception as e:
+        print(f"Ban error: {e}")  # Debug
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while banning the member: {str(e)}'
         })
 
 
