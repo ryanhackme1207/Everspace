@@ -1461,7 +1461,6 @@
         // Room Management Functions
         function kickUser(username) {
             console.log('kickUser function called with username:', username);
-            alert(`Debug: Attempting to kick user: ${username}`); // Temporary debug alert
             hideContextMenu();
             
             if (!confirm(`Are you sure you want to kick ${username}?`)) {
@@ -1469,6 +1468,9 @@
             }
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
+            console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
+            
             if (!csrfToken) {
                 showToast('CSRF token not found. Please refresh the page.', 'error');
                 return;
@@ -1476,8 +1478,10 @@
 
             const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
             console.log('Kick request body:', requestBody);
-            console.log('CSRF token:', csrfToken);
+            console.log('Full CSRF token:', csrfToken);
 
+            console.log('Making request to URL:', '{% url "kick_member" %}');
+            
             fetch('{% url "kick_member" %}', {
                 method: 'POST',
                 headers: {
@@ -1487,20 +1491,27 @@
                 body: requestBody
             })
             .then(response => {
+                console.log('Raw response status:', response.status);
+                console.log('Raw response headers:', response.headers);
+                console.log('Response OK:', response.ok);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    return response.text().then(text => {
+                        console.log('Error response body:', text);
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
+                    });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Kick response:', data);
-                if (data.success) {
-                    showToast(data.message, 'success');
+                console.log('Kick response data:', data);
+                if (data && data.success) {
+                    showToast(data.message || 'User kicked successfully', 'success');
                     // Remove user from active users list
                     activeUsers.delete(username);
                     updateUsersList();
                 } else {
-                    showToast(data.message || 'Failed to kick user', 'error');
+                    showToast(data && data.message ? data.message : 'Failed to kick user', 'error');
                 }
             })
             .catch(error => {
@@ -1521,6 +1532,9 @@
             if (reason === null) return; // User canceled
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
+            console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
+            
             if (!csrfToken) {
                 showToast('CSRF token not found. Please refresh the page.', 'error');
                 return;
@@ -1528,7 +1542,8 @@
 
             const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}&reason=${encodeURIComponent(reason || '')}`;
             console.log('Ban request body:', requestBody);
-            console.log('CSRF token:', csrfToken);
+            console.log('Full CSRF token:', csrfToken);
+            console.log('Making request to URL:', '{% url "ban_member" %}');
 
             fetch('{% url "ban_member" %}', {
                 method: 'POST',
@@ -1539,20 +1554,27 @@
                 body: requestBody
             })
             .then(response => {
+                console.log('Raw response status:', response.status);
+                console.log('Raw response headers:', response.headers);
+                console.log('Response OK:', response.ok);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    return response.text().then(text => {
+                        console.log('Error response body:', text);
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
+                    });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Ban response:', data);
-                if (data.success) {
-                    showToast(data.message, 'success');
+                console.log('Ban response data:', data);
+                if (data && data.success) {
+                    showToast(data.message || 'User banned successfully', 'success');
                     // Remove user from active users list
                     activeUsers.delete(username);
                     updateUsersList();
                 } else {
-                    showToast(data.message || 'Failed to ban user', 'error');
+                    showToast(data && data.message ? data.message : 'Failed to ban user', 'error');
                 }
             })
             .catch(error => {
