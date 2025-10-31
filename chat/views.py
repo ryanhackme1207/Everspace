@@ -403,6 +403,11 @@ def kick_member(request):
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     
+    print(f"[KICK DEBUG] Request user: {request.user}")
+    print(f"[KICK DEBUG] Room name: '{room_name}'")
+    print(f"[KICK DEBUG] Username: '{username}'")
+    print(f"[KICK DEBUG] POST data: {request.POST}")
+    
     if not room_name or not username:
         return JsonResponse({
             'success': False,
@@ -414,7 +419,9 @@ def kick_member(request):
         user_to_kick = User.objects.get(username=username)
         
         # Only room host can kick members
-        if not room_obj.is_host(request.user):
+        is_host = room_obj.is_host(request.user)
+        print(f"[KICK DEBUG] Is user host? {is_host}")
+        if not is_host:
             return JsonResponse({
                 'success': False,
                 'message': 'Only the room host can kick members.'
@@ -478,6 +485,12 @@ def ban_member(request):
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
     reason = request.POST.get('reason', '').strip()
+    
+    print(f"[BAN DEBUG] Request user: {request.user}")
+    print(f"[BAN DEBUG] Room name: '{room_name}'")
+    print(f"[BAN DEBUG] Username: '{username}'")
+    print(f"[BAN DEBUG] Reason: '{reason}'")
+    print(f"[BAN DEBUG] POST data: {request.POST}")
     
     if not room_name or not username:
         return JsonResponse({

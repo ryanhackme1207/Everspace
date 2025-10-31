@@ -1371,6 +1371,7 @@
             contextMenu.className = 'user-context-menu';
             
             const isHost = {{ is_room_host|yesno:"true,false" }};
+            console.log('User is host:', isHost);
             
             let menuItems = `
                 <div class="context-menu-item" onclick="sendFriendRequest('${username}')">
@@ -1459,6 +1460,8 @@
 
         // Room Management Functions
         function kickUser(username) {
+            console.log('kickUser function called with username:', username);
+            alert(`Debug: Attempting to kick user: ${username}`); // Temporary debug alert
             hideContextMenu();
             
             if (!confirm(`Are you sure you want to kick ${username}?`)) {
@@ -1471,13 +1474,17 @@
                 return;
             }
 
+            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
+            console.log('Kick request body:', requestBody);
+            console.log('CSRF token:', csrfToken);
+
             fetch('{% url "kick_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrfToken
                 },
-                body: `room_name={{ room_name }}&username=${encodeURIComponent(username)}`
+                body: requestBody
             })
             .then(response => {
                 if (!response.ok) {
@@ -1499,10 +1506,15 @@
             .catch(error => {
                 console.error('Kick error:', error);
                 showToast(`Error kicking user: ${error.message}`, 'error');
+                // Also check if it's a network error
+                if (!navigator.onLine) {
+                    showToast('Network connection lost. Please check your internet connection.', 'error');
+                }
             });
         }
 
         function banUser(username) {
+            console.log('banUser function called with username:', username);
             hideContextMenu();
             
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
@@ -1514,13 +1526,17 @@
                 return;
             }
 
+            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}&reason=${encodeURIComponent(reason || '')}`;
+            console.log('Ban request body:', requestBody);
+            console.log('CSRF token:', csrfToken);
+
             fetch('{% url "ban_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrfToken
                 },
-                body: `room_name={{ room_name }}&username=${encodeURIComponent(username)}&reason=${encodeURIComponent(reason || '')}`
+                body: requestBody
             })
             .then(response => {
                 if (!response.ok) {
@@ -1542,6 +1558,10 @@
             .catch(error => {
                 console.error('Ban error:', error);
                 showToast(`Error banning user: ${error.message}`, 'error');
+                // Also check if it's a network error
+                if (!navigator.onLine) {
+                    showToast('Network connection lost. Please check your internet connection.', 'error');
+                }
             });
         }
 
@@ -1602,7 +1622,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: `room_name={{ room_name }}&username=${username}`
+                body: `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`
             })
             .then(response => response.json())
             .then(data => {
