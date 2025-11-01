@@ -413,6 +413,7 @@ def kick_member(request):
     """Kick a member from the room"""
     
     print("[KICK DEBUG] ====== KICK_MEMBER VIEW CALLED ======")
+    print("[KICK DEBUG] @csrf_exempt decorator applied!")
     print(f"[KICK DEBUG] Request method: {request.method}")
     print(f"[KICK DEBUG] User authenticated: {request.user.is_authenticated}")
     print(f"[KICK DEBUG] Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
