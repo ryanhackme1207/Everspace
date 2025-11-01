@@ -1470,6 +1470,8 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
             console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
+            console.log('CSRF token value:', csrfToken);
+            console.log('CSRF meta tag element:', document.querySelector('meta[name="csrf-token"]'));
             
             if (!csrfToken) {
                 showToast('CSRF token not found. Please refresh the page.', 'error');
@@ -1486,8 +1488,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
+                    // Removed CSRF token for testing since we have @csrf_exempt
                 },
                 body: requestBody
             })
@@ -1575,8 +1577,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
+                    // Removed CSRF token for testing since we have @csrf_exempt
                 },
                 body: requestBody
             })
@@ -1703,8 +1705,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
+                    // Removed CSRF token for testing since we have @csrf_exempt
                 },
                 body: requestBody
             })
