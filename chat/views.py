@@ -23,7 +23,6 @@ def landing_page(request):
         return redirect('chat_index')
     return render(request, 'chat/landing.html')
 
-@csrf_exempt
 def test_endpoint(request):
     """Test endpoint to verify AJAX connectivity"""
     return JsonResponse({
@@ -408,24 +407,16 @@ def room_settings(request, room_name):
     })
 
 
-@csrf_exempt
+@login_required
+@require_POST
 def kick_member(request):
     """Kick a member from the room"""
     
     print("[KICK DEBUG] ====== KICK_MEMBER VIEW CALLED ======")
-    print("[KICK DEBUG] @csrf_exempt decorator applied!")
     print(f"[KICK DEBUG] Request method: {request.method}")
     print(f"[KICK DEBUG] User authenticated: {request.user.is_authenticated}")
     print(f"[KICK DEBUG] Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
     print(f"[KICK DEBUG] Content-Type: {request.content_type}")
-    
-    # Simplified response for testing
-    return JsonResponse({
-        'success': True,
-        'message': 'Kick function reached successfully (test mode)',
-        'user': str(request.user),
-        'method': request.method
-    })
     
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
@@ -505,21 +496,14 @@ def kick_member(request):
         })
 
 
-@csrf_exempt
+@login_required
+@require_POST
 def ban_member(request):
     """Ban a member from the room"""
     
     print("[BAN DEBUG] ====== BAN_MEMBER VIEW CALLED ======")
     print(f"[BAN DEBUG] Request method: {request.method}")
     print(f"[BAN DEBUG] User authenticated: {request.user.is_authenticated}")
-    
-    # Simplified response for testing
-    return JsonResponse({
-        'success': True,
-        'message': 'Ban function reached successfully (test mode)',
-        'user': str(request.user),
-        'method': request.method
-    })
     
     room_name = request.POST.get('room_name', '').strip()
     username = request.POST.get('username', '').strip()
@@ -772,7 +756,8 @@ def respond_friend_request(request):
         })
 
 
-@csrf_exempt
+@login_required
+@require_POST
 def transfer_ownership(request):
     """Transfer room ownership to another user"""
     
@@ -780,13 +765,80 @@ def transfer_ownership(request):
     print(f"[TRANSFER DEBUG] Request method: {request.method}")
     print(f"[TRANSFER DEBUG] User authenticated: {request.user.is_authenticated}")
     
-    # Simplified response for testing
-    return JsonResponse({
-        'success': True,
-        'message': 'Transfer ownership function reached successfully (test mode)',
-        'user': str(request.user),
-        'method': request.method
-    })
+    room_name = request.POST.get('room_name', '').strip()
+    username = request.POST.get('username', '').strip()
+    
+    print(f"[TRANSFER DEBUG] Room name: '{room_name}'")
+    print(f"[TRANSFER DEBUG] Username: '{username}'")
+    
+    if not room_name or not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room name and username are required.'
+        })
+    
+    try:
+        room_obj = Room.objects.get(name=room_name)
+        new_owner = User.objects.get(username=username)
+        
+        # Only current host can transfer ownership
+        if not room_obj.is_host(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'Only the room host can transfer ownership.'
+            })
+        
+        # Cannot transfer to yourself
+        if new_owner == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You are already the owner.'
+            })
+        
+        # Check if new owner is a member of the room
+        if not room_obj.members.filter(user=new_owner).exists():
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} must be a member of the room to receive ownership.'
+            })
+        
+        # Transfer ownership
+        room_obj.transfer_ownership(new_owner)
+        
+        # Send WebSocket notification
+        channel_layer = get_channel_layer()
+        room_group_name = f'chat_{room_name}'
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'ownership_transferred',
+                'old_owner': request.user.username,
+                'new_owner': username,
+                'message': f'Room ownership has been transferred to {username}'
+            }
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Ownership transferred to {username} successfully.'
+        })
+        
+    except Room.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Room not found.'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'User not found.'
+        })
+    except Exception as e:
+        print(f"[TRANSFER DEBUG] Error: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while transferring ownership: {str(e)}'
+        })
 
 
 @login_required
