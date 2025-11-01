@@ -1,9 +1,9 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>EverSpace - {{ room_name }}</title>
     
     <!-- Bootstrap CSS -->
@@ -733,7 +733,11 @@
     </style>
 </head>
 <body>
-        <!-- Particles Background -->
+    <!-- Hidden CSRF Token -->
+    {% csrf_token %}
+    <input type="hidden" id="csrf-token-input" value="{% csrf_token %}">
+    
+    <!-- Particles Background -->
     <div id="particles"></div>
     
     <!-- Header -->
@@ -897,6 +901,30 @@
 
     <!-- Chat Functionality -->
     <script>
+        // CSRF Token Helper Function
+        function getCSRFToken() {
+            // Try to get from hidden input first
+            const hiddenInput = document.getElementById('csrf-token-input');
+            if (hiddenInput && hiddenInput.value) {
+                return hiddenInput.value;
+            }
+            
+            // Fallback: get from cookie
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
         const roomName = "{{ room_name }}";
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const chatSocket = new WebSocket(
@@ -1441,7 +1469,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRFToken': getCSRFToken()
                 },
                 body: `username=${username}`
             })
@@ -1467,11 +1495,10 @@
                 return;
             }
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfToken = getCSRFToken();
             console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
             console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
             console.log('CSRF token value:', csrfToken);
-            console.log('CSRF meta tag element:', document.querySelector('meta[name="csrf-token"]'));
             
             if (!csrfToken) {
                 showToast('CSRF token not found. Please refresh the page.', 'error');
@@ -1559,7 +1586,7 @@
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
             if (reason === null) return; // User canceled
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfToken = getCSRFToken();
             console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
             console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
             
@@ -1694,7 +1721,7 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById('transferOwnershipModal'));
             modal.hide();
             
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const csrfToken = getCSRFToken();
             console.log('Transfer CSRF token found:', csrfToken ? 'Yes' : 'No');
             
             const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
