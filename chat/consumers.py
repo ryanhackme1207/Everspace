@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
-from .models import Room, Message
+from .models import Room, Message, RoomMember
 from django.core.cache import cache
 import asyncio
 from django.utils import timezone
@@ -185,6 +185,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'display_name': f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username,
                     }
                 )
+                # Mark user offline in DB
+                await self._mark_offline_username(self.user.username)
 
     # Receive message from WebSocket
     async def receive(self, text_data):
@@ -365,3 +367,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_timestamp(self):
         from django.utils import timezone
         return timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # ==== Presence helper methods (DB sync) ====
+    @database_sync_to_async
+    def _set_member_status(self, username: str, status: str):
+        """Low-level helper to set a RoomMember.status if membership exists."""
+        try:
+            room = Room.objects.get(name=self.room_name)
+            room_member = room.members.select_related('user').get(user__username=username)
+            if room_member.status != status:
+                room_member.status = status
+                room_member.save(update_fields=["status"])
+        except (Room.DoesNotExist, RoomMember.DoesNotExist):
+            # Room deleted or user not a member anymore (kicked/banned) - ignore
+            pass
+
+    async def _mark_online(self):
+        """Mark the current websocket user online in the RoomMember table."""
+        if hasattr(self, 'user') and hasattr(self, 'room_name'):
+            await self._set_member_status(self.user.username, 'online')
+
+    async def _mark_offline_username(self, username: str):
+        """Mark an arbitrary username offline (used by idle pruning / disconnect)."""
+        if hasattr(self, 'room_name'):
+            await self._set_member_status(username, 'offline')
