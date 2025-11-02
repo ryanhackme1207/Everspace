@@ -128,9 +128,13 @@ def room(request, room_name):
         messages.error(request, f'Room "{room_name}" does not exist or has been deleted.')
         return redirect('chat_index')
     
-    # Check if user is banned from this room
+    # Check if user is banned from this room. Avoid spamming the same message across redirects.
     if room_obj.is_user_banned(request.user):
-        messages.error(request, f'You are banned from room "{room_name}". Contact the room host if you believe this is an error.')
+        ban_flag_key = f'banned_notice_shown_{room_name}'
+        if not request.session.get(ban_flag_key):
+            # Use extra_tags so templates can suppress room-ban messages outside chat contexts
+            messages.error(request, f'You are banned from room "{room_name}". Contact the room host if you believe this is an error.', extra_tags='room-ban')
+            request.session[ban_flag_key] = True
         return redirect('chat_index')
     
     # Handle private room password checking
