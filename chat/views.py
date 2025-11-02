@@ -1103,13 +1103,21 @@ def edit_profile(request):
         
         return redirect('edit_profile')
     
+    # Filter out room-ban tagged messages (server-side) so they never display here
+    storage = messages.get_messages(request)
+    filtered = []
+    for m in storage:
+        # m.tags can be multiple space-separated tags; check substring presence
+        if 'room-ban' not in m.tags.split():
+            filtered.append(m)
     context = {
         'profile': profile,
         'pixel_avatars': pixel_avatars,
         'remaining_username_changes': 3 - profile.username_changes_count if profile.can_change_username() else 0,
         'can_change_username': profile.can_change_username(),
+        'show_messages': filtered,
     }
-    
+
     return render(request, 'chat/edit_profile.html', context)
 
 
