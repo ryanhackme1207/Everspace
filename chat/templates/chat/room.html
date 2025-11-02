@@ -733,9 +733,10 @@
     </style>
 </head>
 <body>
-    <!-- Hidden CSRF Token -->
-    {% csrf_token %}
-    <input type="hidden" id="csrf-token-input" value="{% csrf_token %}">
+    <!-- Hidden CSRF Token Form -->
+    <form id="csrf-form" style="display:none;">
+        {% csrf_token %}
+    </form>
     
     <!-- Particles Background -->
     <div id="particles"></div>
@@ -903,10 +904,14 @@
     <script>
         // CSRF Token Helper Function
         function getCSRFToken() {
-            // Try to get from hidden input first
-            const hiddenInput = document.getElementById('csrf-token-input');
-            if (hiddenInput && hiddenInput.value) {
-                return hiddenInput.value;
+            // Try to get from hidden form first
+            const csrfForm = document.getElementById('csrf-form');
+            if (csrfForm) {
+                const csrfInput = csrfForm.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (csrfInput && csrfInput.value) {
+                    console.log('Got CSRF token from form:', csrfInput.value);
+                    return csrfInput.value;
+                }
             }
             
             // Fallback: get from cookie
@@ -918,10 +923,17 @@
                     const cookie = cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        console.log('Got CSRF token from cookie:', cookieValue);
                         break;
                     }
                 }
             }
+            
+            if (!cookieValue) {
+                console.error('CSRF token not found in form or cookie!');
+                console.log('All cookies:', document.cookie);
+            }
+            
             return cookieValue;
         }
         
@@ -1091,7 +1103,7 @@
                         <span class="timestamp">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-1">
                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                                <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                             ${data.timestamp}
                         </span>
@@ -1487,302 +1499,100 @@
         }
 
         // Room Management Functions
+        // Kick a user from the room
         function kickUser(username) {
-            console.log('kickUser function called with username:', username);
-            hideContextMenu();
+            console.log(`Attempting to kick user: ${username}`);
             
-            if (!confirm(`Are you sure you want to kick ${username}?`)) {
-                return;
-            }
-
-            const csrfToken = getCSRFToken();
-            console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
-            console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
-            console.log('CSRF token value:', csrfToken);
-            
-            if (!csrfToken) {
-                showToast('CSRF token not found. Please refresh the page.', 'error');
-                return;
-            }
-
-            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
-            console.log('Kick request body:', requestBody);
-            console.log('Full CSRF token:', csrfToken);
-
-            console.log('Making request to URL:', '{% url "kick_member" %}');
-            
-            fetch('{% url "kick_member" %}', {
+            fetch("{% url 'kick_member' %}", {
                 method: 'POST',
+                credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrfToken
                 },
-                body: requestBody
+                body: JSON.stringify({
+                    'room_name': '{{ room_name }}',
+                    'username': username
+                }),
             })
-            .then(response => {
-                console.log('Raw response status:', response.status);
-                console.log('Response OK:', response.ok);
-                
-                // Always get text first to see what we're dealing with
-                return response.text().then(text => {
-                    console.log('Raw response text:', text);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
-                    }
-                    
-                    // Try to parse as JSON
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('Failed to parse JSON:', e);
-                        console.error('Full response was:', text);
-                        
-                        // Check if it's a login page redirect
-                        if (text.includes('login') || text.includes('Login') || text.includes('Sign in')) {
-                            throw new Error('Authentication required - redirected to login page');
-                        }
-                        
-                        // Check if it's a CSRF error
-                        if (text.includes('CSRF') || text.includes('Forbidden')) {
-                            throw new Error('CSRF token error - please refresh the page');
-                        }
-                        
-                        // Check if it's a 404
-                        if (text.includes('404') || text.includes('Not Found')) {
-                            throw new Error('Endpoint not found - URL routing issue');
-                        }
-                        
-                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
-                    }
-                });
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Kick response data:', data);
-                if (data && data.success) {
-                    showToast(data.message || 'User kicked successfully', 'success');
-                    // Remove user from active users list
-                    activeUsers.delete(username);
-                    updateUsersList();
+                if (data.success) {
+                    showToast('Success', data.message, 'success');
                 } else {
-                    showToast(data && data.message ? data.message : 'Failed to kick user', 'error');
+                    showToast('Error', data.message, 'danger');
                 }
             })
             .catch(error => {
-                console.error('Kick error:', error);
-                showToast(`Error kicking user: ${error.message}`, 'error');
-                // Also check if it's a network error
-                if (!navigator.onLine) {
-                    showToast('Network connection lost. Please check your internet connection.', 'error');
-                }
+                console.error('Error kicking user:', error);
+                showToast('Error', 'An unexpected error occurred. Please check the console.', 'danger');
             });
         }
 
+        // Ban a user from the room
         function banUser(username) {
-            console.log('banUser function called with username:', username);
-            hideContextMenu();
-            
+            console.log(`Attempting to ban user: ${username}`);
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
-            if (reason === null) return; // User canceled
 
-            const csrfToken = getCSRFToken();
-            console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
-            console.log('CSRF token length:', csrfToken ? csrfToken.length : 0);
-            
-            if (!csrfToken) {
-                showToast('CSRF token not found. Please refresh the page.', 'error');
-                return;
-            }
-
-            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}&reason=${encodeURIComponent(reason || '')}`;
-            console.log('Ban request body:', requestBody);
-            console.log('Full CSRF token:', csrfToken);
-            console.log('Making request to URL:', '{% url "ban_member" %}');
-
-            fetch('{% url "ban_member" %}', {
+            fetch("{% url 'ban_member' %}", {
                 method: 'POST',
+                credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrfToken
                 },
-                body: requestBody
+                body: JSON.stringify({
+                    'room_name': '{{ room_name }}',
+                    'username': username,
+                    'reason': reason || ''
+                }),
             })
-            .then(response => {
-                console.log('Raw response status:', response.status);
-                console.log('Response OK:', response.ok);
-                
-                // Always get text first to see what we're dealing with
-                return response.text().then(text => {
-                    console.log('Raw response text:', text);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
-                    }
-                    
-                    // Try to parse as JSON
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('Failed to parse JSON:', e);
-                        console.error('Full response was:', text);
-                        
-                        // Check if it's a login page redirect
-                        if (text.includes('login') || text.includes('Login') || text.includes('Sign in')) {
-                            throw new Error('Authentication required - redirected to login page');
-                        }
-                        
-                        // Check if it's a CSRF error
-                        if (text.includes('CSRF') || text.includes('Forbidden')) {
-                            throw new Error('CSRF token error - please refresh the page');
-                        }
-                        
-                        // Check if it's a 404
-                        if (text.includes('Not Found')) {
-                            throw new Error('Endpoint not found - URL routing issue');
-                        }
-                        
-                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
-                    }
-                });
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Ban response data:', data);
-                if (data && data.success) {
-                    showToast(data.message || 'User banned successfully', 'success');
-                    // Remove user from active users list
-                    activeUsers.delete(username);
-                    updateUsersList();
+                if (data.success) {
+                    showToast('Success', data.message, 'success');
                 } else {
-                    showToast(data && data.message ? data.message : 'Failed to ban user', 'error');
+                    showToast('Error', data.message, 'danger');
                 }
             })
             .catch(error => {
-                console.error('Ban error:', error);
-                showToast(`Error banning user: ${error.message}`, 'error');
-                // Also check if it's a network error
-                if (!navigator.onLine) {
-                    showToast('Network connection lost. Please check your internet connection.', 'error');
-                }
+                console.error('Error banning user:', error);
+                showToast('Error', 'An unexpected error occurred. Please check the console.', 'danger');
             });
         }
 
-        function showTransferOwnershipModal(username) {
-            hideContextMenu();
-            
-            const modalHtml = `
-                <div class="modal fade" id="transferOwnershipModal" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" style="color: var(--text-primary);">
-                                    <i class="fas fa-crown me-2" style="color: var(--accent-yellow);"></i>
-                                    Transfer Room Ownership
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" style="color: var(--text-primary);">
-                                <p>Are you sure you want to transfer ownership of this room to <strong>${username}</strong>?</p>
-                                <div class="alert alert-warning" style="background: rgba(254, 202, 87, 0.2); border: 1px solid var(--accent-yellow); color: var(--accent-yellow);">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    This action cannot be undone. You will lose all host privileges.
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-warning" onclick="transferOwnership('${username}')">
-                                    <i class="fas fa-crown me-2"></i>Transfer Ownership
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Remove existing modal if any
-            const existingModal = document.getElementById('transferOwnershipModal');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            
-            // Add modal to page
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('transferOwnershipModal'));
-            modal.show();
-        }
-
+        // Transfer ownership of the room
         function transferOwnership(username) {
-            console.log('transferOwnership function called with username:', username);
+            console.log(`Attempting to transfer ownership to: ${username}`);
             
-            // Hide modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('transferOwnershipModal'));
-            modal.hide();
-            
-            const csrfToken = getCSRFToken();
-            console.log('Transfer CSRF token found:', csrfToken ? 'Yes' : 'No');
-            
-            const requestBody = `room_name=${encodeURIComponent('{{ room_name }}')}&username=${encodeURIComponent(username)}`;
-            console.log('Transfer request body:', requestBody);
-            console.log('Making request to URL:', '{% url "transfer_ownership" %}');
-            
-            fetch('{% url "transfer_ownership" %}', {
+            fetch("{% url 'transfer_ownership' %}", {
                 method: 'POST',
+                credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrfToken
                 },
-                body: requestBody
+                body: JSON.stringify({
+                    'room_name': '{{ room_name }}',
+                    'username': username
+                }),
             })
-            .then(response => {
-                console.log('Transfer response status:', response.status);
-                console.log('Transfer response OK:', response.ok);
-                
-                return response.text().then(text => {
-                    console.log('Transfer raw response text:', text);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
-                    }
-                    
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('Failed to parse transfer JSON:', e);
-                        console.error('Transfer response was:', text);
-                        
-                        if (text.includes('login') || text.includes('Login')) {
-                            throw new Error('Authentication required - redirected to login page');
-                        }
-                        if (text.includes('CSRF') || text.includes('Forbidden')) {
-                            throw new Error('CSRF token error - please refresh the page');
-                        }
-                        if (text.includes('Not Found')) {
-                            throw new Error('Endpoint not found - URL routing issue');
-                        }
-                        
-                        throw new Error(`Server returned HTML instead of JSON. First 500 chars: ${text.substring(0, 500)}`);
-                    }
-                });
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Transfer response data:', data);
-                if (data && data.success) {
-                    showToast(data.message || 'Ownership transferred successfully', 'success');
-                    // Refresh page after successful transfer
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                if (data.success) {
+                    showToast('Success', data.message, 'success');
+                    // Optionally, refresh the page or update UI to reflect new ownership
+                    window.location.reload();
                 } else {
-                    showToast(data && data.message ? data.message : 'Failed to transfer ownership', 'error');
+                    showToast('Error', data.message, 'danger');
                 }
             })
             .catch(error => {
-                console.error('Transfer error:', error);
-                showToast(`Error transferring ownership: ${error.message}`, 'error');
+                console.error('Error transferring ownership:', error);
+                showToast('Error', 'An unexpected error occurred. Please check the console.', 'danger');
             });
         }
 

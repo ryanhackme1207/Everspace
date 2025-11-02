@@ -154,7 +154,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # CSRF Protection
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript to read the token
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True

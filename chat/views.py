@@ -14,8 +14,45 @@ from django.utils import timezone
 from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage, UserProfile
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from functools import wraps
 import os
 import json
+
+# Temporary diagnostic middleware (can be moved to separate file later)
+class KickBanDiagnosticMiddleware:
+    """Middleware to log details for kick/ban POST requests before redirect logic."""
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Only inspect the problematic endpoints
+        if request.path in ['/chat/kick-member/', '/chat/ban-member/'] and request.method == 'POST':
+            print('[DIAG MIDDLEWARE] Path:', request.path)
+            print('[DIAG MIDDLEWARE] User authenticated:', request.user.is_authenticated)
+            print('[DIAG MIDDLEWARE] Session key:', request.session.session_key)
+            print('[DIAG MIDDLEWARE] Headers X-Requested-With:', request.headers.get('X-Requested-With'))
+            print('[DIAG MIDDLEWARE] Content-Type:', request.content_type)
+        return self.get_response(request)
+
+def is_ajax(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+def ajax_login_required(view_func):
+    """
+    Decorator for AJAX views that require authentication.
+    Returns JSON error instead of redirecting to login page.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            if is_ajax(request):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Authentication required. Please log in.'
+                }, status=401)
+            return redirect('auth_login') # Or your login URL
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def landing_page(request):
     """Modern landing page with animations and introduction"""
@@ -407,7 +444,7 @@ def room_settings(request, room_name):
     })
 
 
-@login_required
+@ajax_login_required
 @require_POST
 def kick_member(request):
     """Kick a member from the room"""
@@ -418,13 +455,17 @@ def kick_member(request):
     print(f"[KICK DEBUG] Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
     print(f"[KICK DEBUG] Content-Type: {request.content_type}")
     
-    room_name = request.POST.get('room_name', '').strip()
-    username = request.POST.get('username', '').strip()
-    
+    try:
+        data = json.loads(request.body)
+        room_name = data.get('room_name', '').strip()
+        username = data.get('username', '').strip()
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+
     print(f"[KICK DEBUG] Request user: {request.user}")
     print(f"[KICK DEBUG] Room name: '{room_name}'")
     print(f"[KICK DEBUG] Username: '{username}'")
-    print(f"[KICK DEBUG] POST data: {request.POST}")
+    print(f"[KICK DEBUG] POST data: {data}")
     
     if not room_name or not username:
         return JsonResponse({
@@ -496,7 +537,7 @@ def kick_member(request):
         })
 
 
-@login_required
+@ajax_login_required
 @require_POST
 def ban_member(request):
     """Ban a member from the room"""
@@ -505,15 +546,19 @@ def ban_member(request):
     print(f"[BAN DEBUG] Request method: {request.method}")
     print(f"[BAN DEBUG] User authenticated: {request.user.is_authenticated}")
     
-    room_name = request.POST.get('room_name', '').strip()
-    username = request.POST.get('username', '').strip()
-    reason = request.POST.get('reason', '').strip()
+    try:
+        data = json.loads(request.body)
+        room_name = data.get('room_name', '').strip()
+        username = data.get('username', '').strip()
+        reason = data.get('reason', '').strip()
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     
     print(f"[BAN DEBUG] Request user: {request.user}")
     print(f"[BAN DEBUG] Room name: '{room_name}'")
     print(f"[BAN DEBUG] Username: '{username}'")
     print(f"[BAN DEBUG] Reason: '{reason}'")
-    print(f"[BAN DEBUG] POST data: {request.POST}")
+    print(f"[BAN DEBUG] POST data: {data}")
     
     if not room_name or not username:
         return JsonResponse({
@@ -756,7 +801,7 @@ def respond_friend_request(request):
         })
 
 
-@login_required
+@ajax_login_required
 @require_POST
 def transfer_ownership(request):
     """Transfer room ownership to another user"""
@@ -765,8 +810,12 @@ def transfer_ownership(request):
     print(f"[TRANSFER DEBUG] Request method: {request.method}")
     print(f"[TRANSFER DEBUG] User authenticated: {request.user.is_authenticated}")
     
-    room_name = request.POST.get('room_name', '').strip()
-    username = request.POST.get('username', '').strip()
+    try:
+        data = json.loads(request.body)
+        room_name = data.get('room_name', '').strip()
+        username = data.get('username', '').strip()
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     
     print(f"[TRANSFER DEBUG] Room name: '{room_name}'")
     print(f"[TRANSFER DEBUG] Username: '{username}'")
