@@ -420,9 +420,15 @@ def room_settings(request, room_name):
         messages.error(request, 'Only the room host can access room settings.')
         return redirect('chat_room', room_name=room_name)
     
-    # Get room statistics
-    online_members = room_obj.get_online_members()
-    all_members = room_obj.get_all_members()
+    # Presence: derive online from cache active_users to avoid stale DB status
+    from django.core.cache import cache
+    cache_key = f"active_users_{room_name}"
+    active_cache = cache.get(cache_key, {})  # dict of username -> {username, display_name}
+    active_usernames = {data['username'] for data in active_cache.values() if 'username' in data}
+
+    all_members = room_obj.get_all_members().select_related('user')
+    online_members = [m for m in all_members if m.user.username in active_usernames]
+    offline_members = [m for m in all_members if m.user.username not in active_usernames]
     banned_users = room_obj.banned_users.filter(is_active=True)
     
     # Handle description update
@@ -436,10 +442,11 @@ def room_settings(request, room_name):
         'room_obj': room_obj,
         'room_name': room_name,
         'online_members': online_members,
+        'offline_members': offline_members,
         'all_members': all_members,
         'banned_users': banned_users,
         'total_members': all_members.count(),
-        'online_count': online_members.count(),
+        'online_count': len(online_members),
         'banned_count': banned_users.count(),
     })
 

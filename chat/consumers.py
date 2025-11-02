@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Room, Message
 from django.core.cache import cache
 import asyncio
+from django.utils import timezone
 import time
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -51,8 +52,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         active_users[self.user.username] = {
             'username': self.user.username,
-            'display_name': display_name
+            'display_name': display_name,
         }
+        # Mark user online in DB RoomMember (sync presence)
+        await self._mark_online()
         cache.set(cache_key, active_users, 3600)
         
         # Update user's last seen time
@@ -134,6 +137,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 'display_name': user_data.get('display_name', username),
                             }
                         )
+                        # Mark user offline in DB
+                        await self._mark_offline_username(username)
                     
                     # Update cache if users were removed
                     if users_to_remove:
