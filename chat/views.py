@@ -455,30 +455,38 @@ def room_settings(request, room_name):
 @require_POST
 def kick_member(request):
     """Kick a member from the room"""
-    
     print("[KICK DEBUG] ====== KICK_MEMBER VIEW CALLED ======")
     print(f"[KICK DEBUG] Request method: {request.method}")
     print(f"[KICK DEBUG] User authenticated: {request.user.is_authenticated}")
-    print(f"[KICK DEBUG] Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
+    is_ajax_req = is_ajax(request)
+    print(f"[KICK DEBUG] Is AJAX: {is_ajax_req}")
     print(f"[KICK DEBUG] Content-Type: {request.content_type}")
-    
-    try:
-        data = json.loads(request.body)
-        room_name = data.get('room_name', '').strip()
-        username = data.get('username', '').strip()
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
 
-    print(f"[KICK DEBUG] Request user: {request.user}")
-    print(f"[KICK DEBUG] Room name: '{room_name}'")
-    print(f"[KICK DEBUG] Username: '{username}'")
-    print(f"[KICK DEBUG] POST data: {data}")
+    room_name = ''
+    username = ''
+    raw_payload = None
+    # Accept application/json plus possible charset suffix
+    if request.content_type and request.content_type.startswith('application/json'):
+        try:
+            raw_payload = json.loads(request.body or b'{}')
+            room_name = raw_payload.get('room_name', '').strip()
+            username = raw_payload.get('username', '').strip()
+        except json.JSONDecodeError:
+            if is_ajax_req:
+                return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    else:
+        # Fallback for form-urlencoded or multipart
+        room_name = request.POST.get('room_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        raw_payload = request.POST.dict()
+
+    print(f"[KICK DEBUG] Parsed room_name='{room_name}' username='{username}' payload={raw_payload}")
     
     if not room_name or not username:
-        return JsonResponse({
-            'success': False,
-            'message': 'Room name and username are required.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': 'Room name and username are required.'})
+        messages.error(request, 'Room name and username are required.')
+        return redirect('chat_index')
     
     try:
         room_obj = Room.objects.get(name=room_name)
@@ -488,24 +496,24 @@ def kick_member(request):
         is_host = room_obj.is_host(request.user)
         print(f"[KICK DEBUG] Is user host? {is_host}")
         if not is_host:
-            return JsonResponse({
-                'success': False,
-                'message': 'Only the room host can kick members.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': 'Only the room host can kick members.'})
+            messages.error(request, 'Only the room host can kick members.')
+            return redirect('chat_room', room_name=room_name)
         
         # Cannot kick the host
         if user_to_kick == request.user:
-            return JsonResponse({
-                'success': False,
-                'message': 'You cannot kick yourself.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': 'You cannot kick yourself.'})
+            messages.error(request, 'You cannot kick yourself.')
+            return redirect('chat_room', room_name=room_name)
         
         # Check if user is actually a member
         if not room_obj.members.filter(user=user_to_kick).exists():
-            return JsonResponse({
-                'success': False,
-                'message': f'{username} is not a member of this room.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': f'{username} is not a member of this room.'})
+            messages.error(request, f'{username} is not a member of this room.')
+            return redirect('chat_room', room_name=room_name)
         
         # Kick the user
         room_obj.kick_user(user_to_kick)
@@ -522,50 +530,60 @@ def kick_member(request):
             }
         )
         
-        return JsonResponse({
-            'success': True,
-            'message': f'{username} has been kicked from the room.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': True,'message': f'{username} has been kicked from the room.'})
+        messages.success(request, f'{username} has been kicked from the room.')
+        return redirect('chat_room', room_name=room_name)
         
     except Room.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'Room not found.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': 'Room not found.'})
+        messages.error(request, 'Room not found.')
+        return redirect('chat_index')
     except User.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'User not found.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': 'User not found.'})
+        messages.error(request, 'User not found.')
+        return redirect('chat_room', room_name=room_name or 'chat_index')
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'An error occurred while kicking the member: {str(e)}'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': f'An error occurred while kicking the member: {str(e)}'})
+        messages.error(request, 'An error occurred while kicking the member.')
+        return redirect('chat_room', room_name=room_name or 'chat_index')
 
 
 @ajax_login_required
 @require_POST
 def ban_member(request):
     """Ban a member from the room"""
-    
     print("[BAN DEBUG] ====== BAN_MEMBER VIEW CALLED ======")
     print(f"[BAN DEBUG] Request method: {request.method}")
     print(f"[BAN DEBUG] User authenticated: {request.user.is_authenticated}")
-    
-    try:
-        data = json.loads(request.body)
-        room_name = data.get('room_name', '').strip()
-        username = data.get('username', '').strip()
-        reason = data.get('reason', '').strip()
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
-    
-    print(f"[BAN DEBUG] Request user: {request.user}")
-    print(f"[BAN DEBUG] Room name: '{room_name}'")
-    print(f"[BAN DEBUG] Username: '{username}'")
-    print(f"[BAN DEBUG] Reason: '{reason}'")
-    print(f"[BAN DEBUG] POST data: {data}")
+    is_ajax_req = is_ajax(request)
+    print(f"[BAN DEBUG] Is AJAX: {is_ajax_req}")
+    print(f"[BAN DEBUG] Content-Type: {request.content_type}")
+
+    room_name = ''
+    username = ''
+    reason = ''
+    raw_payload = None
+    # Accept application/json plus possible charset suffix
+    if request.content_type and request.content_type.startswith('application/json'):
+        try:
+            raw_payload = json.loads(request.body or b'{}')
+            room_name = raw_payload.get('room_name', '').strip()
+            username = raw_payload.get('username', '').strip()
+            reason = raw_payload.get('reason', '').strip()
+        except json.JSONDecodeError:
+            if is_ajax_req:
+                return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    else:
+        room_name = request.POST.get('room_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        reason = request.POST.get('reason', '').strip()
+        raw_payload = request.POST.dict()
+
+    print(f"[BAN DEBUG] Parsed room_name='{room_name}' username='{username}' reason='{reason}' payload={raw_payload}")
     
     if not room_name or not username:
         return JsonResponse({
@@ -579,24 +597,24 @@ def ban_member(request):
         
         # Only room host can ban members
         if not room_obj.is_host(request.user):
-            return JsonResponse({
-                'success': False,
-                'message': 'Only the room host can ban members.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': 'Only the room host can ban members.'})
+            messages.error(request, 'Only the room host can ban members.')
+            return redirect('chat_room', room_name=room_name)
         
         # Cannot ban the host
         if user_to_ban == request.user:
-            return JsonResponse({
-                'success': False,
-                'message': 'You cannot ban yourself.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': 'You cannot ban yourself.'})
+            messages.error(request, 'You cannot ban yourself.')
+            return redirect('chat_room', room_name=room_name)
         
         # Check if user is already banned
         if room_obj.is_user_banned(user_to_ban):
-            return JsonResponse({
-                'success': False,
-                'message': f'{username} is already banned from this room.'
-            })
+            if is_ajax_req:
+                return JsonResponse({'success': False,'message': f'{username} is already banned from this room.'})
+            messages.error(request, f'{username} is already banned from this room.')
+            return redirect('chat_room', room_name=room_name)
         
         # Ban the user
         room_obj.ban_user(user_to_ban, request.user, reason)
@@ -613,26 +631,26 @@ def ban_member(request):
             }
         )
         
-        return JsonResponse({
-            'success': True,
-            'message': f'{username} has been banned from the room.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': True,'message': f'{username} has been banned from the room.'})
+        messages.success(request, f'{username} has been banned from the room.')
+        return redirect('chat_room', room_name=room_name)
         
     except Room.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'Room not found.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': 'Room not found.'})
+        messages.error(request, 'Room not found.')
+        return redirect('chat_index')
     except User.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'User not found.'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': 'User not found.'})
+        messages.error(request, 'User not found.')
+        return redirect('chat_room', room_name=room_name or 'chat_index')
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'An error occurred while banning the member: {str(e)}'
-        })
+        if is_ajax_req:
+            return JsonResponse({'success': False,'message': f'An error occurred while banning the member: {str(e)}'})
+        messages.error(request, 'An error occurred while banning the member.')
+        return redirect('chat_room', room_name=room_name or 'chat_index')
 
 
 @login_required
