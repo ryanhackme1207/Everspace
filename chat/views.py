@@ -1142,19 +1142,30 @@ def upload_profile_picture(request):
         return JsonResponse({'success': False, 'message': 'File size cannot exceed 5MB.'})
     
     try:
+        import os, time
+        from django.core.files.base import ContentFile
         # Delete old profile picture if exists
         if profile.profile_picture:
-            profile.profile_picture.delete()
-        
+            try:
+                profile.profile_picture.delete()
+            except Exception:
+                pass
+        # Build unique filename: userID_timestamp_originalext
+        base, ext = os.path.splitext(file.name)
+        if not ext:
+            ext = '.jpg'
+        unique_name = f"u{request.user.id}_{int(time.time())}{ext.lower()}"
         # Clear pixel avatar when uploading custom picture
         profile.pixel_avatar = ''
-        profile.profile_picture = file
-        profile.save()
-        
+        profile.profile_picture.save(unique_name, file, save=True)
+        profile.refresh_from_db()
+        img_url = profile.get_profile_picture_url()
+        # Append cache buster
+        img_url_versioned = f"{img_url}?v={int(time.time())}"
         return JsonResponse({
-            'success': True, 
+            'success': True,
             'message': 'Profile picture updated successfully!',
-            'image_url': profile.get_profile_picture_url()
+            'image_url': img_url_versioned
         })
         
     except Exception as e:
@@ -1182,17 +1193,24 @@ def upload_cover_image(request):
         return JsonResponse({'success': False, 'message': 'File size cannot exceed 10MB.'})
     
     try:
-        # Delete old cover image if exists
+        import os, time
         if profile.cover_image:
-            profile.cover_image.delete()
-        
-        profile.cover_image = file
-        profile.save()
-        
+            try:
+                profile.cover_image.delete()
+            except Exception:
+                pass
+        base, ext = os.path.splitext(file.name)
+        if not ext:
+            ext = '.jpg'
+        unique_name = f"c{request.user.id}_{int(time.time())}{ext.lower()}"
+        profile.cover_image.save(unique_name, file, save=True)
+        profile.refresh_from_db()
+        img_url = profile.get_cover_image_url()
+        img_url_versioned = f"{img_url}?v={int(time.time())}"
         return JsonResponse({
-            'success': True, 
+            'success': True,
             'message': 'Cover image updated successfully!',
-            'image_url': profile.get_cover_image_url()
+            'image_url': img_url_versioned
         })
         
     except Exception as e:
