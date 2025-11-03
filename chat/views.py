@@ -17,6 +17,7 @@ from asgiref.sync import async_to_sync
 from functools import wraps
 import os
 import json
+from django.conf import settings
 
 # Temporary diagnostic middleware (can be moved to separate file later)
 class KickBanDiagnosticMiddleware:
@@ -1144,6 +1145,7 @@ def upload_profile_picture(request):
     try:
         import os, time
         from django.core.files.storage import default_storage
+        from urllib.parse import urljoin
         # Delete old profile picture if exists
         if profile.profile_picture:
             try:
@@ -1155,19 +1157,24 @@ def upload_profile_picture(request):
             ext = '.jpg'
         unique_name = f"u{request.user.id}_{int(time.time())}{ext.lower()}"
         relative_path = f"profile_pictures/{unique_name}"
+        full_dir = os.path.join(settings.MEDIA_ROOT, 'profile_pictures')
+        os.makedirs(full_dir, exist_ok=True)
         # Clear pixel avatar when uploading custom picture
         profile.pixel_avatar = ''
         # Save via storage explicitly to ensure directory creation
         saved_path = default_storage.save(relative_path, file)
         profile.profile_picture.name = saved_path
         profile.save()
-        full_path = os.path.join(MEDIA_ROOT := str((__import__('django.conf').conf.settings.MEDIA_ROOT)), saved_path.replace('/', os.sep))
+        full_path = os.path.join(settings.MEDIA_ROOT, saved_path.replace('/', os.sep))
         exists = os.path.exists(full_path)
         if not exists:
             return JsonResponse({'success': False, 'message': 'File save failed on server (not found after write).'} , status=500)
         img_url = profile.get_profile_picture_url()
-        img_url_versioned = f"{img_url}?v={int(time.time())}"
-        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists})
+        # Build absolute URL
+        absolute_url = urljoin(request.build_absolute_uri('/'), img_url.lstrip('/'))
+        img_url_versioned = f"{absolute_url}?v={int(time.time())}"
+        print(f"[UPLOAD PROFILE] Saved {full_path} exists={exists} url={img_url_versioned}")
+        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
@@ -1196,6 +1203,7 @@ def upload_cover_image(request):
     try:
         import os, time
         from django.core.files.storage import default_storage
+        from urllib.parse import urljoin
         if profile.cover_image:
             try:
                 profile.cover_image.delete()
@@ -1206,16 +1214,20 @@ def upload_cover_image(request):
             ext = '.jpg'
         unique_name = f"c{request.user.id}_{int(time.time())}{ext.lower()}"
         relative_path = f"cover_images/{unique_name}"
+        full_dir = os.path.join(settings.MEDIA_ROOT, 'cover_images')
+        os.makedirs(full_dir, exist_ok=True)
         saved_path = default_storage.save(relative_path, file)
         profile.cover_image.name = saved_path
         profile.save()
-        full_path = os.path.join(MEDIA_ROOT := str((__import__('django.conf').conf.settings.MEDIA_ROOT)), saved_path.replace('/', os.sep))
+        full_path = os.path.join(settings.MEDIA_ROOT, saved_path.replace('/', os.sep))
         exists = os.path.exists(full_path)
         if not exists:
             return JsonResponse({'success': False, 'message': 'File save failed on server (not found after write).'}, status=500)
         img_url = profile.get_cover_image_url()
-        img_url_versioned = f"{img_url}?v={int(time.time())}"
-        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists})
+        absolute_url = urljoin(request.build_absolute_uri('/'), img_url.lstrip('/'))
+        img_url_versioned = f"{absolute_url}?v={int(time.time())}"
+        print(f"[UPLOAD COVER] Saved {full_path} exists={exists} url={img_url_versioned}")
+        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
