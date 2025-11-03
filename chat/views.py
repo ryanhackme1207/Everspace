@@ -1143,30 +1143,31 @@ def upload_profile_picture(request):
     
     try:
         import os, time
-        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
         # Delete old profile picture if exists
         if profile.profile_picture:
             try:
                 profile.profile_picture.delete()
             except Exception:
                 pass
-        # Build unique filename: userID_timestamp_originalext
         base, ext = os.path.splitext(file.name)
         if not ext:
             ext = '.jpg'
         unique_name = f"u{request.user.id}_{int(time.time())}{ext.lower()}"
+        relative_path = f"profile_pictures/{unique_name}"
         # Clear pixel avatar when uploading custom picture
         profile.pixel_avatar = ''
-        profile.profile_picture.save(unique_name, file, save=True)
-        profile.refresh_from_db()
+        # Save via storage explicitly to ensure directory creation
+        saved_path = default_storage.save(relative_path, file)
+        profile.profile_picture.name = saved_path
+        profile.save()
+        full_path = os.path.join(MEDIA_ROOT := str((__import__('django.conf').conf.settings.MEDIA_ROOT)), saved_path.replace('/', os.sep))
+        exists = os.path.exists(full_path)
+        if not exists:
+            return JsonResponse({'success': False, 'message': 'File save failed on server (not found after write).'} , status=500)
         img_url = profile.get_profile_picture_url()
-        # Append cache buster
         img_url_versioned = f"{img_url}?v={int(time.time())}"
-        return JsonResponse({
-            'success': True,
-            'message': 'Profile picture updated successfully!',
-            'image_url': img_url_versioned
-        })
+        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
@@ -1194,6 +1195,7 @@ def upload_cover_image(request):
     
     try:
         import os, time
+        from django.core.files.storage import default_storage
         if profile.cover_image:
             try:
                 profile.cover_image.delete()
@@ -1203,15 +1205,17 @@ def upload_cover_image(request):
         if not ext:
             ext = '.jpg'
         unique_name = f"c{request.user.id}_{int(time.time())}{ext.lower()}"
-        profile.cover_image.save(unique_name, file, save=True)
-        profile.refresh_from_db()
+        relative_path = f"cover_images/{unique_name}"
+        saved_path = default_storage.save(relative_path, file)
+        profile.cover_image.name = saved_path
+        profile.save()
+        full_path = os.path.join(MEDIA_ROOT := str((__import__('django.conf').conf.settings.MEDIA_ROOT)), saved_path.replace('/', os.sep))
+        exists = os.path.exists(full_path)
+        if not exists:
+            return JsonResponse({'success': False, 'message': 'File save failed on server (not found after write).'}, status=500)
         img_url = profile.get_cover_image_url()
         img_url_versioned = f"{img_url}?v={int(time.time())}"
-        return JsonResponse({
-            'success': True,
-            'message': 'Cover image updated successfully!',
-            'image_url': img_url_versioned
-        })
+        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
