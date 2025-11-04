@@ -44,7 +44,9 @@ echo "[startup] Applying migrations..."
 python manage.py migrate --noinput || { echo "[startup][ERROR] migrate failed"; exit 1; }
 
 echo "[startup] Collecting static files..."
-python manage.py collectstatic --noinput || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
+# Use verbose output to debug collection
+python manage.py collectstatic --noinput --verbose 2 || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
+echo "[startup] Static files collected successfully"
 
 # Optional: create superuser only if flagged
 if [ "${CREATE_DEFAULT_SUPERUSER:-false}" = "true" ]; then

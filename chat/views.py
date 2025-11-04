@@ -1522,9 +1522,9 @@ def gif_search(request):
 
     results = []
     try:
-        resp = requests.get(endpoint, params=params, timeout=6)
+        resp = requests.get(endpoint, params=params, timeout=8)
         if not resp.ok:
-            return JsonResponse({'results': [], 'error': f'Upstream error ({resp.status_code})'}, status=502)
+            return JsonResponse({'results': [], 'error': f'Tenor error ({resp.status_code})'}, status=200)
         data = resp.json()
         for item in data.get('results', []):
             media = item.get('media_formats', {})
@@ -1535,10 +1535,12 @@ def gif_search(request):
                     'url': url,
                     'desc': (item.get('content_description') or '')[:140]
                 })
+    except requests.Timeout:
+        return JsonResponse({'results': [], 'error': 'GIF request timed out (try again)'}, status=200)
     except requests.RequestException as e:
-        return JsonResponse({'results': [], 'error': f'Network error: {e.__class__.__name__}'}, status=503)
+        return JsonResponse({'results': [], 'error': f'Network error: {e.__class__.__name__}'}, status=200)
     except Exception as e:
-        return JsonResponse({'results': [], 'error': f'Unexpected error: {str(e)}'}, status=500)
+        return JsonResponse({'results': [], 'error': f'Error: {str(e)}'}, status=200)
 
     return JsonResponse({'results': results})
 
