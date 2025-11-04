@@ -197,7 +197,6 @@ def room(request, room_name):
         'is_room_host': room_obj.is_host(request.user),
         'online_members': online_members,
         'online_count': online_members.count(),
-        'tenor_api_key': settings.TENOR_API_KEY,
     })
 
 @login_required
