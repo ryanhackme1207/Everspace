@@ -1089,25 +1089,30 @@
                         Send
                     </button>
                 </div>
-            </div>
-            
-            <!-- Emoji Picker -->
-            <div id="emoji-picker" class="emoji-picker" style="display: none;">
-                <div class="emoji-picker-header">
-                    <span>Select Emoji</span>
-                    <button class="emoji-close" id="emoji-close">&times;</button>
+
+                <!-- Emoji Picker (moved inside input-container for correct positioning) -->
+                <div id="emoji-picker" class="emoji-picker" style="display: none;">
+                    <div class="emoji-picker-header">
+                        <span>Select Emoji</span>
+                        <button class="emoji-close" id="emoji-close">&times;</button>
+                    </div>
+                    <!-- Recently used row -->
+                    <div id="recent-emojis" style="display:none; padding:0.4rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.75rem; color:var(--text-secondary);">
+                        <strong style="font-size:0.65rem; letter-spacing:0.5px; opacity:0.7;">RECENT</strong>
+                        <div id="recent-emoji-grid" style="display:grid; grid-template-columns:repeat(8,1fr); gap:0.25rem; margin-top:0.3rem;"></div>
+                    </div>
+                    <div class="emoji-grid" id="emoji-grid"></div>
                 </div>
-                <div class="emoji-grid" id="emoji-grid"></div>
-            </div>
-            
-            <!-- GIF Picker -->
-            <div id="gif-picker" class="gif-picker" style="display: none;">
-                <div class="gif-picker-header">
-                    <input type="text" id="gif-search" class="gif-search" placeholder="Search GIFs...">
-                    <button class="gif-close" id="gif-close">&times;</button>
-                </div>
-                <div class="gif-grid" id="gif-grid">
-                    <div class="gif-loading">Search for GIFs above! 🎬</div>
+
+                <!-- GIF Picker (moved inside input-container for correct positioning) -->
+                <div id="gif-picker" class="gif-picker" style="display: none;">
+                    <div class="gif-picker-header">
+                        <input type="text" id="gif-search" class="gif-search" placeholder="Search GIFs...">
+                        <button class="gif-close" id="gif-close">&times;</button>
+                    </div>
+                    <div class="gif-grid" id="gif-grid">
+                        <div class="gif-loading">Search for GIFs above! 🎬</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1656,7 +1661,8 @@
             contextMenu = document.createElement('div');
             contextMenu.className = 'user-context-menu';
             
-            const isHost = {{ is_room_host|yesno:"true,false" }};
+            // Safe boolean evaluation from Django template
+            const isHost = "{{ is_room_host|yesno:'true,false' }}" === 'true';
             console.log('User is host:', isHost);
             
             let menuItems = `
@@ -2039,6 +2045,59 @@
                 '🚒', '🚐', '🚚', '🚛', '🚜', '🛵', '🏍️', '🛺'
             ];
 
+            // ==== Recent Emojis Support ====
+            const recentWrapper = document.getElementById('recent-emojis');
+            const recentGrid = document.getElementById('recent-emoji-grid');
+            const RECENT_LIMIT = 8;
+
+            function loadRecentEmojis() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem('recent_emojis') || '[]');
+                    return Array.isArray(stored) ? stored.slice(0, RECENT_LIMIT) : [];
+                } catch { return []; }
+            }
+
+            function saveRecentEmojis(list) {
+                localStorage.setItem('recent_emojis', JSON.stringify(list.slice(0, RECENT_LIMIT)));
+            }
+
+            function renderRecentEmojis() {
+                const recent = loadRecentEmojis();
+                if (!recent.length) {
+                    recentWrapper.style.display = 'none';
+                    return;
+                }
+                recentWrapper.style.display = 'block';
+                recentGrid.innerHTML = '';
+                recent.forEach(e => {
+                    const el = document.createElement('div');
+                    el.className = 'emoji-item';
+                    el.textContent = e;
+                    el.addEventListener('click', () => insertEmoji(e));
+                    recentGrid.appendChild(el);
+                });
+            }
+
+            function addRecentEmoji(emoji) {
+                let recent = loadRecentEmojis().filter(e => e !== emoji);
+                recent.unshift(emoji); // add to front
+                saveRecentEmojis(recent);
+                renderRecentEmojis();
+            }
+
+            // ==== Emoji Insertion with Caret Preservation ====
+            function insertEmoji(emoji) {
+                const start = msgInput.selectionStart;
+                const end = msgInput.selectionEnd;
+                const before = msgInput.value.slice(0, start);
+                const after = msgInput.value.slice(end);
+                msgInput.value = before + emoji + after;
+                const newPos = start + emoji.length;
+                msgInput.selectionStart = msgInput.selectionEnd = newPos;
+                msgInput.focus();
+                addRecentEmoji(emoji);
+            }
+
             // Load emojis into grid
             console.log(`Loading ${emojis.length} emojis into grid...`);
             emojis.forEach(emoji => {
@@ -2047,14 +2106,14 @@
                 emojiItem.textContent = emoji;
                 emojiItem.addEventListener('click', () => {
                     console.log('Emoji clicked:', emoji);
-                    msgInput.value += emoji;
-                    msgInput.focus();
+                    insertEmoji(emoji);
                     emojiPicker.style.display = 'none';
                     emojiBtn.classList.remove('active');
                 });
                 emojiGrid.appendChild(emojiItem);
             });
-            console.log('Emoji grid populated!');
+            renderRecentEmojis();
+            console.log('Emoji grid populated (with recent support)!');
 
             // Toggle emoji picker
             console.log('Setting up emoji button click handler...');
