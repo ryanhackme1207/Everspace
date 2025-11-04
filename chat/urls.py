@@ -31,4 +31,7 @@ urlpatterns = [
     path('chat/notifications/list/', views.notification_list, name='notification_list'),
     path('chat/notifications/mark-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
     path('chat/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    # Gift System URLs
+    path('chat/gifts/send/', views.send_gift, name='send_gift'),
+    path('chat/gifts/list/', views.get_gifts, name='get_gifts'),
 ]

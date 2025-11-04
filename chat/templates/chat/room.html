@@ -672,13 +672,13 @@
             transform: scale(1.3);
         }
 
-        /* GIF Picker */
-        .gif-picker {
+        /* Gift Picker */
+        .gift-picker {
             position: absolute;
             bottom: 100%;
             left: 1rem;
             width: 450px;
-            max-height: 500px;
+            max-height: 550px;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
@@ -686,19 +686,128 @@
             overflow: hidden;
             z-index: 1000;
             animation: slideUp 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
-        .gif-picker-header {
+        .gift-picker-header {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
             padding: 0.75rem 1rem;
             background: var(--darker-card);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .gif-search {
+        .gift-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .gift-close:hover {
+            color: var(--accent-teal);
+        }
+
+        .gift-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+
+        .gift-tab {
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .gift-tab:hover {
+            border-color: var(--accent-teal);
+            color: var(--accent-teal);
+        }
+
+        .gift-tab.active {
+            background: var(--accent-teal);
+            border-color: var(--accent-teal);
+            color: var(--darker-card);
+        }
+
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            padding: 0.75rem;
+            overflow-y: auto;
             flex: 1;
+        }
+
+        .gift-item {
+            position: relative;
+            cursor: pointer;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .gift-item:hover {
+            transform: scale(1.08);
+            background: rgba(78, 205, 196, 0.15);
+            border-color: var(--accent-teal);
+        }
+
+        .gift-item-emoji {
+            font-size: 2rem;
+        }
+
+        .gift-item-name {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .gift-item.common { --rarity-color: #95a5a6; }
+        .gift-item.rare { --rarity-color: #3498db; }
+        .gift-item.epic { --rarity-color: #9b59b6; }
+        .gift-item.legendary { --rarity-color: #f39c12; }
+
+        .gift-item.common:hover { border-color: #95a5a6; }
+        .gift-item.rare:hover { border-color: #3498db; }
+        .gift-item.epic:hover { border-color: #9b59b6; }
+        .gift-item.legendary:hover { border-color: #f39c12; }
+
+        .gift-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            grid-column: 1 / -1;
+        }
+
+        .gift-message-input {
+            width: 100%;
             background: var(--input-bg);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--text-primary);
@@ -706,47 +815,30 @@
             border-radius: var(--border-radius-sm);
             outline: none;
             transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
         }
 
-        .gif-search:focus {
+        .gift-message-input:focus {
             border-color: var(--accent-teal);
             box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
         }
 
-        .gif-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            padding: 0.5rem;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .gif-item {
-            position: relative;
-            cursor: pointer;
+        .confirm-gift-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-teal), #00b894);
+            border: none;
+            color: var(--darker-card);
+            padding: 0.6rem 1rem;
             border-radius: var(--border-radius-sm);
-            overflow: hidden;
-            aspect-ratio: 1;
+            cursor: pointer;
+            font-weight: 600;
             transition: all 0.2s;
         }
 
-        .gif-item:hover {
-            transform: scale(1.05);
+        .confirm-gift-btn:hover {
+            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
-        }
-
-        .gif-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gif-loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-            font-size: 1.1rem;
         }
 
         @keyframes slideUp {
@@ -760,26 +852,31 @@
             }
         }
 
-        /* Message with GIF */
-        .message-gif {
-            max-width: 300px;
-            border-radius: var(--border-radius-md);
-            overflow: hidden;
+        /* Message with Gift */
+        .message-gift {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 3px solid var(--accent-teal);
+            padding: 0.75rem;
+            border-radius: var(--border-radius-sm);
             margin-top: 0.5rem;
         }
 
-        .message-gif img {
-            width: 100%;
-            height: auto;
-            display: block;
+        .gift-received-animation {
+            animation: giftPop 0.5s ease-out;
         }
 
-        /* GIF Loading State */
-        .gif-loading {
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+        @keyframes giftPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-20deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0);
+            }
         }
 
         /* Scrollbar Styling */
@@ -1082,8 +1179,8 @@
                     <button type="button" class="toolbar-btn" id="emoji-btn" title="Insert Emoji">
                         <i class="far fa-smile"></i>
                     </button>
-                    <button type="button" class="toolbar-btn" id="gif-btn" title="Send GIF">
-                        <i class="fas fa-images"></i>
+                    <button type="button" class="toolbar-btn" id="gift-btn" title="Send Gift">
+                        <i class="fas fa-gift"></i>
                     </button>
                 </div>
                 <div class="input-form">
@@ -1110,14 +1207,25 @@
                     <div class="emoji-grid" id="emoji-grid"></div>
                 </div>
 
-                <!-- GIF Picker (moved inside input-container for correct positioning) -->
-                <div id="gif-picker" class="gif-picker" style="display: none;">
-                    <div class="gif-picker-header">
-                        <input type="text" id="gif-search" class="gif-search" placeholder="Search GIFs...">
-                        <button class="gif-close" id="gif-close">&times;</button>
+                <!-- Gift Picker (moved inside input-container for correct positioning) -->
+                <div id="gift-picker" class="gift-picker" style="display: none;">
+                    <div class="gift-picker-header">
+                        <span>Select a Gift</span>
+                        <button class="gift-close" id="gift-close">&times;</button>
                     </div>
-                    <div class="gif-grid" id="gif-grid">
-                        <div class="gif-loading">Loading trending GIFs... ⏳</div>
+                    <div class="gift-tabs">
+                        <button class="gift-tab active" data-rarity="all">All</button>
+                        <button class="gift-tab" data-rarity="common">Common</button>
+                        <button class="gift-tab" data-rarity="rare">Rare</button>
+                        <button class="gift-tab" data-rarity="epic">Epic</button>
+                        <button class="gift-tab" data-rarity="legendary">Legendary</button>
+                    </div>
+                    <div class="gift-grid" id="gift-grid">
+                        <div class="gift-loading">Loading gifts... ⏳</div>
+                    </div>
+                    <div id="gift-message-input-container" style="display: none; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <input type="text" id="gift-message" class="gift-message-input" placeholder="Add a message with your gift (optional)" maxlength="200">
+                        <button id="confirm-gift-btn" class="confirm-gift-btn">Send Gift</button>
                     </div>
                 </div>
             </div>
@@ -1976,40 +2084,24 @@
         
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing emoji/GIF pickers...');
-            initializeEmojiAndGifPickers();
+            initializeEmojiAndGiftPickers();
         });
 
-        function initializeEmojiAndGifPickers() {
-            console.log('=== Starting emoji/GIF initialization ===');
+        function initializeEmojiAndGiftPickers() {
             
             const emojiBtn = document.getElementById('emoji-btn');
-            const gifBtn = document.getElementById('gif-btn');
+            const giftBtn = document.getElementById('gift-btn');
             const emojiPicker = document.getElementById('emoji-picker');
-            const gifPicker = document.getElementById('gif-picker');
+            const giftPicker = document.getElementById('gift-picker');
             const emojiGrid = document.getElementById('emoji-grid');
-            const gifGrid = document.getElementById('gif-grid');
-            const gifSearch = document.getElementById('gif-search');
             const emojiClose = document.getElementById('emoji-close');
-            const gifClose = document.getElementById('gif-close');
+            const giftClose = document.getElementById('gift-close');
             const msgInput = document.getElementById('message-input');
 
-            console.log('Elements found:', {
-                emojiBtn: !!emojiBtn,
-                gifBtn: !!gifBtn,
-                emojiPicker: !!emojiPicker,
-                gifPicker: !!gifPicker,
-                emojiGrid: !!emojiGrid,
-                gifGrid: !!gifGrid,
-                msgInput: !!msgInput
-            });
-
-            if (!emojiBtn || !gifBtn || !emojiPicker || !gifPicker || !msgInput) {
+            if (!emojiBtn || !giftBtn || !emojiPicker || !giftPicker || !msgInput) {
                 console.error('Missing required elements!');
                 return;
             }
-
-            console.log('All elements found! Building emoji grid...');
 
             // Popular emojis - comprehensive list
             const emojis = [
@@ -2146,38 +2238,34 @@
                     positionEmojiPicker();
                     emojiPicker.style.display = 'block';
                     emojiBtn.classList.add('active');
-                    // Close GIF if open
-                    gifPicker.style.display = 'none';
-                    gifBtn.classList.remove('active');
+                    // Close Gift if open
+                    giftPicker.style.display = 'none';
+                    giftBtn.classList.remove('active');
                 }
-                console.log('Emoji picker display:', emojiPicker.style.display, 'position attr:', emojiPicker.getAttribute('data-position'));
             });
 
-            // Toggle GIF picker
-            console.log('Setting up GIF button click handler...');
-            gifBtn.addEventListener('click', (e) => {
-                console.log('GIF button clicked!');
+            // Toggle Gift picker
+            giftBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isVisible = gifPicker.style.display === 'block';
-                gifPicker.style.display = isVisible ? 'none' : 'block';
+                const isVisible = giftPicker.style.display === 'block';
+                if (!isVisible) {
+                    loadGifts();
+                }
+                giftPicker.style.display = isVisible ? 'none' : 'block';
                 emojiPicker.style.display = 'none';
-                gifBtn.classList.toggle('active');
+                giftBtn.classList.toggle('active');
                 emojiBtn.classList.remove('active');
-                console.log('GIF picker display:', gifPicker.style.display);
             });
 
             // Close buttons
-            console.log('Setting up close button handlers...');
             emojiClose.addEventListener('click', () => {
-                console.log('Emoji close clicked');
                 emojiPicker.style.display = 'none';
                 emojiBtn.classList.remove('active');
             });
 
-            gifClose.addEventListener('click', () => {
-                console.log('GIF close clicked');
-                gifPicker.style.display = 'none';
-                gifBtn.classList.remove('active');
+            giftClose.addEventListener('click', () => {
+                giftPicker.style.display = 'none';
+                giftBtn.classList.remove('active');
             });
 
             // Close pickers when clicking outside
@@ -2186,98 +2274,127 @@
                     emojiPicker.style.display = 'none';
                     emojiBtn.classList.remove('active');
                 }
-                if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
-                    gifPicker.style.display = 'none';
-                    gifBtn.classList.remove('active');
+                if (!giftPicker.contains(e.target) && e.target !== giftBtn) {
+                    giftPicker.style.display = 'none';
+                    giftBtn.classList.remove('active');
                 }
             });
 
-            // GIF Search (using Tenor API - free, no key required)
-            let gifSearchTimeout;
-            gifSearch.addEventListener('input', (e) => {
-                clearTimeout(gifSearchTimeout);
-                const query = e.target.value.trim();
-                
-                if (query.length < 2) {
-                    gifGrid.innerHTML = '<div class="gif-loading">Type to search GIFs... 🎬</div>';
-                    return;
-                }
-
-                gifSearchTimeout = setTimeout(() => {
-                    searchGifs(query);
-                }, 500);
-            });
-
-            async function searchGifs(query) {
-                const searching = query && query.length >= 2;
-                gifGrid.innerHTML = `<div class="gif-loading">${searching ? 'Searching... 🔍' : 'Loading trending GIFs... ⏳'}</div>`;
+            // ========== GIFT SYSTEM ==========
+            let selectedGift = null;
+            const giftTabs = document.querySelectorAll('.gift-tab');
+            const giftGrid = document.getElementById('gift-grid');
+            const giftsData = {};
+            
+            // Load gifts from server
+            async function loadGifts() {
                 try {
-                    const url = searching ? `/gif/search/?q=${encodeURIComponent(query)}` : '/gif/search/';
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Request failed');
+                    const response = await fetch('{% url "get_gifts" %}');
                     const data = await response.json();
-                    if (data.error && (!data.results || data.results.length === 0)) {
-                        gifGrid.innerHTML = `<div class="gif-loading">❌ ${data.error}</div>`;
-                        return;
+                    if (data.success) {
+                        Object.assign(giftsData, data.gifts);
+                        displayGifts('all');
                     }
-                    displayGifs(data.results, searching);
                 } catch (err) {
-                    console.error('GIF search error:', err);
-                    gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
+                    console.error('Error loading gifts:', err);
+                    giftGrid.innerHTML = '<div class="gift-loading">Error loading gifts</div>';
                 }
             }
 
-            function displayGifs(gifs, isSearch) {
-                if (!gifs || gifs.length === 0) {
-                    gifGrid.innerHTML = `<div class="gif-loading">${isSearch ? 'No GIFs found 😕' : 'No trending GIFs available.'}</div>`;
-                    return;
+            // Display gifts based on rarity filter
+            function displayGifts(rarity) {
+                giftGrid.innerHTML = '';
+                let giftsList = [];
+                
+                if (rarity === 'all') {
+                    giftsList = [
+                        ...giftsData.common,
+                        ...giftsData.rare,
+                        ...giftsData.epic,
+                        ...giftsData.legendary
+                    ];
+                } else {
+                    giftsList = giftsData[rarity] || [];
                 }
-                gifGrid.innerHTML = '';
-                gifs.forEach(gif => {
-                    const gifItem = document.createElement('div');
-                    gifItem.className = 'gif-item';
-                    const img = document.createElement('img');
-                    // Support both original Tenor object structure and simplified proxy structure
-                    const directUrl = gif.url;
-                    let previewUrl = directUrl;
-                    let fullUrl = directUrl;
-                    let altText = gif.desc || gif.content_description || 'GIF';
-                    if (gif.media_formats) {
-                        const tiny = gif.media_formats.tinygif || gif.media_formats.gif || {};
-                        previewUrl = tiny.url || previewUrl;
-                        const full = gif.media_formats.gif || tiny || {};
-                        fullUrl = full.url || previewUrl;
-                        altText = gif.content_description || altText;
-                    }
-                    img.src = previewUrl;
-                    img.alt = altText;
-                    gifItem.appendChild(img);
-                    gifItem.addEventListener('click', () => {
-                        sendGif(fullUrl, altText);
-                    });
-                    gifGrid.appendChild(gifItem);
+
+                giftsList.forEach(gift => {
+                    const giftItem = document.createElement('div');
+                    giftItem.className = `gift-item ${gift.rarity}`;
+                    giftItem.innerHTML = `
+                        <div class="gift-item-emoji">${gift.emoji}</div>
+                        <div class="gift-item-name">${gift.name}</div>
+                    `;
+                    giftItem.addEventListener('click', () => selectGift(gift));
+                    giftGrid.appendChild(giftItem);
                 });
             }
 
-            function sendGif(gifUrl, description) {
-                const gifMessage = `[GIF]${gifUrl}[/GIF]`;
-                chatSocket.send(JSON.stringify({
-                    'message': gifMessage,
-                    'username': currentUsername
-                }));
-                
-                gifPicker.style.display = 'none';
-                gifBtn.classList.remove('active');
-                gifSearch.value = '';
-                gifGrid.innerHTML = '<div class="gif-loading">Loading trending GIFs... ⏳</div>';
-                // Reload trending after send
-                setTimeout(() => searchGifs(''), 200);
-            }
-            // Load initial trending GIFs
-            searchGifs('');
-        } // End initializeEmojiAndGifPickers
+            // Handle gift tab clicks
+            giftTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    giftTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    displayGifts(tab.dataset.rarity);
+                });
+            });
 
-        // ========== END EMOJI & GIF SYSTEM ==========
+            // Select a gift to send
+            function selectGift(gift) {
+                selectedGift = gift;
+                document.getElementById('gift-message-input-container').style.display = 'block';
+                // Highlight selected gift
+                document.querySelectorAll('.gift-item').forEach(item => {
+                    item.style.borderColor = '';
+                    item.style.borderWidth = '1px';
+                });
+                event.target.closest('.gift-item').style.borderColor = 'var(--accent-teal)';
+                event.target.closest('.gift-item').style.borderWidth = '2px';
+            }
+
+            // Send selected gift
+            document.getElementById('confirm-gift-btn').addEventListener('click', async () => {
+                if (!selectedGift) return;
+
+                const recipientUsername = prompt('Send gift to (username):');
+                if (!recipientUsername) return;
+
+                const message = document.getElementById('gift-message').value;
+
+                try {
+                    const response = await fetch('{% url "send_gift" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            gift_id: selectedGift.id,
+                            recipient: recipientUsername,
+                            room: roomName,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(`Gift sent to ${recipientUsername}! 🎉`);
+                        giftPicker.style.display = 'none';
+                        giftBtn.classList.remove('active');
+                        document.getElementById('gift-message').value = '';
+                        document.getElementById('gift-message-input-container').style.display = 'none';
+                        selectedGift = null;
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (err) {
+                    console.error('Error sending gift:', err);
+                    alert('Error sending gift');
+                }
+            });
+
+        } // End initializeEmojiAndGiftPickers
+
+        // ========== END EMOJI & GIFT SYSTEM ==========
 
     </script>
 </body>

@@ -1601,3 +1601,125 @@ def mark_all_notifications_read(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+# ===== GIFT SYSTEM VIEWS =====
+
+@login_required
+@require_POST
+def send_gift(request):
+    """Send a gift to another user in a room"""
+    try:
+        data = json.loads(request.body)
+        gift_id = data.get('gift_id')
+        recipient_username = data.get('recipient')
+        room_name = data.get('room')
+        message = data.get('message', '')
+        
+        # Validate input
+        if not all([gift_id, recipient_username, room_name]):
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing required fields'
+            }, status=400)
+        
+        # Get objects
+        from .models import Gift, GiftTransaction
+        try:
+            gift = Gift.objects.get(id=gift_id)
+            recipient = User.objects.get(username=recipient_username)
+            room = Room.objects.get(name=room_name)
+        except (Gift.DoesNotExist, User.DoesNotExist, Room.DoesNotExist):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid gift, user, or room'
+            }, status=404)
+        
+        # Verify user is member of room
+        if not room.members.filter(user=request.user).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'You are not a member of this room'
+            }, status=403)
+        
+        # Verify recipient is member of room
+        if not room.members.filter(user=recipient).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Recipient is not a member of this room'
+            }, status=403)
+        
+        # Create gift transaction
+        transaction = GiftTransaction.objects.create(
+            gift=gift,
+            sender=request.user,
+            receiver=recipient,
+            room=room,
+            message=message[:200] if message else ''
+        )
+        
+        # Broadcast via WebSocket
+        channel_layer = get_channel_layer()
+        room_group_name = f'room_{room.name}'
+        
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'gift_received',
+                'gift_name': gift.name,
+                'gift_emoji': gift.emoji,
+                'gift_rarity': gift.rarity,
+                'sender': request.user.username,
+                'receiver': recipient.username,
+                'message': message,
+            }
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Gift sent to {recipient.username}!',
+            'transaction_id': transaction.id
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Error sending gift: {str(e)}'
+        }, status=500)
+
+
+@login_required
+def get_gifts(request):
+    """Get list of available gifts for sending"""
+    try:
+        from .models import Gift
+        gifts = Gift.objects.all().values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description')
+        
+        # Group by rarity
+        grouped = {
+            'common': [],
+            'rare': [],
+            'epic': [],
+            'legendary': []
+        }
+        
+        for gift in gifts:
+            rarity = gift['rarity']
+            if rarity in grouped:
+                grouped[rarity].append(gift)
+        
+        return JsonResponse({
+            'success': True,
+            'gifts': grouped
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
