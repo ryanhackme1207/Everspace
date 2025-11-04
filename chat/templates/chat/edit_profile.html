@@ -14,6 +14,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Premium Animated Covers CSS -->
+    <link rel="stylesheet" href="/static/chat/css/premium_covers.css">
+    
     <style>
         :root {
             /* Modern Ocean & Sunset Theme */
@@ -472,9 +475,9 @@
         <!-- Profile Cover Section -->
         <div class="profile-cover-section">
             {% if profile.cover_choice %}
-                <div class="dynamic-cover" id="cover-preview" style="background: {{ cover_gradient|default:'var(--primary-gradient)' }};"></div>
+                <div class="dynamic-cover {{ cover_css_class }}" id="cover-preview"></div>
             {% else %}
-                <img src="{{ profile.get_cover_image_url }}" alt="Cover Image" class="cover-image" id="cover-preview">
+                <div class="dynamic-cover cover-aurora-animated" id="cover-preview"></div>
             {% endif %}
             <div class="cover-select-overlay">
                 <a href="#cover-selection" class="choose-cover-btn">
@@ -620,8 +623,8 @@
                 <input type="hidden" name="cover_choice" id="cover-choice-input" value="{{ profile.cover_choice }}">
                 <div class="cover-choice-grid">
                     {% for c in cover_choices %}
-                        <div class="cover-choice-option {% if profile.cover_choice == c.id %}selected{% endif %}"
-                             style="background: {{ c.gradient }};" onclick="selectCover('{{ c.id }}')" data-id="{{ c.id }}">
+                        <div class="cover-choice-option {{ c.css_class }} {% if profile.cover_choice == c.id %}selected{% endif %}"
+                             onclick="selectCover('{{ c.id }}')" data-id="{{ c.id }}">
                             <div class="cover-choice-label">{{ c.label }}</div>
                         </div>
                     {% endfor %}

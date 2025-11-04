@@ -1,0 +1,327 @@
+/* Premium Animated Cover Styles for EverSpace Profiles */
+
+/* ===== ANIMATED COVER BACKGROUNDS ===== */
+
+/* Aurora Wave - Flowing Northern Lights */
+.cover-aurora-animated {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #7b2cbf 100%);
+    background-size: 400% 400%;
+    animation: aurora-flow 8s ease infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-aurora-animated::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: aurora-pulse 6s ease-in-out infinite;
+}
+
+@keyframes aurora-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes aurora-pulse {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    50% { transform: translate(20%, 20%) scale(1.2); opacity: 0.8; }
+}
+
+/* Cosmic Nebula - Deep Space */
+.cover-cosmic-animated {
+    background: linear-gradient(135deg, #662d8c 0%, #ed1e79 50%, #ff6b9d 100%);
+    background-size: 300% 300%;
+    animation: cosmic-drift 12s ease infinite;
+    position: relative;
+}
+
+.cover-cosmic-animated::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(147,51,234,0.2) 0%, transparent 40%),
+        radial-gradient(circle at 40% 20%, rgba(255,107,157,0.15) 0%, transparent 35%);
+    animation: cosmic-stars 10s linear infinite;
+}
+
+@keyframes cosmic-drift {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+}
+
+@keyframes cosmic-stars {
+    0%, 100% { opacity: 0.6; transform: rotate(0deg); }
+    50% { opacity: 1; transform: rotate(180deg); }
+}
+
+/* Neon Pulse - Vibrant Energy */
+.cover-neon-animated {
+    background: linear-gradient(135deg, #12c2e9 0%, #c471ed 50%, #f64f59 100%);
+    background-size: 200% 200%;
+    animation: neon-pulse 4s ease-in-out infinite;
+    position: relative;
+}
+
+.cover-neon-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.05) 10px,
+        rgba(255,255,255,0.05) 20px
+    );
+    animation: neon-scan 3s linear infinite;
+}
+
+@keyframes neon-pulse {
+    0%, 100% { background-position: 0% 50%; filter: brightness(1) saturate(1); }
+    50% { background-position: 100% 50%; filter: brightness(1.2) saturate(1.3); }
+}
+
+@keyframes neon-scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Cyberpunk Grid - Digital City */
+.cover-cyberpunk-animated {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #3d0066 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-cyberpunk-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,0,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: cyberpunk-grid 20s linear infinite;
+}
+
+.cover-cyberpunk-animated::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(255,0,255,0.1) 100%);
+    animation: cyberpunk-glow 3s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-grid {
+    0% { transform: translateY(0) translateX(0); }
+    100% { transform: translateY(50px) translateX(50px); }
+}
+
+@keyframes cyberpunk-glow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+/* Sunset Paradise - Warm Vibes */
+.cover-sunset-animated {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 30%, #ffdde1 60%, #feca57 100%);
+    background-size: 400% 400%;
+    animation: sunset-flow 15s ease infinite;
+    position: relative;
+}
+
+.cover-sunset-animated::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(0deg, rgba(255,154,158,0.3) 0%, transparent 100%);
+    animation: sunset-wave 8s ease-in-out infinite;
+}
+
+@keyframes sunset-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes sunset-wave {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(-10px); opacity: 0.9; }
+}
+
+/* Ocean Deep - Underwater */
+.cover-ocean-animated {
+    background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-ocean-animated::before,
+.cover-ocean-animated::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 40%);
+    animation: ocean-wave 10s ease-in-out infinite;
+}
+
+.cover-ocean-animated::after {
+    animation-delay: -5s;
+    opacity: 0.5;
+}
+
+@keyframes ocean-wave {
+    0%, 100% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    50% {
+        transform: translate(-40%, -40%) rotate(180deg);
+    }
+}
+
+/* Galaxy Storm - Spiral Cosmic */
+.cover-galaxy-animated {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-galaxy-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 30% 40%, rgba(147,51,234,0.3) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(59,130,246,0.25) 0%, transparent 50%);
+    animation: galaxy-rotate 20s linear infinite;
+}
+
+@keyframes galaxy-rotate {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(360deg) scale(1.1); }
+}
+
+/* Digital Matrix - Code Rain */
+.cover-matrix-animated {
+    background: linear-gradient(135deg, #000000 0%, #0a2e0a 50%, #001a00 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-matrix-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,255,0,0.03) 2px,
+        rgba(0,255,0,0.03) 4px
+    );
+    animation: matrix-scroll 10s linear infinite;
+}
+
+.cover-matrix-animated::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0,255,0,0.1) 0%, transparent 70%);
+    animation: matrix-pulse 2s ease-in-out infinite;
+}
+
+@keyframes matrix-scroll {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(50px); }
+}
+
+@keyframes matrix-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* Phoenix Fire - Flames */
+.cover-fire-animated {
+    background: linear-gradient(135deg, #ff0000 0%, #ff4500 30%, #ffa500 60%, #ffff00 100%);
+    background-size: 200% 200%;
+    animation: fire-flicker 3s ease-in-out infinite;
+    position: relative;
+}
+
+.cover-fire-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at bottom, rgba(255,100,0,0.4) 0%, transparent 60%);
+    animation: fire-rise 4s ease-in-out infinite;
+}
+
+@keyframes fire-flicker {
+    0%, 100% { background-position: 0% 0%; filter: brightness(1); }
+    25% { background-position: 50% 50%; filter: brightness(1.2); }
+    50% { background-position: 100% 100%; filter: brightness(0.9); }
+    75% { background-position: 50% 50%; filter: brightness(1.1); }
+}
+
+@keyframes fire-rise {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-20px) scale(1.1); opacity: 0.9; }
+}
+
+/* Crystal Dreams - Crystalline */
+.cover-crystal-animated {
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cover-crystal-animated::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%),
+        linear-gradient(-45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    background-size: 100px 100px;
+    animation: crystal-shine 8s linear infinite;
+}
+
+@keyframes crystal-shine {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 100px 100px, -100px 100px; }
+}
+
+/* ===== AVATAR ENHANCEMENTS ===== */
+
+.pixel-avatar-option img {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 0 8px rgba(0,255,255,0.3));
+    transition: all 0.3s ease;
+}
+
+.pixel-avatar-option:hover img {
+    filter: drop-shadow(0 0 15px rgba(0,255,255,0.6));
+    transform: scale(1.05);
+}
+
+.pixel-avatar-option.selected img {
+    filter: drop-shadow(0 0 20px rgba(255,107,107,0.8));
+    animation: avatar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes avatar-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
