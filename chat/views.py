@@ -1493,16 +1493,14 @@ def view_profile(request, username=None):
 # ===== GIF SEARCH PROXY (Tenor) =====
 @login_required
 def gif_search(request):
-    """Server-side GIF search / trending using Tenor API (v2) or fallback.
+    """Server-side GIF search / trending using Tenor API (v1).
     If ?q is missing or shorter than 2 chars, return trending GIFs.
     Response shape simplified for frontend: {results:[{url, desc}]}.
-    Fallback: Return empty results if API key not set or API fails.
     """
     query = request.GET.get('q', '').strip()
     api_key = getattr(settings, 'TENOR_API_KEY', '')
 
     if not api_key:
-        # Return friendly message when API key not set
         return JsonResponse({
             'results': [],
             'error': 'GIF search requires TENOR_API_KEY to be configured'
@@ -1510,14 +1508,14 @@ def gif_search(request):
 
     # Decide endpoint: trending if no meaningful query
     if len(query) < 2:
-        endpoint = 'https://tenor.googleapis.com/v2/trending'
+        endpoint = 'https://api.tenor.com/v1/trending'
         params = {
             'key': api_key,
             'limit': 21,
             'media_filter': 'tinygif,gif'
         }
     else:
-        endpoint = 'https://tenor.googleapis.com/v2/search'
+        endpoint = 'https://api.tenor.com/v1/search'
         params = {
             'key': api_key,
             'q': query,
@@ -1533,12 +1531,12 @@ def gif_search(request):
         if resp.status_code == 401:
             return JsonResponse({
                 'results': [],
-                'error': 'Invalid API key - check TENOR_API_KEY setting'
+                'error': 'Invalid Tenor API key - check configuration'
             }, status=200)
         elif resp.status_code == 404:
             return JsonResponse({
                 'results': [],
-                'error': 'Tenor API endpoint not found - check configuration'
+                'error': 'Tenor API not available - check your key'
             }, status=200)
         elif not resp.ok:
             return JsonResponse({
@@ -1549,12 +1547,13 @@ def gif_search(request):
         data = resp.json()
         for item in data.get('results', []):
             media = item.get('media_formats', {})
-            chosen = media.get('tinygif') or media.get('gif') or {}
+            # Try tinygif first, then gif, then webm
+            chosen = media.get('tinygif') or media.get('gif') or media.get('webm') or {}
             url = chosen.get('url')
             if url:
                 results.append({
                     'url': url,
-                    'desc': (item.get('content_description') or '')[:140]
+                    'desc': (item.get('title') or item.get('content_description') or '')[:140]
                 })
     except requests.Timeout:
         return JsonResponse({
@@ -1567,7 +1566,6 @@ def gif_search(request):
             'error': f'Network error ({e.__class__.__name__})'
         }, status=200)
     except ValueError:
-        # JSON decode error
         return JsonResponse({
             'results': [],
             'error': 'Invalid response from API'
