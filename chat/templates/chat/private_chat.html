@@ -520,6 +520,25 @@
             }
             return cookieValue;
         }
+
+        // Mark all messages from this friend as read when viewing chat
+        function markMessagesAsRead() {
+            fetch('{% url "mark_all_notifications_read" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(() => {
+                console.log('Messages marked as read');
+            })
+            .catch(error => {
+                console.error('Error marking messages as read:', error);
+            });
+        }
+
+        // Mark messages as read when page loads
+        window.addEventListener('load', markMessagesAsRead);
     </script>
 </body>
 </html>

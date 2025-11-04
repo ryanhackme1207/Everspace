@@ -982,8 +982,11 @@ def private_chat(request, username):
 @require_POST
 def send_private_message(request):
     """Send a private message to a friend"""
-    username = request.POST.get('username', '').strip()
+    # Accept both 'username' and 'receiver_username' for compatibility
+    username = request.POST.get('username', '').strip() or request.POST.get('receiver_username', '').strip()
     content = request.POST.get('content', '').strip()
+    
+    print(f"[PRIVATE MSG DEBUG] Sender: {request.user.username}, Receiver: {username}, Content length: {len(content)}")
     
     if not username or not content:
         return JsonResponse({
@@ -995,10 +998,20 @@ def send_private_message(request):
         receiver = get_object_or_404(User, username=username)
         
         # Check if users are friends
-        if not Friendship.are_friends(request.user, receiver):
+        are_friends = Friendship.are_friends(request.user, receiver)
+        print(f"[PRIVATE MSG DEBUG] Are friends check: {are_friends}")
+        
+        # Debug: Show friendship status
+        friendship = Friendship.get_friendship(request.user, receiver)
+        if friendship:
+            print(f"[PRIVATE MSG DEBUG] Friendship exists: sender={friendship.sender.username}, receiver={friendship.receiver.username}, status={friendship.status}")
+        else:
+            print(f"[PRIVATE MSG DEBUG] No friendship record found between {request.user.username} and {username}")
+        
+        if not are_friends:
             return JsonResponse({
                 'success': False,
-                'message': 'You can only send messages to friends.'
+                'message': 'You can only send messages to friends. Make sure the friend request is accepted.'
             })
         
         # Create private message
@@ -1007,6 +1020,28 @@ def send_private_message(request):
             receiver=receiver,
             content=content
         )
+        
+        print(f"[PRIVATE MSG DEBUG] Message created successfully: ID={message.id}")
+        
+        # Send real-time notification via WebSocket
+        try:
+            channel_layer = get_channel_layer()
+            notification_group = f'notifications_{receiver.username}'
+            
+            async_to_sync(channel_layer.group_send)(
+                notification_group,
+                {
+                    'type': 'new_message_notification',
+                    'sender': request.user.username,
+                    'message': content[:100],  # Truncate for notification
+                    'timestamp': message.timestamp.isoformat(),
+                    'message_id': message.id
+                }
+            )
+            print(f"[NOTIFICATION] Sent WebSocket notification to {receiver.username}")
+        except Exception as e:
+            print(f"[NOTIFICATION ERROR] Failed to send WebSocket notification: {str(e)}")
+            # Don't fail the entire request if notification fails
         
         return JsonResponse({
             'success': True,
@@ -1020,9 +1055,12 @@ def send_private_message(request):
         })
         
     except Exception as e:
+        print(f"[PRIVATE MSG ERROR] Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             'success': False,
-            'message': 'An error occurred while sending the message.'
+            'message': f'An error occurred while sending the message: {str(e)}'
         })
 
 
@@ -1356,3 +1394,102 @@ def view_profile(request, username=None):
     }
     
     return render(request, 'chat/view_profile.html', context)
+
+
+# ===== NOTIFICATION VIEWS =====
+
+@login_required
+def notification_count(request):
+    """Get unread message count for the current user"""
+    try:
+        unread_count = PrivateMessage.objects.filter(
+            receiver=request.user,
+            is_read=False
+        ).count()
+        
+        return JsonResponse({
+            'success': True,
+            'count': unread_count
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'count': 0,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+def notification_list(request):
+    """Get list of recent unread messages"""
+    try:
+        # Get recent unread messages
+        notifications = PrivateMessage.objects.filter(
+            receiver=request.user
+        ).select_related('sender').order_by('-timestamp')[:20]
+        
+        notification_data = []
+        for message in notifications:
+            notification_data.append({
+                'id': message.id,
+                'sender': message.sender.username,
+                'message': message.content[:100],  # Truncate long messages
+                'timestamp': message.timestamp.isoformat(),
+                'is_read': message.is_read,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'notifications': notification_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'notifications': [],
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    """Mark a specific notification as read"""
+    try:
+        message = get_object_or_404(
+            PrivateMessage,
+            id=notification_id,
+            receiver=request.user
+        )
+        message.is_read = True
+        message.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Notification marked as read'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all notifications as read for the current user"""
+    try:
+        updated_count = PrivateMessage.objects.filter(
+            receiver=request.user,
+            is_read=False
+        ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{updated_count} notifications marked as read'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

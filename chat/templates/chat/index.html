@@ -1097,6 +1097,151 @@
             box-shadow: 0 8px 25px rgba(252, 70, 107, 0.4);
             filter: brightness(1.1);
         }
+
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+            display: inline-block;
+            margin-right: 1.5rem;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-icon:hover {
+            color: var(--accent-teal);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-coral);
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            animation: pulse-badge 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 120%;
+            right: 0;
+            width: 350px;
+            max-height: 400px;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-elevated);
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-decoration: none;
+            display: block;
+            color: var(--text-primary);
+        }
+
+        .notification-item:hover {
+            background: var(--darker-card);
+        }
+
+        .notification-item.unread {
+            background: rgba(78, 205, 196, 0.05);
+            border-left: 3px solid var(--accent-teal);
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .notification-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .notification-text {
+            flex: 1;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .notification-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .mark-all-read {
+            color: var(--accent-teal);
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .mark-all-read:hover {
+            color: var(--accent-coral);
+        }
     </style>
 </head>
 <body>
@@ -1117,6 +1262,26 @@
                     <span class="welcome-text">{{ user.first_name|default:user.username }}</span>
                 </div>
                 <div class="user-actions">
+                    <!-- Notification Bell -->
+                    <div class="notification-bell">
+                        <i class="fas fa-bell notification-icon" id="notificationBell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                        
+                        <!-- Notification Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <span>Notifications</span>
+                                <a href="#" class="mark-all-read" id="markAllRead">Mark all read</a>
+                            </div>
+                            <div id="notificationList">
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3;"></i>
+                                    <p>No new notifications</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <a href="{% url 'edit_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="Edit Profile">
                         <i class="fas fa-user-edit me-1"></i>Profile
                     </a>
@@ -1848,6 +2013,214 @@
                 }
             }
             return cookieValue;
+        }
+
+        // ===== NOTIFICATION SYSTEM =====
+        let notificationSocket = null;
+        let unreadCount = 0;
+
+        // Initialize notification system
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNotifications();
+            setupNotificationListeners();
+            fetchUnreadCount();
+        });
+
+        function initializeNotifications() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/notifications/`;
+            
+            notificationSocket = new WebSocket(wsUrl);
+            
+            notificationSocket.onopen = function(e) {
+                console.log('Notification WebSocket connected');
+            };
+            
+            notificationSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Notification received:', data);
+                
+                if (data.type === 'new_message') {
+                    handleNewMessageNotification(data);
+                }
+            };
+            
+            notificationSocket.onclose = function(e) {
+                console.log('Notification WebSocket closed. Reconnecting in 3 seconds...');
+                setTimeout(initializeNotifications, 3000);
+            };
+            
+            notificationSocket.onerror = function(e) {
+                console.error('Notification WebSocket error:', e);
+            };
+        }
+
+        function setupNotificationListeners() {
+            const notificationBell = document.getElementById('notificationBell');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const markAllRead = document.getElementById('markAllRead');
+            
+            // Toggle dropdown on bell click
+            notificationBell.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('show');
+                if (notificationDropdown.classList.contains('show')) {
+                    fetchNotifications();
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.notification-bell')) {
+                    notificationDropdown.classList.remove('show');
+                }
+            });
+            
+            // Mark all as read
+            markAllRead.addEventListener('click', function(e) {
+                e.preventDefault();
+                markAllNotificationsRead();
+            });
+        }
+
+        function handleNewMessageNotification(data) {
+            unreadCount++;
+            updateNotificationBadge();
+            
+            // Show browser notification if permitted
+            if (Notification.permission === 'granted') {
+                new Notification('New Message from ' + data.sender, {
+                    body: data.message.substring(0, 100),
+                    icon: '/static/chat/img/notification-icon.png'
+                });
+            }
+            
+            // Play notification sound (optional)
+            playNotificationSound();
+        }
+
+        function fetchUnreadCount() {
+            fetch('/chat/notifications/count/')
+                .then(response => response.json())
+                .then(data => {
+                    unreadCount = data.count;
+                    updateNotificationBadge();
+                })
+                .catch(error => console.error('Error fetching unread count:', error));
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function fetchNotifications() {
+            fetch('/chat/notifications/list/')
+                .then(response => response.json())
+                .then(data => {
+                    displayNotifications(data.notifications);
+                })
+                .catch(error => console.error('Error fetching notifications:', error));
+        }
+
+        function displayNotifications(notifications) {
+            const notificationList = document.getElementById('notificationList');
+            
+            if (notifications.length === 0) {
+                notificationList.innerHTML = `
+                    <div class="notification-empty">
+                        <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3;"></i>
+                        <p>No new notifications</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            notificationList.innerHTML = notifications.map(notif => {
+                const timeAgo = formatTimeAgo(new Date(notif.timestamp));
+                const unreadClass = notif.is_read ? '' : 'unread';
+                const avatar = notif.sender_avatar || notif.sender.charAt(0).toUpperCase();
+                
+                return `
+                    <a href="/chat/private/${notif.sender}/" class="notification-item ${unreadClass}" data-id="${notif.id}">
+                        <div class="notification-content">
+                            <div class="notification-avatar">${avatar}</div>
+                            <div class="notification-text">
+                                <div class="notification-message">
+                                    <strong>${notif.sender}</strong> sent you a message
+                                </div>
+                                <div class="notification-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+            
+            // Add click handlers to mark as read
+            notificationList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const notifId = this.dataset.id;
+                    markNotificationRead(notifId);
+                });
+            });
+        }
+
+        function markNotificationRead(notificationId) {
+            fetch(`/chat/notifications/mark-read/${notificationId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(() => {
+                if (unreadCount > 0) {
+                    unreadCount--;
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        function markAllNotificationsRead() {
+            fetch('/chat/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(() => {
+                unreadCount = 0;
+                updateNotificationBadge();
+                fetchNotifications();
+            })
+            .catch(error => console.error('Error marking all as read:', error));
+        }
+
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+            return date.toLocaleDateString();
+        }
+
+        function playNotificationSound() {
+            // Optional: Add a subtle notification sound
+            const audio = new Audio('/static/chat/sounds/notification.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(() => {}); // Ignore if sound fails
+        }
+
+        // Request notification permission on page load
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
         }
     </script>
 </body>

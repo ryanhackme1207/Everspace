@@ -26,4 +26,9 @@ urlpatterns = [
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/<str:username>/', views.view_profile, name='view_profile'),
     path('profile/', views.view_profile, name='my_profile'),
+    # Notification URLs
+    path('chat/notifications/count/', views.notification_count, name='notification_count'),
+    path('chat/notifications/list/', views.notification_list, name='notification_list'),
+    path('chat/notifications/mark-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
+    path('chat/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
 ]
