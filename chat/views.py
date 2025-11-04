@@ -1493,8 +1493,8 @@ def view_profile(request, username=None):
 # ===== GIF SEARCH PROXY (Tenor) =====
 @login_required
 def gif_search(request):
-    """Server-side GIF search / trending using Tenor API (v1).
-    If ?q is missing or shorter than 2 chars, return trending GIFs.
+    """Server-side GIF search / trending using Google Tenor API (v2).
+    If ?q is missing or shorter than 2 chars, return featured/trending GIFs.
     Response shape simplified for frontend: {results:[{url, desc}]}.
     """
     query = request.GET.get('q', '').strip()
@@ -1506,26 +1506,29 @@ def gif_search(request):
             'error': 'GIF search requires TENOR_API_KEY to be configured'
         }, status=200)
 
-    # Decide endpoint: trending if no meaningful query
+    # Google Tenor API v2 requires Referer header
+    headers = {
+        'Referer': 'https://everspace-izi3.onrender.com'
+    }
+
+    # Decide endpoint: featured (trending) if no meaningful query
     if len(query) < 2:
-        endpoint = 'https://api.tenor.com/v1/trending'
+        endpoint = 'https://tenor.googleapis.com/v2/featured'
         params = {
             'key': api_key,
-            'limit': 21,
             'media_filter': 'tinygif,gif'
         }
     else:
-        endpoint = 'https://api.tenor.com/v1/search'
+        endpoint = 'https://tenor.googleapis.com/v2/search'
         params = {
             'key': api_key,
             'q': query,
-            'limit': 30,
             'media_filter': 'tinygif,gif'
         }
 
     results = []
     try:
-        resp = requests.get(endpoint, params=params, timeout=8)
+        resp = requests.get(endpoint, params=params, headers=headers, timeout=8)
         
         # Check for API errors
         if resp.status_code == 401:
@@ -1533,10 +1536,15 @@ def gif_search(request):
                 'results': [],
                 'error': 'Invalid Tenor API key - check configuration'
             }, status=200)
+        elif resp.status_code == 403:
+            return JsonResponse({
+                'results': [],
+                'error': 'API key access denied - verify configuration'
+            }, status=200)
         elif resp.status_code == 404:
             return JsonResponse({
                 'results': [],
-                'error': 'Tenor API not available - check your key'
+                'error': 'Tenor API endpoint not found'
             }, status=200)
         elif not resp.ok:
             return JsonResponse({
