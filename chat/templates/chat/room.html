@@ -1964,10 +1964,13 @@
         
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing emoji/GIF pickers...');
             initializeEmojiAndGifPickers();
         });
 
         function initializeEmojiAndGifPickers() {
+            console.log('=== Starting emoji/GIF initialization ===');
+            
             const emojiBtn = document.getElementById('emoji-btn');
             const gifBtn = document.getElementById('gif-btn');
             const emojiPicker = document.getElementById('emoji-picker');
@@ -1977,11 +1980,24 @@
             const gifSearch = document.getElementById('gif-search');
             const emojiClose = document.getElementById('emoji-close');
             const gifClose = document.getElementById('gif-close');
+            const msgInput = document.getElementById('message-input');
 
-            if (!emojiBtn || !gifBtn || !emojiPicker || !gifPicker) {
-                console.error('Emoji/GIF elements not found!');
+            console.log('Elements found:', {
+                emojiBtn: !!emojiBtn,
+                gifBtn: !!gifBtn,
+                emojiPicker: !!emojiPicker,
+                gifPicker: !!gifPicker,
+                emojiGrid: !!emojiGrid,
+                gifGrid: !!gifGrid,
+                msgInput: !!msgInput
+            });
+
+            if (!emojiBtn || !gifBtn || !emojiPicker || !gifPicker || !msgInput) {
+                console.error('Missing required elements!');
                 return;
             }
+
+            console.log('All elements found! Building emoji grid...');
 
             // Popular emojis - comprehensive list
             const emojis = [
@@ -2024,46 +2040,58 @@
             ];
 
             // Load emojis into grid
+            console.log(`Loading ${emojis.length} emojis into grid...`);
             emojis.forEach(emoji => {
                 const emojiItem = document.createElement('div');
                 emojiItem.className = 'emoji-item';
                 emojiItem.textContent = emoji;
                 emojiItem.addEventListener('click', () => {
-                    messageInput.value += emoji;
-                    messageInput.focus();
+                    console.log('Emoji clicked:', emoji);
+                    msgInput.value += emoji;
+                    msgInput.focus();
                     emojiPicker.style.display = 'none';
                     emojiBtn.classList.remove('active');
                 });
                 emojiGrid.appendChild(emojiItem);
             });
+            console.log('Emoji grid populated!');
 
             // Toggle emoji picker
+            console.log('Setting up emoji button click handler...');
             emojiBtn.addEventListener('click', (e) => {
+                console.log('Emoji button clicked!');
                 e.stopPropagation();
                 const isVisible = emojiPicker.style.display === 'block';
                 emojiPicker.style.display = isVisible ? 'none' : 'block';
                 gifPicker.style.display = 'none';
                 emojiBtn.classList.toggle('active');
                 gifBtn.classList.remove('active');
+                console.log('Emoji picker display:', emojiPicker.style.display);
             });
 
             // Toggle GIF picker
+            console.log('Setting up GIF button click handler...');
             gifBtn.addEventListener('click', (e) => {
+                console.log('GIF button clicked!');
                 e.stopPropagation();
                 const isVisible = gifPicker.style.display === 'block';
                 gifPicker.style.display = isVisible ? 'none' : 'block';
                 emojiPicker.style.display = 'none';
                 gifBtn.classList.toggle('active');
                 emojiBtn.classList.remove('active');
+                console.log('GIF picker display:', gifPicker.style.display);
             });
 
             // Close buttons
+            console.log('Setting up close button handlers...');
             emojiClose.addEventListener('click', () => {
+                console.log('Emoji close clicked');
                 emojiPicker.style.display = 'none';
                 emojiBtn.classList.remove('active');
             });
 
             gifClose.addEventListener('click', () => {
+                console.log('GIF close clicked');
                 gifPicker.style.display = 'none';
                 gifBtn.classList.remove('active');
             });
@@ -2100,8 +2128,15 @@
                 gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
                 
                 try {
-                    // Using Tenor API (v2) - free public endpoint
-                    const apiKey = 'AIzaSyAGPD2zRCYJMJU3pMg_lQNqKW3BDMBwC8M'; // Public demo key
+                    // Get API key from Django template context (safer than hardcoding)
+                    const apiKey = '{{ tenor_api_key|default:"" }}';
+                    
+                    if (!apiKey) {
+                        gifGrid.innerHTML = '<div class="gif-loading">❌ GIF search not configured. Contact admin.</div>';
+                        console.error('Tenor API key not configured');
+                        return;
+                    }
+                    
                     const limit = 20;
                     const response = await fetch(
                         `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=${limit}&media_filter=gif`
