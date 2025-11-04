@@ -1040,57 +1040,23 @@ def edit_profile(request):
     ]
 
     cover_choices = [
-        # id, label, gradient CSS (used in template via data-gradient or class)
-        {
-            'id': 'sunrise',
-            'label': 'Sunrise Glow',
-            'gradient': 'linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)'
-        },
-        {
-            'id': 'aurora',
-            'label': 'Aurora Wave',
-            'gradient': 'linear-gradient(135deg,#00c6ff 0%,#0072ff 100%)'
-        },
-        {
-            'id': 'cosmic',
-            'label': 'Cosmic Dust',
-            'gradient': 'linear-gradient(135deg,#662d8c 0%,#ed1e79 100%)'
-        },
-        {
-            'id': 'neon',
-            'label': 'Neon Grid',
-            'gradient': 'linear-gradient(135deg,#12c2e9 0%,#c471ed 50%,#f64f59 100%)'
-        },
-        {
-            'id': 'circuit',
-            'label': 'Circuit Dark',
-            'gradient': 'linear-gradient(135deg,#1f1c2c 0%,#928dab 100%)'
-        },
-        {
-            'id': 'starfield',
-            'label': 'Starfield',
-            'gradient': 'linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%)'
-        },
-        {
-            'id': 'horizon',
-            'label': 'Horizon',
-            'gradient': 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)'
-        },
-        {
-            'id': 'ocean',
-            'label': 'Ocean Glow',
-            'gradient': 'linear-gradient(135deg,#2193b0 0%,#6dd5ed 100%)'
-        },
-        {
-            'id': 'midnight',
-            'label': 'Midnight Pulse',
-            'gradient': 'linear-gradient(135deg,#141e30 0%,#243b55 100%)'
-        },
-        {
-            'id': 'crystal',
-            'label': 'Crystal Ridge',
-            'gradient': 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)'
-        },
+        # Existing gradient-only presets
+        {'id': 'sunrise', 'label': 'Sunrise Glow', 'gradient': 'linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)'},
+        {'id': 'aurora', 'label': 'Aurora Wave', 'gradient': 'linear-gradient(135deg,#00c6ff 0%,#0072ff 100%)'},
+        {'id': 'cosmic', 'label': 'Cosmic Dust', 'gradient': 'linear-gradient(135deg,#662d8c 0%,#ed1e79 100%)'},
+        {'id': 'neon', 'label': 'Neon Grid', 'gradient': 'linear-gradient(135deg,#12c2e9 0%,#c471ed 50%,#f64f59 100%)'},
+        {'id': 'circuit', 'label': 'Circuit Dark', 'gradient': 'linear-gradient(135deg,#1f1c2c 0%,#928dab 100%)'},
+        {'id': 'starfield', 'label': 'Starfield', 'gradient': 'linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%)'},
+        {'id': 'horizon', 'label': 'Horizon', 'gradient': 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)'},
+        {'id': 'ocean', 'label': 'Ocean Glow', 'gradient': 'linear-gradient(135deg,#2193b0 0%,#6dd5ed 100%)'},
+        {'id': 'midnight', 'label': 'Midnight Pulse', 'gradient': 'linear-gradient(135deg,#141e30 0%,#243b55 100%)'},
+        {'id': 'crystal', 'label': 'Crystal Ridge', 'gradient': 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)'},
+        # New image-backed special covers (script will generate images in static/chat/covers/<id>.jpg)
+        {'id': 'galaxy', 'label': 'Galaxy Swirl', 'gradient': 'linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)'},
+        {'id': 'nebula', 'label': 'Nebula Core', 'gradient': 'linear-gradient(135deg,#20002c 0%,#6f0000 100%)'},
+        {'id': 'matrix', 'label': 'Matrix Code', 'gradient': 'linear-gradient(135deg,#000000 0%,#0f9b0f 100%)'},
+        {'id': 'flare', 'label': 'Solar Flare', 'gradient': 'linear-gradient(135deg,#f12711 0%,#f5af19 100%)'},
+        {'id': 'wave', 'label': 'Quantum Wave', 'gradient': 'linear-gradient(135deg,#6441A5 0%,#2a0845 100%)'},
     ]
     
     if request.method == 'POST':
