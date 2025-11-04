@@ -30,10 +30,14 @@ export PYTHONUNBUFFERED=1
 
 # Ensure TENOR_API_KEY is set (free tier key for GIF search)
 # Users can override by setting TENOR_API_KEY in Render environment variables
+# Get a free API key at: https://tenor.com/developer/keyregistration
 if [ -z "${TENOR_API_KEY:-}" ]; then
-	# Free Tenor API key (public, rate-limited)
-	export TENOR_API_KEY="AIzaSyBN8sQqKM1nq7rLYV_dEj1s3_EqCUgJbLU"
-	echo "[startup] Using default Tenor API key (set TENOR_API_KEY in env to override)"
+	echo "[startup] WARNING: TENOR_API_KEY not set. GIF search will be unavailable."
+	echo "[startup] To enable GIFs, set TENOR_API_KEY in Render environment variables."
+	echo "[startup] Get a free key at: https://tenor.com/developer/keyregistration"
+	# Don't set a default invalid key - let it be empty so users know to configure it
+else
+	echo "[startup] TENOR_API_KEY is configured"
 fi
 
 # Always create superuser on first run (can be disabled by unsetting flag)
