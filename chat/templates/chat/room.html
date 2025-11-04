@@ -1962,188 +1962,200 @@
 
         // ========== EMOJI & GIF SYSTEM ==========
         
-        const emojiBtn = document.getElementById('emoji-btn');
-        const gifBtn = document.getElementById('gif-btn');
-        const emojiPicker = document.getElementById('emoji-picker');
-        const gifPicker = document.getElementById('gif-picker');
-        const emojiGrid = document.getElementById('emoji-grid');
-        const gifGrid = document.getElementById('gif-grid');
-        const gifSearch = document.getElementById('gif-search');
-        const emojiClose = document.getElementById('emoji-close');
-        const gifClose = document.getElementById('gif-close');
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEmojiAndGifPickers();
+        });
 
-        // Popular emojis
-        const emojis = [
-            '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
-            '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
-            '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪',
-            '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
-            '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
-            '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
-            '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯',
-            '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁',
-            '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧',
-            '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
-            '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠',
-            '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹',
-            '👺', '👻', '👽', '👾', '🤖', '😺', '😸', '😹',
-            '😻', '😼', '😽', '🙀', '😿', '😾', '👋', '🤚',
-            '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞',
-            '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
-            '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏',
-            '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳',
-            '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃',
-            '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋',
-            '🩸', '👶', '👧', '🧒', '👦', '👩', '🧑', '👨',
-            '👩‍🦱', '🧑‍🦱', '👨‍🦱', '👩‍🦰', '🧑‍🦰', '👨‍🦰', '👱‍♀️', '👱',
-            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
-            '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
-            '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
-            '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
-            '🔥', '💧', '🌊', '💨', '☁️', '⛅', '⛈️', '🌤️',
-            '🌈', '⭐', '🌟', '✨', '⚡', '☄️', '💥', '🔥',
-            '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉',
-            '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
-            '🎮', '🕹️', '🎯', '🎲', '🎰', '🎳', '🎪', '🎭',
-            '🍕', '🍔', '🍟', '🌭', '🍿', '🥓', '🥚', '🍳',
-            '🍕', '🍰', '🎂', '🧁', '🍪', '🍩', '🍫', '🍬',
-            '☕', '🍵', '🧃', '🥤', '🍷', '🍺', '🍻', '🥂',
-            '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑',
-            '🚒', '🚐', '🚚', '🚛', '🚜', '🛵', '🏍️', '🛺'
-        ];
+        function initializeEmojiAndGifPickers() {
+            const emojiBtn = document.getElementById('emoji-btn');
+            const gifBtn = document.getElementById('gif-btn');
+            const emojiPicker = document.getElementById('emoji-picker');
+            const gifPicker = document.getElementById('gif-picker');
+            const emojiGrid = document.getElementById('emoji-grid');
+            const gifGrid = document.getElementById('gif-grid');
+            const gifSearch = document.getElementById('gif-search');
+            const emojiClose = document.getElementById('emoji-close');
+            const gifClose = document.getElementById('gif-close');
 
-        // Load emojis into grid
-        emojis.forEach(emoji => {
-            const emojiItem = document.createElement('div');
-            emojiItem.className = 'emoji-item';
-            emojiItem.textContent = emoji;
-            emojiItem.addEventListener('click', () => {
-                messageInput.value += emoji;
-                messageInput.focus();
+            if (!emojiBtn || !gifBtn || !emojiPicker || !gifPicker) {
+                console.error('Emoji/GIF elements not found!');
+                return;
+            }
+
+            // Popular emojis - comprehensive list
+            const emojis = [
+                '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+                '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+                '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪',
+                '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
+                '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+                '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+                '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯',
+                '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁',
+                '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧',
+                '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
+                '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠',
+                '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹',
+                '👺', '👻', '👽', '👾', '🤖', '😺', '😸', '😹',
+                '😻', '😼', '😽', '🙀', '😿', '😾', '👋', '🤚',
+                '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞',
+                '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
+                '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏',
+                '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳',
+                '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃',
+                '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋',
+                '🩸', '👶', '👧', '🧒', '👦', '👩', '🧑', '👨',
+                '👩‍🦱', '🧑‍🦱', '👨‍🦱', '👩‍🦰', '🧑‍🦰', '👨‍🦰', '👱‍♀️', '👱',
+                '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+                '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+                '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
+                '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+                '🔥', '💧', '🌊', '💨', '☁️', '⛅', '⛈️', '🌤️',
+                '🌈', '⭐', '🌟', '✨', '⚡', '☄️', '💥', '🔥',
+                '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉',
+                '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
+                '🎮', '🕹️', '🎯', '🎲', '🎰', '🎳', '🎪', '🎭',
+                '🍕', '🍔', '🍟', '🌭', '🍿', '🥓', '🥚', '🍳',
+                '🍕', '🍰', '🎂', '🧁', '🍪', '🍩', '🍫', '🍬',
+                '☕', '🍵', '🧃', '🥤', '🍷', '🍺', '🍻', '🥂',
+                '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑',
+                '🚒', '🚐', '🚚', '🚛', '🚜', '🛵', '🏍️', '🛺'
+            ];
+
+            // Load emojis into grid
+            emojis.forEach(emoji => {
+                const emojiItem = document.createElement('div');
+                emojiItem.className = 'emoji-item';
+                emojiItem.textContent = emoji;
+                emojiItem.addEventListener('click', () => {
+                    messageInput.value += emoji;
+                    messageInput.focus();
+                    emojiPicker.style.display = 'none';
+                    emojiBtn.classList.remove('active');
+                });
+                emojiGrid.appendChild(emojiItem);
+            });
+
+            // Toggle emoji picker
+            emojiBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = emojiPicker.style.display === 'block';
+                emojiPicker.style.display = isVisible ? 'none' : 'block';
+                gifPicker.style.display = 'none';
+                emojiBtn.classList.toggle('active');
+                gifBtn.classList.remove('active');
+            });
+
+            // Toggle GIF picker
+            gifBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = gifPicker.style.display === 'block';
+                gifPicker.style.display = isVisible ? 'none' : 'block';
+                emojiPicker.style.display = 'none';
+                gifBtn.classList.toggle('active');
+                emojiBtn.classList.remove('active');
+            });
+
+            // Close buttons
+            emojiClose.addEventListener('click', () => {
                 emojiPicker.style.display = 'none';
                 emojiBtn.classList.remove('active');
             });
-            emojiGrid.appendChild(emojiItem);
-        });
 
-        // Toggle emoji picker
-        emojiBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isVisible = emojiPicker.style.display === 'block';
-            emojiPicker.style.display = isVisible ? 'none' : 'block';
-            gifPicker.style.display = 'none';
-            emojiBtn.classList.toggle('active');
-            gifBtn.classList.remove('active');
-        });
-
-        // Toggle GIF picker
-        gifBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isVisible = gifPicker.style.display === 'block';
-            gifPicker.style.display = isVisible ? 'none' : 'block';
-            emojiPicker.style.display = 'none';
-            gifBtn.classList.toggle('active');
-            emojiBtn.classList.remove('active');
-        });
-
-        // Close buttons
-        emojiClose.addEventListener('click', () => {
-            emojiPicker.style.display = 'none';
-            emojiBtn.classList.remove('active');
-        });
-
-        gifClose.addEventListener('click', () => {
-            gifPicker.style.display = 'none';
-            gifBtn.classList.remove('active');
-        });
-
-        // Close pickers when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-                emojiPicker.style.display = 'none';
-                emojiBtn.classList.remove('active');
-            }
-            if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
+            gifClose.addEventListener('click', () => {
                 gifPicker.style.display = 'none';
                 gifBtn.classList.remove('active');
-            }
-        });
-
-        // GIF Search (using Tenor API - free, no key required)
-        let gifSearchTimeout;
-        gifSearch.addEventListener('input', (e) => {
-            clearTimeout(gifSearchTimeout);
-            const query = e.target.value.trim();
-            
-            if (query.length < 2) {
-                gifGrid.innerHTML = '<div class="gif-loading">Type to search GIFs... 🎬</div>';
-                return;
-            }
-
-            gifSearchTimeout = setTimeout(() => {
-                searchGifs(query);
-            }, 500);
-        });
-
-        async function searchGifs(query) {
-            gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
-            
-            try {
-                // Using Tenor API (v2) - free public endpoint
-                const apiKey = 'AIzaSyAGPD2zRCYJMJU3pMg_lQNqKW3BDMBwC8M'; // Public demo key
-                const limit = 20;
-                const response = await fetch(
-                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=${limit}&media_filter=gif`
-                );
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch GIFs');
-                }
-                
-                const data = await response.json();
-                displayGifs(data.results);
-            } catch (error) {
-                console.error('GIF search error:', error);
-                gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
-            }
-        }
-
-        function displayGifs(gifs) {
-            if (!gifs || gifs.length === 0) {
-                gifGrid.innerHTML = '<div class="gif-loading">No GIFs found 😕</div>';
-                return;
-            }
-
-            gifGrid.innerHTML = '';
-            gifs.forEach(gif => {
-                const gifItem = document.createElement('div');
-                gifItem.className = 'gif-item';
-                
-                const img = document.createElement('img');
-                img.src = gif.media_formats.tinygif.url;
-                img.alt = gif.content_description;
-                
-                gifItem.appendChild(img);
-                gifItem.addEventListener('click', () => {
-                    sendGif(gif.media_formats.gif.url, gif.content_description);
-                });
-                
-                gifGrid.appendChild(gifItem);
             });
-        }
 
-        function sendGif(gifUrl, description) {
-            const gifMessage = `[GIF]${gifUrl}[/GIF]`;
-            chatSocket.send(JSON.stringify({
-                'message': gifMessage,
-                'username': currentUsername
-            }));
-            
-            gifPicker.style.display = 'none';
-            gifBtn.classList.remove('active');
-            gifSearch.value = '';
-            gifGrid.innerHTML = '<div class="gif-loading">Search for GIFs above! 🎬</div>';
-        }
+            // Close pickers when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+                    emojiPicker.style.display = 'none';
+                    emojiBtn.classList.remove('active');
+                }
+                if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
+                    gifPicker.style.display = 'none';
+                    gifBtn.classList.remove('active');
+                }
+            });
+
+            // GIF Search (using Tenor API - free, no key required)
+            let gifSearchTimeout;
+            gifSearch.addEventListener('input', (e) => {
+                clearTimeout(gifSearchTimeout);
+                const query = e.target.value.trim();
+                
+                if (query.length < 2) {
+                    gifGrid.innerHTML = '<div class="gif-loading">Type to search GIFs... 🎬</div>';
+                    return;
+                }
+
+                gifSearchTimeout = setTimeout(() => {
+                    searchGifs(query);
+                }, 500);
+            });
+
+            async function searchGifs(query) {
+                gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
+                
+                try {
+                    // Using Tenor API (v2) - free public endpoint
+                    const apiKey = 'AIzaSyAGPD2zRCYJMJU3pMg_lQNqKW3BDMBwC8M'; // Public demo key
+                    const limit = 20;
+                    const response = await fetch(
+                        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=${limit}&media_filter=gif`
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch GIFs');
+                    }
+                    
+                    const data = await response.json();
+                    displayGifs(data.results);
+                } catch (error) {
+                    console.error('GIF search error:', error);
+                    gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
+                }
+            }
+
+            function displayGifs(gifs) {
+                if (!gifs || gifs.length === 0) {
+                    gifGrid.innerHTML = '<div class="gif-loading">No GIFs found 😕</div>';
+                    return;
+                }
+
+                gifGrid.innerHTML = '';
+                gifs.forEach(gif => {
+                    const gifItem = document.createElement('div');
+                    gifItem.className = 'gif-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = gif.media_formats.tinygif.url;
+                    img.alt = gif.content_description;
+                    
+                    gifItem.appendChild(img);
+                    gifItem.addEventListener('click', () => {
+                        sendGif(gif.media_formats.gif.url, gif.content_description);
+                    });
+                    
+                    gifGrid.appendChild(gifItem);
+                });
+            }
+
+            function sendGif(gifUrl, description) {
+                const gifMessage = `[GIF]${gifUrl}[/GIF]`;
+                chatSocket.send(JSON.stringify({
+                    'message': gifMessage,
+                    'username': currentUsername
+                }));
+                
+                gifPicker.style.display = 'none';
+                gifBtn.classList.remove('active');
+                gifSearch.value = '';
+                gifGrid.innerHTML = '<div class="gif-loading">Search for GIFs above! 🎬</div>';
+            }
+        } // End initializeEmojiAndGifPickers
 
         // ========== END EMOJI & GIF SYSTEM ==========
 
