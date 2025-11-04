@@ -84,28 +84,33 @@ def index(request):
     outgoing_requests = []
     
     if request.user.is_authenticated:
+        # Ensure user has a profile
+        UserProfile.objects.get_or_create(user=request.user)
+        
         # Get accepted friendships
         friends_relationships = Friendship.objects.filter(
             models.Q(sender=request.user) | models.Q(receiver=request.user),
             status='accepted'
-        )
+        ).select_related('sender__profile', 'receiver__profile')
         
         friends = []
         for friendship in friends_relationships:
             friend = friendship.receiver if friendship.sender == request.user else friendship.sender
+            # Ensure friend has a profile
+            UserProfile.objects.get_or_create(user=friend)
             friends.append(friend)
         
         # Get pending incoming requests
         incoming_requests = Friendship.objects.filter(
             receiver=request.user,
             status='pending'
-        ).select_related('sender')
+        ).select_related('sender', 'sender__profile')
         
         # Get pending outgoing requests
         outgoing_requests = Friendship.objects.filter(
             sender=request.user,
             status='pending'
-        ).select_related('receiver')
+        ).select_related('receiver', 'receiver__profile')
     
     return render(request, 'chat/index.html', {
         'rooms': rooms,

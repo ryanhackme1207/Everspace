@@ -392,6 +392,32 @@
             justify-content: center;
             margin-right: 1rem;
             font-weight: 600;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
         }
 
         .welcome-text {
@@ -597,6 +623,14 @@
             font-weight: 700;
             font-size: 1.2rem;
             flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid var(--accent-teal);
+        }
+
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .friend-info {
@@ -1256,9 +1290,17 @@
             </a>
             <div class="d-flex align-items-center">
                 <div class="user-info me-3">
-                    <div class="user-avatar">
-                        {{ user.first_name.0|default:user.username.0|upper }}
-                    </div>
+                    <a href="{% url 'my_profile' %}" class="user-avatar" title="View My Profile">
+                        {% if user.profile.pixel_avatar %}
+                            <img src="/static/chat/images/pixel_avatars/{{ user.profile.pixel_avatar }}.png" alt="{{ user.username }}">
+                        {% elif user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}">
+                        {% else %}
+                            <div class="user-avatar-fallback">
+                                {{ user.first_name.0|default:user.username.0|upper }}
+                            </div>
+                        {% endif %}
+                    </a>
                     <span class="welcome-text">{{ user.first_name|default:user.username }}</span>
                 </div>
                 <div class="user-actions">
@@ -1282,8 +1324,11 @@
                         </div>
                     </div>
                     
+                    <a href="{% url 'my_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="View My Profile">
+                        <i class="fas fa-user me-1"></i>My Profile
+                    </a>
                     <a href="{% url 'edit_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="Edit Profile">
-                        <i class="fas fa-user-edit me-1"></i>Profile
+                        <i class="fas fa-user-edit me-1"></i>Edit
                     </a>
                     <div class="dropdown me-2">
                         <button class="btn btn-outline-modern btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="securityDropdown">
@@ -1473,17 +1518,26 @@
                         {% for request in incoming_requests %}
                         <div class="friend-request-card">
                             <div class="friend-avatar">
-                                {{ request.sender.username|slice:":1"|upper }}
+                                {% if request.sender.profile.pixel_avatar %}
+                                    <img src="/static/chat/images/pixel_avatars/{{ request.sender.profile.pixel_avatar }}.png" alt="{{ request.sender.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif request.sender.profile.profile_picture %}
+                                    <img src="{{ request.sender.profile.profile_picture.url }}" alt="{{ request.sender.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    {{ request.sender.username|slice:":1"|upper }}
+                                {% endif %}
                             </div>
                             <div class="friend-info">
                                 <h6>{{ request.sender.username }}</h6>
                                 <p class="friend-status">{{ request.created_at|timesince }} ago</p>
                             </div>
                             <div class="friend-actions">
-                                <button class="btn-friend-accept" onclick="respondToRequest({{ request.id }}, 'accepted')">
+                                <a href="{% url 'view_profile' request.sender.username %}" class="btn-friend-accept" title="View Profile">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                <button class="btn-friend-accept" onclick="respondToRequest({{ request.id }}, 'accepted')" title="Accept">
                                     <i class="fas fa-check"></i>
                                 </button>
-                                <button class="btn-friend-decline" onclick="respondToRequest({{ request.id }}, 'declined')">
+                                <button class="btn-friend-decline" onclick="respondToRequest({{ request.id }}, 'declined')" title="Decline">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1505,7 +1559,13 @@
                             {% for friend in friends %}
                             <div class="friend-card">
                                 <div class="friend-avatar">
-                                    {{ friend.username|slice:":1"|upper }}
+                                    {% if friend.profile.pixel_avatar %}
+                                        <img src="/static/chat/images/pixel_avatars/{{ friend.profile.pixel_avatar }}.png" alt="{{ friend.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% elif friend.profile.profile_picture %}
+                                        <img src="{{ friend.profile.profile_picture.url }}" alt="{{ friend.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        {{ friend.username|slice:":1"|upper }}
+                                    {% endif %}
                                 </div>
                                 <div class="friend-info">
                                     <h6>{{ friend.username }}</h6>
@@ -1514,10 +1574,13 @@
                                     </p>
                                 </div>
                                 <div class="friend-actions">
-                                    <a href="{% url 'private_chat' friend.username %}" class="btn-friend-chat">
+                                    <a href="{% url 'view_profile' friend.username %}" class="btn-friend-chat" title="View Profile">
+                                        <i class="fas fa-user"></i>
+                                    </a>
+                                    <a href="{% url 'private_chat' friend.username %}" class="btn-friend-chat" title="Send Message">
                                         <i class="fas fa-comment"></i>
                                     </a>
-                                    <button class="btn-friend-remove" onclick="removeFriend('{{ friend.username }}')">
+                                    <button class="btn-friend-remove" onclick="removeFriend('{{ friend.username }}')" title="Remove Friend">
                                         <i class="fas fa-user-minus"></i>
                                     </button>
                                 </div>

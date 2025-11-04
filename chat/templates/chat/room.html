@@ -568,6 +568,214 @@
             transform: none;
         }
 
+        /* Input Toolbar */
+        .input-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--darker-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent-teal);
+            border-color: var(--accent-teal);
+            transform: scale(1.05);
+        }
+
+        .toolbar-btn.active {
+            background: var(--accent-teal);
+            color: white;
+            border-color: var(--accent-teal);
+        }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 1rem;
+            width: 320px;
+            max-height: 400px;
+            background: var(--dark-card);
+            border: 1px solid var(--accent-teal);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-elevated);
+            overflow: hidden;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        .emoji-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--darker-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .emoji-close, .gif-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .emoji-close:hover, .gif-close:hover {
+            color: var(--accent-coral);
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.25rem;
+            padding: 0.5rem;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .emoji-item {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s;
+        }
+
+        .emoji-item:hover {
+            background: rgba(78, 205, 196, 0.2);
+            transform: scale(1.3);
+        }
+
+        /* GIF Picker */
+        .gif-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 1rem;
+            width: 450px;
+            max-height: 500px;
+            background: var(--dark-card);
+            border: 1px solid var(--accent-teal);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-elevated);
+            overflow: hidden;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        .gif-picker-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--darker-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gif-search {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .gif-search:focus {
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        .gif-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .gif-item {
+            position: relative;
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            aspect-ratio: 1;
+            transition: all 0.2s;
+        }
+
+        .gif-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+        }
+
+        .gif-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gif-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Message with GIF */
+        .message-gif {
+            max-width: 300px;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .message-gif img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* GIF Loading State */
+        .gif-loading {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
         /* Scrollbar Styling */
         .messages-container::-webkit-scrollbar,
         .sidebar::-webkit-scrollbar {
@@ -864,6 +1072,14 @@
 
             <!-- Message Input -->
             <div class="input-container">
+                <div class="input-toolbar">
+                    <button type="button" class="toolbar-btn" id="emoji-btn" title="Insert Emoji">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <button type="button" class="toolbar-btn" id="gif-btn" title="Send GIF">
+                        <i class="fas fa-images"></i>
+                    </button>
+                </div>
                 <div class="input-form">
                     <input type="text" id="message-input" class="message-input" placeholder="Type your message..." required>
                     <button id="send-button" class="send-button">
@@ -872,6 +1088,26 @@
                         </svg>
                         Send
                     </button>
+                </div>
+            </div>
+            
+            <!-- Emoji Picker -->
+            <div id="emoji-picker" class="emoji-picker" style="display: none;">
+                <div class="emoji-picker-header">
+                    <span>Select Emoji</span>
+                    <button class="emoji-close" id="emoji-close">&times;</button>
+                </div>
+                <div class="emoji-grid" id="emoji-grid"></div>
+            </div>
+            
+            <!-- GIF Picker -->
+            <div id="gif-picker" class="gif-picker" style="display: none;">
+                <div class="gif-picker-header">
+                    <input type="text" id="gif-search" class="gif-search" placeholder="Search GIFs...">
+                    <button class="gif-close" id="gif-close">&times;</button>
+                </div>
+                <div class="gif-grid" id="gif-grid">
+                    <div class="gif-loading">Search for GIFs above! 🎬</div>
                 </div>
             </div>
         </div>
@@ -1090,6 +1326,16 @@
                 const displayName = data.display_name || data.username;
                 const isCurrentUser = data.username === currentUsername;
                 
+                // Check if message is a GIF
+                let messageContent;
+                const gifMatch = data.message.match(/\[GIF\](.*?)\[\/GIF\]/);
+                if (gifMatch) {
+                    const gifUrl = gifMatch[1];
+                    messageContent = `<img src="${gifUrl}" alt="GIF" class="message-gif">`;
+                } else {
+                    messageContent = data.message;
+                }
+                
                 messageElement.innerHTML = `
                     <div class="message-header">
                         <span class="username">
@@ -1108,7 +1354,7 @@
                             ${data.timestamp}
                         </span>
                     </div>
-                    <div class="message-content">${data.message}</div>
+                    <div class="message-content">${messageContent}</div>
                 `;
                 
                 messagesContainer.appendChild(messageElement);
@@ -1714,6 +1960,192 @@
             return cookieValue;
         }
 
+        // ========== EMOJI & GIF SYSTEM ==========
+        
+        const emojiBtn = document.getElementById('emoji-btn');
+        const gifBtn = document.getElementById('gif-btn');
+        const emojiPicker = document.getElementById('emoji-picker');
+        const gifPicker = document.getElementById('gif-picker');
+        const emojiGrid = document.getElementById('emoji-grid');
+        const gifGrid = document.getElementById('gif-grid');
+        const gifSearch = document.getElementById('gif-search');
+        const emojiClose = document.getElementById('emoji-close');
+        const gifClose = document.getElementById('gif-close');
+
+        // Popular emojis
+        const emojis = [
+            '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+            '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+            '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪',
+            '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
+            '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+            '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+            '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯',
+            '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁',
+            '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧',
+            '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
+            '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠',
+            '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹',
+            '👺', '👻', '👽', '👾', '🤖', '😺', '😸', '😹',
+            '😻', '😼', '😽', '🙀', '😿', '😾', '👋', '🤚',
+            '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞',
+            '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
+            '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏',
+            '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳',
+            '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃',
+            '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋',
+            '🩸', '👶', '👧', '🧒', '👦', '👩', '🧑', '👨',
+            '👩‍🦱', '🧑‍🦱', '👨‍🦱', '👩‍🦰', '🧑‍🦰', '👨‍🦰', '👱‍♀️', '👱',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+            '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+            '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
+            '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+            '🔥', '💧', '🌊', '💨', '☁️', '⛅', '⛈️', '🌤️',
+            '🌈', '⭐', '🌟', '✨', '⚡', '☄️', '💥', '🔥',
+            '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉',
+            '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
+            '🎮', '🕹️', '🎯', '🎲', '🎰', '🎳', '🎪', '🎭',
+            '🍕', '🍔', '🍟', '🌭', '🍿', '🥓', '🥚', '🍳',
+            '🍕', '🍰', '🎂', '🧁', '🍪', '🍩', '🍫', '🍬',
+            '☕', '🍵', '🧃', '🥤', '🍷', '🍺', '🍻', '🥂',
+            '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑',
+            '🚒', '🚐', '🚚', '🚛', '🚜', '🛵', '🏍️', '🛺'
+        ];
+
+        // Load emojis into grid
+        emojis.forEach(emoji => {
+            const emojiItem = document.createElement('div');
+            emojiItem.className = 'emoji-item';
+            emojiItem.textContent = emoji;
+            emojiItem.addEventListener('click', () => {
+                messageInput.value += emoji;
+                messageInput.focus();
+                emojiPicker.style.display = 'none';
+                emojiBtn.classList.remove('active');
+            });
+            emojiGrid.appendChild(emojiItem);
+        });
+
+        // Toggle emoji picker
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = emojiPicker.style.display === 'block';
+            emojiPicker.style.display = isVisible ? 'none' : 'block';
+            gifPicker.style.display = 'none';
+            emojiBtn.classList.toggle('active');
+            gifBtn.classList.remove('active');
+        });
+
+        // Toggle GIF picker
+        gifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = gifPicker.style.display === 'block';
+            gifPicker.style.display = isVisible ? 'none' : 'block';
+            emojiPicker.style.display = 'none';
+            gifBtn.classList.toggle('active');
+            emojiBtn.classList.remove('active');
+        });
+
+        // Close buttons
+        emojiClose.addEventListener('click', () => {
+            emojiPicker.style.display = 'none';
+            emojiBtn.classList.remove('active');
+        });
+
+        gifClose.addEventListener('click', () => {
+            gifPicker.style.display = 'none';
+            gifBtn.classList.remove('active');
+        });
+
+        // Close pickers when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+                emojiPicker.style.display = 'none';
+                emojiBtn.classList.remove('active');
+            }
+            if (!gifPicker.contains(e.target) && e.target !== gifBtn) {
+                gifPicker.style.display = 'none';
+                gifBtn.classList.remove('active');
+            }
+        });
+
+        // GIF Search (using Tenor API - free, no key required)
+        let gifSearchTimeout;
+        gifSearch.addEventListener('input', (e) => {
+            clearTimeout(gifSearchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                gifGrid.innerHTML = '<div class="gif-loading">Type to search GIFs... 🎬</div>';
+                return;
+            }
+
+            gifSearchTimeout = setTimeout(() => {
+                searchGifs(query);
+            }, 500);
+        });
+
+        async function searchGifs(query) {
+            gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
+            
+            try {
+                // Using Tenor API (v2) - free public endpoint
+                const apiKey = 'AIzaSyAGPD2zRCYJMJU3pMg_lQNqKW3BDMBwC8M'; // Public demo key
+                const limit = 20;
+                const response = await fetch(
+                    `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=${limit}&media_filter=gif`
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch GIFs');
+                }
+                
+                const data = await response.json();
+                displayGifs(data.results);
+            } catch (error) {
+                console.error('GIF search error:', error);
+                gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
+            }
+        }
+
+        function displayGifs(gifs) {
+            if (!gifs || gifs.length === 0) {
+                gifGrid.innerHTML = '<div class="gif-loading">No GIFs found 😕</div>';
+                return;
+            }
+
+            gifGrid.innerHTML = '';
+            gifs.forEach(gif => {
+                const gifItem = document.createElement('div');
+                gifItem.className = 'gif-item';
+                
+                const img = document.createElement('img');
+                img.src = gif.media_formats.tinygif.url;
+                img.alt = gif.content_description;
+                
+                gifItem.appendChild(img);
+                gifItem.addEventListener('click', () => {
+                    sendGif(gif.media_formats.gif.url, gif.content_description);
+                });
+                
+                gifGrid.appendChild(gifItem);
+            });
+        }
+
+        function sendGif(gifUrl, description) {
+            const gifMessage = `[GIF]${gifUrl}[/GIF]`;
+            chatSocket.send(JSON.stringify({
+                'message': gifMessage,
+                'username': currentUsername
+            }));
+            
+            gifPicker.style.display = 'none';
+            gifBtn.classList.remove('active');
+            gifSearch.value = '';
+            gifGrid.innerHTML = '<div class="gif-loading">Search for GIFs above! 🎬</div>';
+        }
+
+        // ========== END EMOJI & GIF SYSTEM ==========
 
     </script>
 </body>
