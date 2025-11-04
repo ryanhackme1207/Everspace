@@ -138,6 +138,11 @@ try:
 except Exception:
     pass  # Directory creation may succeed on first run or after migrations
 
+# STATICFILES_DIRS: directories where Django looks for static files (app-level statics)
+STATICFILES_DIRS = [
+    BASE_DIR / 'chat' / 'static',  # chat app static files (images, css, js)
+]
+
 # Media files (user uploads)
 MEDIA_URL = '/media/'
 # Allow override via environment (e.g., persistent disk on Render)
@@ -160,6 +165,9 @@ if USE_S3:
     except Exception:
         # If storages not installed, fall back silently to local storage
         USE_S3 = False
+
+# WhiteNoise configuration for efficient static file serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
