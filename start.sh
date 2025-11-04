@@ -1,46 +1,63 @@
-#!/bin/bash
-set -o errexit
-set -o pipefail
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
 
-echo "[startup] Using DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-discord_chat.production}";
-export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-discord_chat.production}
+echo "[startup] ===== Render deployment start ====="
 
-echo "[startup] Running migrations..."
-python manage.py migrate --noinput
+# Load .env if present (without clobbering already-set Render env vars)
+if [ -f .env ]; then
+	echo "[startup] Sourcing .env (only exporting vars not already set)"
+	# Read file line by line to avoid 'set -a' leaking secrets indiscriminately
+	while IFS='=' read -r key val; do
+		# skip comments/blank
+		[ -z "${key}" ] && continue
+		[[ "$key" =~ ^# ]] && continue
+		# strip possible CR and quotes
+		val="${val%$'\r'}"
+		val="${val%""}"; val="${val#""}"
+		if [ -z "${!key:-}" ]; then
+			export "${key}"="${val}"
+		fi
+	done < .env
+fi
 
-echo "[startup] Ensuring hardcoded superuser ryanadmin exists (WARNING: credentials are in repo)";
-python - <<'PYCODE'
-import django
+# Default settings module if not set by Render dashboard
+export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-discord_chat.settings}
+echo "[startup] DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}"
+
+# Ensure Python path
+export PYTHONUNBUFFERED=1
+
+echo "[startup] Applying migrations..."
+python manage.py migrate --noinput || { echo "[startup][ERROR] migrate failed"; exit 1; }
+
+echo "[startup] Collecting static files..."
+python manage.py collectstatic --noinput || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
+
+# Optional: create superuser only if flagged
+if [ "${CREATE_DEFAULT_SUPERUSER:-false}" = "true" ]; then
+	echo "[startup] Creating default superuser if missing (controlled by CREATE_DEFAULT_SUPERUSER)"
+	python - <<'PYCODE'
+import os, django
 django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
-username='ryanadmin'
-password='ryanadmin12345'
-email='admin@example.com'
+username = os.environ.get('DEFAULT_ADMIN_USER','admin')
+password = os.environ.get('DEFAULT_ADMIN_PASS','ChangeMe123!')
+email = os.environ.get('DEFAULT_ADMIN_EMAIL','admin@example.com')
 u, created = User.objects.get_or_create(username=username, defaults={'email': email})
 if created:
-	u.set_password(password)
-	u.is_staff = True
-	u.is_superuser = True
-	u.save()
-	print('[startup] Created superuser', username)
-else:
-	changed=False
-	if not u.is_superuser:
-		u.is_superuser = True; changed=True
-	if not u.is_staff:
-		u.is_staff = True; changed=True
-	# Always reset password to ensure known credentials after redeploy (comment out if undesired)
-	u.set_password(password); changed=True
-	if changed:
+		u.set_password(password)
+		u.is_staff = True
+		u.is_superuser = True
 		u.save()
-		print('[startup] Updated existing superuser', username)
-	else:
-		print('[startup] Superuser already configured', username)
+		print('[startup] Superuser created:', username)
+else:
+		print('[startup] Superuser exists:', username)
 PYCODE
+fi
 
-echo "[startup] Collecting static files..."
-python manage.py collectstatic --noinput
-
-echo "[startup] Starting Daphne on 0.0.0.0:$PORT";
-exec daphne -b 0.0.0.0 -p $PORT discord_chat.asgi:application
+# Choose ASGI server (daphne recommended for Channels)
+PORT=${PORT:-8000}
+echo "[startup] Starting Daphne on 0.0.0.0:${PORT}"
+exec daphne -b 0.0.0.0 -p "${PORT}" discord_chat.asgi:application

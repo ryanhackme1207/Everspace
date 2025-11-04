@@ -26,6 +26,8 @@ urlpatterns = [
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/<str:username>/', views.view_profile, name='view_profile'),
     path('profile/', views.view_profile, name='my_profile'),
+    # GIF search proxy
+    path('gif/search/', views.gif_search, name='gif_search'),
     # Notification URLs
     path('chat/notifications/count/', views.notification_count, name='notification_count'),
     path('chat/notifications/list/', views.notification_list, name='notification_list'),

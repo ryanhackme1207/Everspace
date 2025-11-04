@@ -7,6 +7,7 @@
     <title>{{ profile_user.username }}'s Profile - EverSpace</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'chat/css/premium_covers.css' %}">
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -276,18 +277,15 @@
 
         <div class="profile-card">
             <div class="profile-header">
-                {% if profile.cover_choice %}
-                <div class="profile-cover" style="background-image: url('{% static 'chat/img/covers/' %}{{ profile.cover_choice }}.jpg');"></div>
-                {% endif %}
+                {# Unified cover logic: animated CSS class if chosen, else background image URL fallback #}
+                <div class="profile-cover {% if cover_css_class %}{{ cover_css_class }}{% endif %}" {% if not cover_css_class and cover_image_url %}style="background-image: url('{{ cover_image_url }}');"{% endif %}></div>
             </div>
 
             <div class="profile-content">
                 <div class="profile-avatar-container">
                     <div class="profile-avatar">
-                        {% if profile.profile_picture %}
-                            <img src="{{ profile.profile_picture.url }}" alt="{{ profile_user.username }}">
-                        {% elif profile.pixel_avatar %}
-                            <img src="{% static 'chat/img/pixel-avatars/' %}{{ profile.pixel_avatar }}.png" alt="{{ profile_user.username }}">
+                        {% if avatar_url %}
+                            <img src="{{ avatar_url }}" alt="{{ profile_user.username }} avatar" loading="lazy">
                         {% else %}
                             {{ profile_user.username|slice:":1"|upper }}
                         {% endif %}
@@ -295,10 +293,22 @@
                 </div>
 
                 <div class="profile-info">
-                    <h1 class="profile-username">{{ profile_user.username }}</h1>
+                    <h1 class="profile-username">{{ profile_user.username }}
+                        {% if is_own_profile %}<span style="display:inline-block; font-size:0.75rem; padding:0.25rem 0.5rem; margin-left:0.5rem; background:rgba(255,255,255,0.08); border-radius:6px;">YOU</span>{% endif %}
+                    </h1>
+                    {% if profile_user.first_name or profile_user.last_name %}
+                        <p style="margin-top:-0.5rem; color:var(--text-secondary); font-size:0.95rem;">{{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+                    {% endif %}
+                    {% if profile.bio %}
+                        <div style="max-width:600px; margin:0.75rem auto 1rem; font-size:0.95rem; line-height:1.4; color:var(--text-secondary); white-space:pre-line;">{{ profile.bio|default:"No bio yet." }}</div>
+                    {% else %}
+                        {% if is_own_profile %}
+                            <div style="margin:0.75rem auto 1rem; font-size:0.85rem; opacity:0.6;">Add a bio in <a href="{% url 'edit_profile' %}" style="color:var(--accent-purple); text-decoration:none;">Edit Profile</a> to tell others about you.</div>
+                        {% endif %}
+                    {% endif %}
                     <p class="profile-email">
                         <i class="fas fa-envelope"></i>
-                        {{ profile_user.email }}
+                        {{ profile_user.email|default:"(no email)" }}
                     </p>
                 </div>
 
@@ -322,26 +332,18 @@
 
                 <div class="profile-stats">
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-user-friends"></i>
-                        </div>
-                        <div class="stat-value">{{ profile_user.friends.count }}</div>
+                        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+                        <div class="stat-value">{% if profile_user.friends %}{{ profile_user.friends.count }}{% else %}0{% endif %}</div>
                         <div class="stat-label">Friends</div>
                     </div>
-
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <div class="stat-value">{{ profile_user.message_set.count }}</div>
+                        <div class="stat-icon"><i class="fas fa-comments"></i></div>
+                        <div class="stat-value">{% if profile_user.message_set %}{{ profile_user.message_set.count }}{% else %}0{% endif %}</div>
                         <div class="stat-label">Messages</div>
                     </div>
-
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-door-open"></i>
-                        </div>
-                        <div class="stat-value">{{ profile_user.room_set.count }}</div>
+                        <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                        <div class="stat-value">{% if profile_user.room_set %}{{ profile_user.room_set.count }}{% else %}0{% endif %}</div>
                         <div class="stat-label">Rooms Created</div>
                     </div>
                 </div>

@@ -18,6 +18,7 @@ from functools import wraps
 import os
 import json
 from django.conf import settings
+import requests  # For Tenor GIF search proxy
 
 # Temporary diagnostic middleware (can be moved to separate file later)
 class KickBanDiagnosticMiddleware:
@@ -1456,14 +1457,81 @@ def view_profile(request, username=None):
         user = request.user
     
     profile, created = UserProfile.objects.get_or_create(user=user)
+
+    # Determine animated cover CSS class (reuse logic from edit_profile)
+    cover_css_class = ''
+    cover_choices = [
+        {'id': 'aurora', 'css_class': 'cover-aurora-animated'},
+        {'id': 'cosmic', 'css_class': 'cover-cosmic-animated'},
+        {'id': 'neon', 'css_class': 'cover-neon-animated'},
+        {'id': 'cyberpunk', 'css_class': 'cover-cyberpunk-animated'},
+        {'id': 'sunset', 'css_class': 'cover-sunset-animated'},
+        {'id': 'ocean', 'css_class': 'cover-ocean-animated'},
+        {'id': 'galaxy', 'css_class': 'cover-galaxy-animated'},
+        {'id': 'matrix', 'css_class': 'cover-matrix-animated'},
+        {'id': 'fire', 'css_class': 'cover-fire-animated'},
+        {'id': 'crystal', 'css_class': 'cover-crystal-animated'},
+    ]
+    if profile.cover_choice:
+        for c in cover_choices:
+            if c['id'] == profile.cover_choice:
+                cover_css_class = c['css_class']
+                break
     
     context = {
         'profile_user': user,
         'profile': profile,
         'is_own_profile': user == request.user,
+        'cover_css_class': cover_css_class,
+        'avatar_url': profile.get_profile_picture_url(),
+        'cover_image_url': profile.get_cover_image_url(),
     }
     
     return render(request, 'chat/view_profile.html', context)
+
+
+# ===== GIF SEARCH PROXY (Tenor) =====
+@login_required
+def gif_search(request):
+    """Server-side GIF search using Tenor API. Keeps API key off client.
+    Query param: ?q=term (min length 2). Returns JSON: {results:[{url,desc}]}
+    """
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    api_key = getattr(settings, 'TENOR_API_KEY', '')
+    if not api_key:
+        return JsonResponse({'results': [], 'error': 'GIF search not configured'})
+
+    params = {
+        'q': q,
+        'key': api_key,
+        'limit': 20,
+        'media_filter': 'gif'
+    }
+    results = []
+    try:
+        r = requests.get('https://tenor.googleapis.com/v2/search', params=params, timeout=5)
+        if r.ok:
+            data = r.json()
+            for item in data.get('results', []):
+                media = item.get('media_formats', {})
+                chosen = media.get('tinygif') or media.get('gif') or {}
+                url = chosen.get('url')
+                if url:
+                    results.append({
+                        'url': url,
+                        'desc': (item.get('content_description') or '')[:120]
+                    })
+        else:
+            return JsonResponse({'results': [], 'error': 'Upstream error'}, status=502)
+    except requests.RequestException as e:
+        return JsonResponse({'results': [], 'error': f'Network error: {e.__class__.__name__}'}, status=503)
+    except Exception as e:
+        return JsonResponse({'results': [], 'error': f'Unexpected error: {str(e)}'}, status=500)
+
+    return JsonResponse({'results': results})
 
 
 # ===== NOTIFICATION VIEWS =====

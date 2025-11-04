@@ -606,15 +606,20 @@
             position: absolute;
             bottom: 100%;
             left: 1rem;
-            width: 320px;
-            max-height: 400px;
+            width: 340px;
+            max-height: 420px;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
             box-shadow: var(--shadow-elevated);
-            overflow: hidden;
-            z-index: 1000;
-            animation: slideUp 0.3s ease;
+            overflow: visible; /* allow grid overflow internally */
+            z-index: 2000;
+            animation: slideUp 0.25s ease;
+        }
+        /* When there isn't enough space above, show below */
+        .emoji-picker[data-position="below"] {
+            bottom: auto;
+            top: 100%;
         }
 
         .emoji-picker-header {
@@ -2117,15 +2122,34 @@
 
             // Toggle emoji picker
             console.log('Setting up emoji button click handler...');
+            function positionEmojiPicker() {
+                // Decide whether to show above or below based on available space
+                const triggerRect = emojiBtn.getBoundingClientRect();
+                const spaceAbove = triggerRect.top;
+                const needed = 440; // approximate picker height
+                if (spaceAbove < needed) {
+                    emojiPicker.setAttribute('data-position', 'below');
+                } else {
+                    emojiPicker.removeAttribute('data-position');
+                }
+            }
+
             emojiBtn.addEventListener('click', (e) => {
                 console.log('Emoji button clicked!');
                 e.stopPropagation();
                 const isVisible = emojiPicker.style.display === 'block';
-                emojiPicker.style.display = isVisible ? 'none' : 'block';
-                gifPicker.style.display = 'none';
-                emojiBtn.classList.toggle('active');
-                gifBtn.classList.remove('active');
-                console.log('Emoji picker display:', emojiPicker.style.display);
+                if (isVisible) {
+                    emojiPicker.style.display = 'none';
+                    emojiBtn.classList.remove('active');
+                } else {
+                    positionEmojiPicker();
+                    emojiPicker.style.display = 'block';
+                    emojiBtn.classList.add('active');
+                    // Close GIF if open
+                    gifPicker.style.display = 'none';
+                    gifBtn.classList.remove('active');
+                }
+                console.log('Emoji picker display:', emojiPicker.style.display, 'position attr:', emojiPicker.getAttribute('data-position'));
             });
 
             // Toggle GIF picker
@@ -2185,30 +2209,17 @@
 
             async function searchGifs(query) {
                 gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
-                
                 try {
-                    // Get API key from Django template context (safer than hardcoding)
-                    const apiKey = '{{ tenor_api_key|default:"" }}';
-                    
-                    if (!apiKey) {
-                        gifGrid.innerHTML = '<div class="gif-loading">❌ GIF search not configured. Contact admin.</div>';
-                        console.error('Tenor API key not configured');
+                    const response = await fetch(`/gif/search/?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Request failed');
+                    const data = await response.json();
+                    if (data.error) {
+                        gifGrid.innerHTML = `<div class="gif-loading">❌ ${data.error}</div>`;
                         return;
                     }
-                    
-                    const limit = 20;
-                    const response = await fetch(
-                        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=${limit}&media_filter=gif`
-                    );
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch GIFs');
-                    }
-                    
-                    const data = await response.json();
                     displayGifs(data.results);
-                } catch (error) {
-                    console.error('GIF search error:', error);
+                } catch (err) {
+                    console.error('GIF search error:', err);
                     gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
                 }
             }
