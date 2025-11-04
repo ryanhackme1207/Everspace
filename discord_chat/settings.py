@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -130,7 +131,26 @@ STATIC_URL = 'static/'
 
 # Media files (user uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Allow override via environment (e.g., persistent disk on Render)
+_env_media_root = os.environ.get('MEDIA_ROOT')
+MEDIA_ROOT = Path(_env_media_root) if _env_media_root else (BASE_DIR / 'media')
+try:
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+except Exception:
+    # Non-fatal: directory may be created later by storage backend
+    pass
+
+# Optional S3 integration toggle (placeholder)
+USE_S3 = os.environ.get('USE_S3', 'false').lower() in ['1', 'true', 'yes']
+if USE_S3:
+    # Expected env vars (document only): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+    # AWS_STORAGE_BUCKET_NAME, AWS_S3_REGION_NAME
+    try:
+        INSTALLED_APPS.append('storages')
+        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    except Exception:
+        # If storages not installed, fall back silently to local storage
+        USE_S3 = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -185,12 +205,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # OTP Settings
-OTP_TOTP_ISSUER = 'Discord Chat App'
+OTP_TOTP_ISSUER = 'Everspace'
 OTP_LOGIN_URL = '/auth/login/'
 
 # Email Settings (for development - use console backend)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@discordchat.com'
+DEFAULT_FROM_EMAIL = 'noreply@gmail.com'
 
 # Rate Limiting
 RATELIMIT_ENABLE = True

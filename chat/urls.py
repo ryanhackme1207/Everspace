@@ -24,8 +24,6 @@ urlpatterns = [
     path('friends/send-message/', views.send_private_message, name='send_private_message'),
     # Profile URLs
     path('profile/edit/', views.edit_profile, name='edit_profile'),
-    path('profile/upload-picture/', views.upload_profile_picture, name='upload_profile_picture'),
-    path('profile/upload-cover/', views.upload_cover_image, name='upload_cover_image'),
     path('profile/<str:username>/', views.view_profile, name='view_profile'),
     path('profile/', views.view_profile, name='my_profile'),
 ]

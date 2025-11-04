@@ -132,49 +132,51 @@
             box-shadow: var(--shadow-elevated);
         }
 
-        .cover-image {
+        .cover-image, .dynamic-cover {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: var(--border-radius-lg);
         }
 
-        .cover-upload-overlay {
+        .dynamic-cover {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .cover-select-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.35);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 1rem;
             opacity: 0;
             transition: opacity 0.3s ease;
-            cursor: pointer;
             border-radius: var(--border-radius-lg);
         }
 
-        .profile-cover-section:hover .cover-upload-overlay {
-            opacity: 1;
-        }
+        .profile-cover-section:hover .cover-select-overlay { opacity: 1; }
 
-        .upload-btn {
+        .choose-cover-btn {
             background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 2px solid var(--glass-border);
-            border-radius: var(--border-radius-md);
-            padding: 1rem 2rem;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius-sm);
             font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.25s ease;
         }
-
-        .upload-btn:hover {
-            background: var(--accent-coral);
-            border-color: var(--accent-coral);
-            transform: translateY(-2px);
-        }
+        .choose-cover-btn:hover { background: var(--accent-teal); border-color: var(--accent-teal); }
 
         /* Profile Picture Section */
         .profile-picture-section {
@@ -371,24 +373,31 @@
             color: #dc3545;
         }
 
-        /* File Upload Areas */
-        .file-upload-area {
-            border: 2px dashed var(--glass-border);
+        /* Cover choice grid */
+        .cover-choice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .cover-choice-option {
+            position: relative;
+            height: 80px;
             border-radius: var(--border-radius-md);
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
             cursor: pointer;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            transition: all 0.3s ease;
         }
-
-        .file-upload-area:hover {
-            border-color: var(--accent-teal);
-            background: rgba(78, 205, 196, 0.05);
-        }
-
-        .file-upload-area.dragover {
-            border-color: var(--accent-coral);
-            background: rgba(255, 107, 107, 0.05);
+        .cover-choice-option:hover { border-color: var(--accent-teal); transform: translateY(-3px); }
+        .cover-choice-option.selected { border-color: var(--accent-coral); box-shadow: 0 0 0 3px rgba(255,107,107,0.25); }
+        .cover-choice-label {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.4rem;
+            text-align: center;
         }
 
         /* Responsive Design */
@@ -462,11 +471,15 @@
 
         <!-- Profile Cover Section -->
         <div class="profile-cover-section">
-            <img src="{{ profile.get_cover_image_url }}" alt="Cover Image" class="cover-image" id="cover-preview">
-            <div class="cover-upload-overlay" onclick="document.getElementById('cover-file-input').click()">
-                <button type="button" class="upload-btn">
-                    <i class="fas fa-camera me-2"></i>Change Cover
-                </button>
+            {% if profile.cover_choice %}
+                <div class="dynamic-cover" id="cover-preview" style="background: {{ cover_gradient|default:'var(--primary-gradient)' }};"></div>
+            {% else %}
+                <img src="{{ profile.get_cover_image_url }}" alt="Cover Image" class="cover-image" id="cover-preview">
+            {% endif %}
+            <div class="cover-select-overlay">
+                <a href="#cover-selection" class="choose-cover-btn">
+                    <i class="fas fa-palette"></i> Choose Cover
+                </a>
             </div>
             
             <!-- Profile Picture Section -->
@@ -574,13 +587,6 @@
                             <i class="fas fa-images"></i>Profile Picture
                         </h2>
                         
-                        <!-- Custom Upload -->
-                        <div class="file-upload-area mb-3" onclick="document.getElementById('profile-file-input').click()">
-                            <i class="fas fa-cloud-upload-alt mb-2" style="font-size: 2rem; color: var(--accent-teal);"></i>
-                            <div>Click to upload custom image</div>
-                            <small class="text-muted">JPG, PNG, GIF up to 5MB</small>
-                        </div>
-                        
                         <!-- Pixel Avatars -->
                         <h5 class="mb-3" style="color: var(--text-primary);">Or choose a pixel avatar:</h5>
                         <form method="post" action="{% url 'edit_profile' %}" id="pixel-avatar-form">
@@ -603,9 +609,26 @@
         </div>
     </div>
 
-    <!-- Hidden File Inputs -->
-    <input type="file" id="profile-file-input" accept="image/*" style="display: none;">
-    <input type="file" id="cover-file-input" accept="image/*" style="display: none;">
+    <!-- Cover Selection Section -->
+    <div class="container" id="cover-selection" style="margin-top:2rem;">
+        <div class="glass-card">
+            <h2 class="section-title"><i class="fas fa-palette"></i>Cover Image</h2>
+            <p class="text-muted" style="font-size:0.9rem;">Pick a themed cover. This replaces any uploaded cover image.</p>
+            <form method="post" action="{% url 'edit_profile' %}" id="cover-choice-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="set_cover_choice">
+                <input type="hidden" name="cover_choice" id="cover-choice-input" value="{{ profile.cover_choice }}">
+                <div class="cover-choice-grid">
+                    {% for c in cover_choices %}
+                        <div class="cover-choice-option {% if profile.cover_choice == c.id %}selected{% endif %}"
+                             style="background: {{ c.gradient }};" onclick="selectCover('{{ c.id }}')" data-id="{{ c.id }}">
+                            <div class="cover-choice-label">{{ c.label }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -657,66 +680,14 @@
             document.getElementById('pixel-avatar-form').submit();
         }
 
-        // Profile picture upload
-        document.getElementById('profile-file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                uploadProfilePicture(file);
-            }
-        });
-
-        // Cover image upload
-        document.getElementById('cover-file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                uploadCoverImage(file);
-            }
-        });
-
-        function uploadProfilePicture(file) {
-            const formData = new FormData();
-            formData.append('profile_picture', file);
-            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-
-            fetch('{% url "upload_profile_picture" %}', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('profile-preview').src = data.image_url + '?t=' + new Date().getTime();
-                    showToast(data.message, 'success');
-                } else {
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showToast('An error occurred while uploading the image.', 'error');
-            });
-        }
-
-        function uploadCoverImage(file) {
-            const formData = new FormData();
-            formData.append('cover_image', file);
-            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-
-            fetch('{% url "upload_cover_image" %}', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('cover-preview').src = data.image_url + '?t=' + new Date().getTime();
-                    showToast(data.message, 'success');
-                } else {
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showToast('An error occurred while uploading the image.', 'error');
-            });
+        // Cover selection handled via form submissions (no uploads)
+        function selectCover(id) {
+            document.querySelectorAll('.cover-choice-option').forEach(el => el.classList.remove('selected'));
+            const input = document.getElementById('cover-choice-input');
+            input.value = id;
+            const chosen = document.querySelector('.cover-choice-option[data-id="' + id + '"]');
+            if (chosen) chosen.classList.add('selected');
+            document.getElementById('cover-choice-form').submit();
         }
 
         function showToast(message, type) {
@@ -739,31 +710,7 @@
             }, 5000);
         }
 
-        // Drag and drop for file uploads
-        function setupDragAndDrop(element, callback) {
-            element.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                element.classList.add('dragover');
-            });
-
-            element.addEventListener('dragleave', function(e) {
-                element.classList.remove('dragover');
-            });
-
-            element.addEventListener('drop', function(e) {
-                e.preventDefault();
-                element.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    callback(files[0]);
-                }
-            });
-        }
-
-        // Setup drag and drop for upload areas
-        setupDragAndDrop(document.querySelector('.file-upload-area'), uploadProfilePicture);
-        setupDragAndDrop(document.querySelector('.cover-upload-overlay'), uploadCoverImage);
+        // Removed legacy drag & drop upload logic (selection-only mode)
     </script>
 </body>
 </html>

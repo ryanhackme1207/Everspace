@@ -13,6 +13,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     cover_image = models.ImageField(upload_to='cover_images/', null=True, blank=True)
+    # New: selectable cover choice (CSS/gradient or static predefined id). Takes precedence over uploaded cover.
+    cover_choice = models.CharField(max_length=50, blank=True, default='')
     bio = models.TextField(max_length=500, blank=True, default='')
     pixel_avatar = models.CharField(max_length=50, blank=True, default='')
     username_changes_count = models.IntegerField(default=0)
@@ -52,11 +54,14 @@ class UserProfile(models.Model):
             return '/static/chat/images/default_avatar.png'
 
     def get_cover_image_url(self):
-        """Get cover image URL or default"""
+        """Resolve cover image: priority -> cover_choice preset -> uploaded cover -> default."""
+        if self.cover_choice:
+            # For gradient/CSS covers we return a sentinel path the template maps to a CSS class.
+            # If cover_choice matches a file in static/chat/covers/<id>.jpg user can swap to actual images later.
+            return f'/static/chat/covers/{self.cover_choice}.jpg'
         if self.cover_image:
             return self.cover_image.url
-        else:
-            return '/static/chat/images/default_cover.jpg'
+        return '/static/chat/images/default_cover.jpg'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

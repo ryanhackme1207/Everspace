@@ -1035,7 +1035,62 @@ def edit_profile(request):
     # Define available pixel avatars
     pixel_avatars = [
         'robot', 'alien', 'knight', 'wizard', 'ninja', 'pirate', 'cat', 'dog',
-        'dragon', 'unicorn', 'ghost', 'monster', 'astronaut', 'viking', 'samurai', 'mage'
+        'dragon', 'unicorn', 'ghost', 'monster', 'astronaut', 'viking', 'samurai', 'mage',
+        'phoenix', 'cyber', 'mech', 'lotus', 'serpent'
+    ]
+
+    cover_choices = [
+        # id, label, gradient CSS (used in template via data-gradient or class)
+        {
+            'id': 'sunrise',
+            'label': 'Sunrise Glow',
+            'gradient': 'linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)'
+        },
+        {
+            'id': 'aurora',
+            'label': 'Aurora Wave',
+            'gradient': 'linear-gradient(135deg,#00c6ff 0%,#0072ff 100%)'
+        },
+        {
+            'id': 'cosmic',
+            'label': 'Cosmic Dust',
+            'gradient': 'linear-gradient(135deg,#662d8c 0%,#ed1e79 100%)'
+        },
+        {
+            'id': 'neon',
+            'label': 'Neon Grid',
+            'gradient': 'linear-gradient(135deg,#12c2e9 0%,#c471ed 50%,#f64f59 100%)'
+        },
+        {
+            'id': 'circuit',
+            'label': 'Circuit Dark',
+            'gradient': 'linear-gradient(135deg,#1f1c2c 0%,#928dab 100%)'
+        },
+        {
+            'id': 'starfield',
+            'label': 'Starfield',
+            'gradient': 'linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%)'
+        },
+        {
+            'id': 'horizon',
+            'label': 'Horizon',
+            'gradient': 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)'
+        },
+        {
+            'id': 'ocean',
+            'label': 'Ocean Glow',
+            'gradient': 'linear-gradient(135deg,#2193b0 0%,#6dd5ed 100%)'
+        },
+        {
+            'id': 'midnight',
+            'label': 'Midnight Pulse',
+            'gradient': 'linear-gradient(135deg,#141e30 0%,#243b55 100%)'
+        },
+        {
+            'id': 'crystal',
+            'label': 'Crystal Ridge',
+            'gradient': 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)'
+        },
     ]
     
     if request.method == 'POST':
@@ -1101,6 +1156,18 @@ def edit_profile(request):
                 messages.success(request, 'Pixel avatar updated successfully!')
             else:
                 messages.error(request, 'Invalid pixel avatar selection.')
+        elif action == 'set_cover_choice':
+            cover_id = request.POST.get('cover_choice')
+            if any(c['id'] == cover_id for c in cover_choices):
+                profile.cover_choice = cover_id
+                # Optional: clear uploaded cover_image if present
+                if profile.cover_image:
+                    profile.cover_image.delete()
+                    profile.cover_image = None
+                profile.save()
+                messages.success(request, 'Cover updated successfully!')
+            else:
+                messages.error(request, 'Invalid cover choice.')
         
         return redirect('edit_profile')
     
@@ -1111,9 +1178,19 @@ def edit_profile(request):
         # m.tags can be multiple space-separated tags; check substring presence
         if 'room-ban' not in m.tags.split():
             filtered.append(m)
+    # Determine gradient for currently selected cover (if any)
+    cover_gradient = ''
+    if profile.cover_choice:
+        for c in cover_choices:
+            if c['id'] == profile.cover_choice:
+                cover_gradient = c['gradient']
+                break
+
     context = {
         'profile': profile,
         'pixel_avatars': pixel_avatars,
+        'cover_choices': cover_choices,
+        'cover_gradient': cover_gradient,
         'remaining_username_changes': 3 - profile.username_changes_count if profile.can_change_username() else 0,
         'can_change_username': profile.can_change_username(),
         'show_messages': filtered,
@@ -1127,6 +1204,8 @@ def edit_profile(request):
 def upload_profile_picture(request):
     """Handle profile picture upload"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
+    # Uploads deprecated in preset-selection mode
+    return JsonResponse({'success': False, 'message': 'Direct uploads disabled. Please choose a pixel avatar.'}, status=410)
     
     if 'profile_picture' not in request.FILES:
         return JsonResponse({'success': False, 'message': 'No file uploaded.'})
@@ -1179,7 +1258,16 @@ def upload_profile_picture(request):
             profile_dir_listing = os.listdir(full_dir)
         except Exception:
             profile_dir_listing = []
-        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': profile_dir_listing})
+        # Base64 inline data (small images only to avoid payload bloat)
+        inline_b64 = ''
+        try:
+            if os.path.getsize(full_path) <= 2 * 1024 * 1024:  # 2MB safety cap
+                import base64
+                with open(full_path, 'rb') as f:
+                    inline_b64 = 'data:image/' + ext.replace('.', '') + ';base64,' + base64.b64encode(f.read()).decode('utf-8')
+        except Exception:
+            inline_b64 = ''
+        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': profile_dir_listing,'inline_data': inline_b64})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
@@ -1190,6 +1278,8 @@ def upload_profile_picture(request):
 def upload_cover_image(request):
     """Handle cover image upload"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
+    # Uploads deprecated in preset-selection mode
+    return JsonResponse({'success': False, 'message': 'Cover uploads disabled. Please choose a preset cover.'}, status=410)
     
     if 'cover_image' not in request.FILES:
         return JsonResponse({'success': False, 'message': 'No file uploaded.'})
@@ -1236,7 +1326,15 @@ def upload_cover_image(request):
             cover_dir_listing = os.listdir(full_dir)
         except Exception:
             cover_dir_listing = []
-        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': cover_dir_listing})
+        inline_b64 = ''
+        try:
+            if os.path.getsize(full_path) <= 4 * 1024 * 1024:  # 4MB cap for cover
+                import base64
+                with open(full_path, 'rb') as f:
+                    inline_b64 = 'data:image/' + ext.replace('.', '') + ';base64,' + base64.b64encode(f.read()).decode('utf-8')
+        except Exception:
+            inline_b64 = ''
+        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': cover_dir_listing,'inline_data': inline_b64})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
