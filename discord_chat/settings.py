@@ -129,6 +129,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+# STATIC_ROOT: where collectstatic gathers files (required for 'python manage.py collectstatic')
+_env_static_root = os.environ.get('STATIC_ROOT')
+STATIC_ROOT = Path(_env_static_root) if _env_static_root else (BASE_DIR / 'staticfiles')
+try:
+    STATIC_ROOT.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass  # Directory creation may succeed on first run or after migrations
 
 # Media files (user uploads)
 MEDIA_URL = '/media/'
