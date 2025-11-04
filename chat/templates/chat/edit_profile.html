@@ -131,8 +131,9 @@
             background: var(--primary-gradient);
             border-radius: var(--border-radius-lg);
             margin: 2rem 0;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to visible */
             box-shadow: var(--shadow-elevated);
+            margin-bottom: 5rem; /* Add space for profile picture overflow */
         }
 
         .cover-image, .dynamic-cover {
@@ -140,6 +141,7 @@
             height: 100%;
             object-fit: cover;
             border-radius: var(--border-radius-lg);
+            overflow: hidden; /* Keep animations inside the rounded corners */
         }
 
         .dynamic-cover {
@@ -227,7 +229,7 @@
 
         /* Main Content */
         .profile-content {
-            margin-top: 4rem;
+            margin-top: 1rem; /* Reduced from 4rem since we added margin-bottom to cover */
             padding: 2rem 0;
         }
 
@@ -408,6 +410,7 @@
             .profile-cover-section {
                 height: 200px;
                 margin: 1rem 0;
+                margin-bottom: 3.5rem; /* Add space for mobile profile picture */
             }
 
             .profile-picture-section {
@@ -423,6 +426,10 @@
             .profile-picture {
                 width: 80px;
                 height: 80px;
+            }
+
+            .profile-content {
+                margin-top: 0.5rem; /* Reduced for mobile */
             }
 
             .glass-card {
