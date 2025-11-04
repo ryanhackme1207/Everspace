@@ -1174,7 +1174,12 @@ def upload_profile_picture(request):
         absolute_url = urljoin(request.build_absolute_uri('/'), img_url.lstrip('/'))
         img_url_versioned = f"{absolute_url}?v={int(time.time())}"
         print(f"[UPLOAD PROFILE] Saved {full_path} exists={exists} url={img_url_versioned}")
-        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path})
+        # List directory contents for debugging
+        try:
+            profile_dir_listing = os.listdir(full_dir)
+        except Exception:
+            profile_dir_listing = []
+        return JsonResponse({'success': True,'message': 'Profile picture updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': profile_dir_listing})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
@@ -1227,7 +1232,11 @@ def upload_cover_image(request):
         absolute_url = urljoin(request.build_absolute_uri('/'), img_url.lstrip('/'))
         img_url_versioned = f"{absolute_url}?v={int(time.time())}"
         print(f"[UPLOAD COVER] Saved {full_path} exists={exists} url={img_url_versioned}")
-        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path})
+        try:
+            cover_dir_listing = os.listdir(full_dir)
+        except Exception:
+            cover_dir_listing = []
+        return JsonResponse({'success': True,'message': 'Cover image updated successfully!','image_url': img_url_versioned,'debug_path_exists': exists,'saved_path': saved_path,'dir_listing': cover_dir_listing})
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'An error occurred while uploading the image.'})
