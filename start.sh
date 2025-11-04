@@ -32,12 +32,11 @@ export PYTHONUNBUFFERED=1
 # Users can override by setting TENOR_API_KEY in Render environment variables
 # Get a free API key at: https://tenor.com/developer/keyregistration
 if [ -z "${TENOR_API_KEY:-}" ]; then
-	echo "[startup] WARNING: TENOR_API_KEY not set. GIF search will be unavailable."
-	echo "[startup] To enable GIFs, set TENOR_API_KEY in Render environment variables."
-	echo "[startup] Get a free key at: https://tenor.com/developer/keyregistration"
-	# Don't set a default invalid key - let it be empty so users know to configure it
+	# EverSpace project Tenor API key
+	export TENOR_API_KEY="AIzaSyA3iOLnafGrcexjOUxYOGtALbgEQ_258Gs"
+	echo "[startup] Using EverSpace Tenor API key"
 else
-	echo "[startup] TENOR_API_KEY is configured"
+	echo "[startup] TENOR_API_KEY from environment override"
 fi
 
 # Always create superuser on first run (can be disabled by unsetting flag)
