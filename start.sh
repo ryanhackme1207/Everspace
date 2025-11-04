@@ -50,8 +50,8 @@ python manage.py migrate --noinput || { echo "[startup][ERROR] migrate failed"; 
 echo "[startup] Collecting static files..."
 # Clear old static files first
 rm -rf staticfiles/ || true
-# Use verbose output to debug collection; use --clear to ensure fresh collection
-python manage.py collectstatic --noinput --clear --verbose 2 || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
+# Use -v 2 for verbosity; --clear to ensure fresh collection
+python manage.py collectstatic --noinput --clear -v 2 || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
 echo "[startup] Static files collected successfully"
 
 # Optional: create superuser only if flagged
