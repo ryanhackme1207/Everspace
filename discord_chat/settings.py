@@ -187,6 +187,12 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # CSRF Protection
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JavaScript to read the token
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://everspace-izi3.onrender.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
