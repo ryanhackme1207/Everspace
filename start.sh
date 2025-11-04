@@ -42,8 +42,8 @@ import os, django
 django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
-username = os.environ.get('DEFAULT_ADMIN_USER','admin')
-password = os.environ.get('DEFAULT_ADMIN_PASS','ChangeMe123!')
+username = os.environ.get('DEFAULT_ADMIN_USER','ryanadmin')
+password = os.environ.get('DEFAULT_ADMIN_PASS','ryanadmin12345')
 email = os.environ.get('DEFAULT_ADMIN_EMAIL','admin@example.com')
 u, created = User.objects.get_or_create(username=username, defaults={'email': email})
 if created:
