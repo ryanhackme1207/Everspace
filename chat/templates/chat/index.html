@@ -2171,10 +2171,14 @@
                 return;
             }
             
+            console.log('[NOTIFICATIONS] Displaying', notifications.length, 'notifications');
+            
             notificationList.innerHTML = notifications.map(notif => {
                 const timeAgo = formatTimeAgo(new Date(notif.timestamp));
                 const unreadClass = notif.is_read ? '' : 'unread';
                 const avatar = notif.sender.charAt(0).toUpperCase();
+                
+                console.log('[NOTIFICATION]', notif.type, '-', notif.title, '- Link:', notif.link);
                 
                 // Get icon and color based on notification type
                 let icon = 'fa-bell';
@@ -2238,18 +2242,26 @@
             // Add click handlers to mark as read and navigate
             notificationList.querySelectorAll('.notification-item').forEach(item => {
                 item.addEventListener('click', function(e) {
+                    e.preventDefault(); // Always prevent default to control navigation
+                    
                     const notifId = this.dataset.id;
                     const link = this.dataset.link;
                     
-                    // Only prevent default if we need to mark as read first
-                    if (notifId && link !== '#') {
-                        e.preventDefault();
+                    console.log('[NOTIFICATION CLICK] ID:', notifId, 'Link:', link);
+                    
+                    // Mark as read
+                    if (notifId) {
                         markNotificationRead(notifId);
-                        
-                        // Navigate after marking as read
+                    }
+                    
+                    // Navigate if valid link
+                    if (link && link !== '#' && link !== 'null' && link !== 'undefined') {
+                        console.log('[NOTIFICATION CLICK] Navigating to:', link);
                         setTimeout(() => {
                             window.location.href = link;
                         }, 100);
+                    } else {
+                        console.warn('[NOTIFICATION CLICK] Invalid link:', link);
                     }
                 });
             });
