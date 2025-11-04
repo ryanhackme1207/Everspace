@@ -372,3 +372,106 @@ class PrivateMessage(models.Model):
         """Mark message as read"""
         self.is_read = True
         self.save()
+
+
+class Notification(models.Model):
+    """Universal notification system for all events"""
+    NOTIFICATION_TYPES = [
+        ('message', 'New Message'),
+        ('friend_request', 'Friend Request'),
+        ('friend_accepted', 'Friend Request Accepted'),
+        ('kicked', 'Kicked from Room'),
+        ('banned', 'Banned from Room'),
+        ('room_deleted', 'Room Deleted'),
+        ('transfer_ownership', 'Room Ownership Transferred'),
+    ]
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    link = models.CharField(max_length=500, blank=True)  # Link to relevant page
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    # Optional related objects
+    room = models.ForeignKey('Room', on_delete=models.CASCADE, null=True, blank=True)
+    private_message = models.ForeignKey(PrivateMessage, on_delete=models.CASCADE, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f'{self.notification_type} for {self.recipient.username}: {self.title}'
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        self.is_read = True
+        self.save()
+    
+    @classmethod
+    def create_message_notification(cls, sender, receiver, private_message):
+        """Create notification for new private message"""
+        return cls.objects.create(
+            recipient=receiver,
+            sender=sender,
+            notification_type='message',
+            title=f'New message from {sender.username}',
+            message=private_message.content[:100],
+            link=f'/friends/chat/{sender.username}/',
+            private_message=private_message
+        )
+    
+    @classmethod
+    def create_friend_request_notification(cls, sender, receiver):
+        """Create notification for friend request"""
+        return cls.objects.create(
+            recipient=receiver,
+            sender=sender,
+            notification_type='friend_request',
+            title=f'{sender.username} sent you a friend request',
+            message=f'{sender.username} wants to be your friend',
+            link='/friends/'
+        )
+    
+    @classmethod
+    def create_friend_accepted_notification(cls, sender, receiver):
+        """Create notification when friend request is accepted"""
+        return cls.objects.create(
+            recipient=sender,
+            sender=receiver,
+            notification_type='friend_accepted',
+            title=f'{receiver.username} accepted your friend request',
+            message=f'You and {receiver.username} are now friends!',
+            link=f'/friends/chat/{receiver.username}/'
+        )
+    
+    @classmethod
+    def create_kick_notification(cls, kicked_user, room, kicked_by):
+        """Create notification for being kicked from room"""
+        return cls.objects.create(
+            recipient=kicked_user,
+            sender=kicked_by,
+            notification_type='kicked',
+            title=f'You were kicked from {room.name}',
+            message=f'{kicked_by.username} removed you from room {room.name}',
+            room=room,
+            link='/chat/'
+        )
+    
+    @classmethod
+    def create_ban_notification(cls, banned_user, room, banned_by):
+        """Create notification for being banned from room"""
+        return cls.objects.create(
+            recipient=banned_user,
+            sender=banned_by,
+            notification_type='banned',
+            title=f'You were banned from {room.name}',
+            message=f'{banned_by.username} banned you from room {room.name}',
+            room=room,
+            link='/chat/'
+        )

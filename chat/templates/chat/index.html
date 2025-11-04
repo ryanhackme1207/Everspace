@@ -2040,9 +2040,8 @@
                 const data = JSON.parse(e.data);
                 console.log('Notification received:', data);
                 
-                if (data.type === 'new_message') {
-                    handleNewMessageNotification(data);
-                }
+                // Handle all notification types
+                handleIncomingNotification(data);
             };
             
             notificationSocket.onclose = function(e) {
@@ -2083,19 +2082,50 @@
             });
         }
 
-        function handleNewMessageNotification(data) {
+        function handleIncomingNotification(data) {
             unreadCount++;
             updateNotificationBadge();
             
+            // Get notification details based on type
+            let title = 'New Notification';
+            let body = '';
+            
+            switch(data.notification_type || data.type) {
+                case 'message':
+                case 'new_message':
+                    title = 'New Message from ' + data.sender;
+                    body = data.message.substring(0, 100);
+                    break;
+                case 'friend_request':
+                    title = 'Friend Request';
+                    body = data.sender + ' sent you a friend request';
+                    break;
+                case 'friend_accepted':
+                    title = 'Friend Request Accepted';
+                    body = data.sender + ' accepted your friend request';
+                    break;
+                case 'kicked':
+                    title = 'Kicked from Room';
+                    body = 'You were kicked from ' + data.room + ' by ' + data.sender;
+                    break;
+                case 'banned':
+                    title = 'Banned from Room';
+                    body = 'You were banned from ' + data.room + ' by ' + data.sender;
+                    break;
+                default:
+                    title = data.title || 'New Notification';
+                    body = data.message || '';
+            }
+            
             // Show browser notification if permitted
             if (Notification.permission === 'granted') {
-                new Notification('New Message from ' + data.sender, {
-                    body: data.message.substring(0, 100),
+                new Notification(title, {
+                    body: body,
                     icon: '/static/chat/img/notification-icon.png'
                 });
             }
             
-            // Play notification sound (optional)
+            // Play notification sound
             playNotificationSound();
         }
 
@@ -2144,15 +2174,59 @@
             notificationList.innerHTML = notifications.map(notif => {
                 const timeAgo = formatTimeAgo(new Date(notif.timestamp));
                 const unreadClass = notif.is_read ? '' : 'unread';
-                const avatar = notif.sender_avatar || notif.sender.charAt(0).toUpperCase();
+                const avatar = notif.sender.charAt(0).toUpperCase();
+                
+                // Get icon and color based on notification type
+                let icon = 'fa-bell';
+                let iconColor = 'var(--accent-teal)';
+                
+                switch(notif.type) {
+                    case 'message':
+                        icon = 'fa-envelope';
+                        iconColor = 'var(--accent-teal)';
+                        break;
+                    case 'friend_request':
+                        icon = 'fa-user-plus';
+                        iconColor = 'var(--accent-coral)';
+                        break;
+                    case 'friend_accepted':
+                        icon = 'fa-user-check';
+                        iconColor = '#4CAF50';
+                        break;
+                    case 'kicked':
+                        icon = 'fa-door-open';
+                        iconColor = '#FF9800';
+                        break;
+                    case 'banned':
+                        icon = 'fa-ban';
+                        iconColor = '#F44336';
+                        break;
+                    case 'room_deleted':
+                        icon = 'fa-trash';
+                        iconColor = '#9E9E9E';
+                        break;
+                    case 'transfer_ownership':
+                        icon = 'fa-crown';
+                        iconColor = '#FFD700';
+                        break;
+                }
+                
+                // Ensure link has proper format
+                let link = notif.link || '#';
+                if (link && !link.startsWith('http') && !link.startsWith('/')) {
+                    link = '/' + link;
+                }
                 
                 return `
-                    <a href="/chat/private/${notif.sender}/" class="notification-item ${unreadClass}" data-id="${notif.id}">
+                    <a href="${link}" class="notification-item ${unreadClass}" data-id="${notif.id}" data-link="${link}">
                         <div class="notification-content">
-                            <div class="notification-avatar">${avatar}</div>
+                            <div class="notification-avatar" style="background: ${iconColor};">
+                                <i class="fas ${icon}" style="color: white;"></i>
+                            </div>
                             <div class="notification-text">
                                 <div class="notification-message">
-                                    <strong>${notif.sender}</strong> sent you a message
+                                    <strong>${notif.title}</strong>
+                                    <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">${notif.message.substring(0, 80)}${notif.message.length > 80 ? '...' : ''}</p>
                                 </div>
                                 <div class="notification-time">${timeAgo}</div>
                             </div>
@@ -2161,11 +2235,22 @@
                 `;
             }).join('');
             
-            // Add click handlers to mark as read
+            // Add click handlers to mark as read and navigate
             notificationList.querySelectorAll('.notification-item').forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function(e) {
                     const notifId = this.dataset.id;
-                    markNotificationRead(notifId);
+                    const link = this.dataset.link;
+                    
+                    // Only prevent default if we need to mark as read first
+                    if (notifId && link !== '#') {
+                        e.preventDefault();
+                        markNotificationRead(notifId);
+                        
+                        // Navigate after marking as read
+                        setTimeout(() => {
+                            window.location.href = link;
+                        }, 100);
+                    }
                 });
             });
         }

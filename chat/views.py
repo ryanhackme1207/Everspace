@@ -523,8 +523,24 @@ def kick_member(request):
         # Kick the user
         room_obj.kick_user(user_to_kick)
         
-        # Send WebSocket notification to kick user from the room
+        # Create notification for kicked user
+        from .models import Notification
+        notification = Notification.create_kick_notification(user_to_kick, room_obj, request.user)
+        
+        # Send WebSocket notification to kicked user's notification channel
         channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'notifications_{user_to_kick.username}',
+            {
+                'type': 'kick_notification',
+                'sender': request.user.username,
+                'room': room_name,
+                'message': f'You were kicked from {room_name} by {request.user.username}',
+                'timestamp': notification.created_at.isoformat()
+            }
+        )
+        
+        # Send WebSocket notification to kick user from the room
         room_group_name = f'chat_{room_name}'
         async_to_sync(channel_layer.group_send)(
             room_group_name,
@@ -624,8 +640,24 @@ def ban_member(request):
         # Ban the user
         room_obj.ban_user(user_to_ban, request.user, reason)
         
-        # Send WebSocket notification to ban user from the room
+        # Create notification for banned user
+        from .models import Notification
+        notification = Notification.create_ban_notification(user_to_ban, room_obj, request.user)
+        
+        # Send WebSocket notification to banned user's notification channel
         channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'notifications_{user_to_ban.username}',
+            {
+                'type': 'ban_notification',
+                'sender': request.user.username,
+                'room': room_name,
+                'message': f'You were banned from {room_name} by {request.user.username}',
+                'timestamp': notification.created_at.isoformat()
+            }
+        )
+        
+        # Send WebSocket notification to ban user from the room
         room_group_name = f'chat_{room_name}'
         async_to_sync(channel_layer.group_send)(
             room_group_name,
@@ -769,6 +801,22 @@ def send_friend_request(request):
                 status='pending'
             )
             
+            # Create notification for friend request
+            from .models import Notification
+            notification = Notification.create_friend_request_notification(request.user, target_user)
+            
+            # Send WebSocket notification
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'notifications_{target_user.username}',
+                {
+                    'type': 'friend_request_notification',
+                    'sender': request.user.username,
+                    'message': f'{request.user.username} sent you a friend request',
+                    'timestamp': notification.created_at.isoformat()
+                }
+            )
+            
             return JsonResponse({
                 'success': True,
                 'message': f'Friend request sent to {username}!'
@@ -810,6 +858,22 @@ def respond_friend_request(request):
         if status == 'accepted':
             friendship.accept()
             message = f'You are now friends with {friendship.sender.username}!'
+            
+            # Create notification for sender
+            from .models import Notification
+            notification = Notification.create_friend_accepted_notification(friendship.sender, request.user)
+            
+            # Send WebSocket notification to sender
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'notifications_{friendship.sender.username}',
+                {
+                    'type': 'friend_accepted_notification',
+                    'sender': request.user.username,
+                    'message': f'{request.user.username} accepted your friend request',
+                    'timestamp': notification.created_at.isoformat()
+                }
+            )
         elif status == 'declined':
             friendship.decline()
             message = f'Friend request from {friendship.sender.username} declined.'
@@ -1400,10 +1464,12 @@ def view_profile(request, username=None):
 
 @login_required
 def notification_count(request):
-    """Get unread message count for the current user"""
+    """Get unread notification count for the current user"""
     try:
-        unread_count = PrivateMessage.objects.filter(
-            receiver=request.user,
+        from .models import Notification
+        
+        unread_count = Notification.objects.filter(
+            recipient=request.user,
             is_read=False
         ).count()
         
@@ -1421,21 +1487,26 @@ def notification_count(request):
 
 @login_required
 def notification_list(request):
-    """Get list of recent unread messages"""
+    """Get list of recent notifications"""
     try:
-        # Get recent unread messages
-        notifications = PrivateMessage.objects.filter(
-            receiver=request.user
-        ).select_related('sender').order_by('-timestamp')[:20]
+        from .models import Notification
+        
+        # Get recent notifications (all types)
+        notifications = Notification.objects.filter(
+            recipient=request.user
+        ).select_related('sender', 'room').order_by('-created_at')[:20]
         
         notification_data = []
-        for message in notifications:
+        for notif in notifications:
             notification_data.append({
-                'id': message.id,
-                'sender': message.sender.username,
-                'message': message.content[:100],  # Truncate long messages
-                'timestamp': message.timestamp.isoformat(),
-                'is_read': message.is_read,
+                'id': notif.id,
+                'type': notif.notification_type,
+                'sender': notif.sender.username if notif.sender else 'System',
+                'title': notif.title,
+                'message': notif.message,
+                'link': notif.link,
+                'timestamp': notif.created_at.isoformat(),
+                'is_read': notif.is_read,
             })
         
         return JsonResponse({
@@ -1455,13 +1526,14 @@ def notification_list(request):
 def mark_notification_read(request, notification_id):
     """Mark a specific notification as read"""
     try:
-        message = get_object_or_404(
-            PrivateMessage,
+        from .models import Notification
+        
+        notification = get_object_or_404(
+            Notification,
             id=notification_id,
-            receiver=request.user
+            recipient=request.user
         )
-        message.is_read = True
-        message.save()
+        notification.mark_as_read()
         
         return JsonResponse({
             'success': True,
@@ -1479,8 +1551,10 @@ def mark_notification_read(request, notification_id):
 def mark_all_notifications_read(request):
     """Mark all notifications as read for the current user"""
     try:
-        updated_count = PrivateMessage.objects.filter(
-            receiver=request.user,
+        from .models import Notification
+        
+        updated_count = Notification.objects.filter(
+            recipient=request.user,
             is_read=False
         ).update(is_read=True)
         

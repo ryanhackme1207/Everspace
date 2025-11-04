@@ -366,6 +366,8 @@
         const typingIndicator = document.getElementById('typingIndicator');
         
         const friendUsername = '{{ friend.username }}';
+        const currentUsername = '{{ user.username }}';
+        let chatSocket = null;
 
         // Auto-scroll to bottom
         function scrollToBottom() {
@@ -375,65 +377,99 @@
         // Initial scroll to bottom
         scrollToBottom();
 
+        // Initialize WebSocket for private chat
+        function initializeWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/private-chat/${friendUsername}/`;
+            
+            chatSocket = new WebSocket(wsUrl);
+            
+            chatSocket.onopen = function(e) {
+                console.log('[Private Chat] WebSocket connected to', friendUsername);
+            };
+            
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('[Private Chat] Message received:', data);
+                
+                if (data.type === 'chat_message') {
+                    displayReceivedMessage(data);
+                } else if (data.type === 'typing') {
+                    showTypingIndicator(data.is_typing);
+                }
+            };
+            
+            chatSocket.onclose = function(e) {
+                console.log('[Private Chat] WebSocket closed. Reconnecting in 3 seconds...');
+                setTimeout(initializeWebSocket, 3000);
+            };
+            
+            chatSocket.onerror = function(e) {
+                console.error('[Private Chat] WebSocket error:', e);
+            };
+        }
+
+        // Display received message
+        function displayReceivedMessage(data) {
+            // Remove empty chat message if it exists
+            const emptyChat = chatMessages.querySelector('.empty-chat');
+            if (emptyChat) {
+                emptyChat.remove();
+            }
+
+            const isSent = data.sender === currentUsername;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${data.message}
+                    </div>
+                    <div class="message-time">
+                        ${formatTime(data.timestamp)}
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Format timestamp
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
+        }
+
+        // Show/hide typing indicator
+        function showTypingIndicator(isTyping) {
+            if (isTyping) {
+                typingIndicator.classList.remove('d-none');
+            } else {
+                typingIndicator.classList.add('d-none');
+            }
+        }
+
         // Send message function
         function sendMessage() {
             const message = messageInput.value.trim();
-            if (!message) return;
-
-            // Disable input while sending
-            messageInput.disabled = true;
-            sendButton.disabled = true;
-
-            fetch('{% url "send_private_message" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: `receiver_username=${friendUsername}&content=${encodeURIComponent(message)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Add message to chat
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message sent';
-                    messageDiv.innerHTML = `
-                        <div class="message-content">
-                            <div class="message-bubble">
-                                ${message}
-                            </div>
-                            <div class="message-time">
-                                ${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false})}
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Remove empty chat message if it exists
-                    const emptyChat = chatMessages.querySelector('.empty-chat');
-                    if (emptyChat) {
-                        emptyChat.remove();
-                    }
-                    
-                    chatMessages.appendChild(messageDiv);
-                    scrollToBottom();
-                    
-                    // Clear input
-                    messageInput.value = '';
-                } else {
-                    alert('Failed to send message: ' + data.message);
+            if (!message || !chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+                if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+                    alert('Connection lost. Please wait for reconnection...');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while sending the message.');
-            })
-            .finally(() => {
-                // Re-enable input
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                messageInput.focus();
-            });
+                return;
+            }
+
+            // Send via WebSocket
+            chatSocket.send(JSON.stringify({
+                'type': 'chat_message',
+                'message': message,
+                'receiver': friendUsername
+            }));
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.focus();
         }
 
         // Event listeners
@@ -450,6 +486,14 @@
         messageInput.addEventListener('input', function() {
             // Enable/disable send button based on content
             sendButton.disabled = !this.value.trim();
+            
+            // Send typing indicator
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing',
+                    'is_typing': this.value.trim().length > 0
+                }));
+            }
         });
 
         // Initial state
@@ -458,52 +502,8 @@
         // Focus on input
         messageInput.focus();
 
-        // Typing indicator (future enhancement with WebSocket)
-        let typingTimeout;
-        messageInput.addEventListener('input', function() {
-            // Show typing indicator to other user (requires WebSocket)
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                // Hide typing indicator
-            }, 1000);
-        });
-
-        // Poll for new messages (basic implementation)
-        let lastMessageId = {{ last_message_id|default:0 }};
-        
-        function pollForMessages() {
-            fetch(`{% url 'private_chat' friend.username %}?last_id=${lastMessageId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.new_messages && data.new_messages.length > 0) {
-                    data.new_messages.forEach(message => {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = `message ${message.sender === '{{ user.username }}' ? 'sent' : 'received'}`;
-                        messageDiv.innerHTML = `
-                            <div class="message-content">
-                                <div class="message-bubble">
-                                    ${message.content}
-                                </div>
-                                <div class="message-time">
-                                    ${new Date(message.created_at).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false})}
-                                </div>
-                            </div>
-                        `;
-                        
-                        chatMessages.appendChild(messageDiv);
-                        lastMessageId = Math.max(lastMessageId, message.id);
-                    });
-                    
-                    scrollToBottom();
-                }
-            })
-            .catch(error => {
-                console.error('Error polling messages:', error);
-            });
-        }
-
-        // Poll every 3 seconds for new messages
-        setInterval(pollForMessages, 3000);
+        // Initialize WebSocket connection
+        initializeWebSocket();
 
         // Get CSRF token
         function getCookie(name) {

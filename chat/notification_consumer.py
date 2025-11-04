@@ -2,7 +2,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
-from .models import PrivateMessage
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -45,17 +44,62 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         """Send new message notification to WebSocket"""
         await self.send(text_data=json.dumps({
             'type': 'new_message',
+            'notification_type': 'message',
             'sender': event['sender'],
             'message': event['message'],
             'timestamp': event['timestamp'],
             'message_id': event.get('message_id')
         }))
-
-
-@database_sync_to_async
-def get_unread_message_count(user):
-    """Get count of unread messages for a user"""
-    return PrivateMessage.objects.filter(
-        receiver=user,
-        is_read=False
-    ).count()
+    
+    async def friend_request_notification(self, event):
+        """Send friend request notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'friend_request',
+            'notification_type': 'friend_request',
+            'sender': event['sender'],
+            'message': event['message'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def friend_accepted_notification(self, event):
+        """Send friend accepted notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'friend_accepted',
+            'notification_type': 'friend_accepted',
+            'sender': event['sender'],
+            'message': event['message'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def kick_notification(self, event):
+        """Send kick notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'kicked',
+            'notification_type': 'kicked',
+            'sender': event['sender'],
+            'room': event['room'],
+            'message': event['message'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def ban_notification(self, event):
+        """Send ban notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'banned',
+            'notification_type': 'banned',
+            'sender': event['sender'],
+            'room': event['room'],
+            'message': event['message'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def general_notification(self, event):
+        """Send general notification"""
+        await self.send(text_data=json.dumps({
+            'type': event.get('notification_type', 'general'),
+            'notification_type': event.get('notification_type', 'general'),
+            'title': event.get('title', ''),
+            'message': event['message'],
+            'link': event.get('link', ''),
+            'timestamp': event['timestamp']
+        }))
