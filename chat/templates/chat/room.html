@@ -606,13 +606,13 @@
             position: absolute;
             bottom: 100%;
             left: 1rem;
-            width: 340px;
-            max-height: 420px;
+            width: 420px; /* widened */
+            max-height: 560px; /* taller so bottom rows visible */
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
             box-shadow: var(--shadow-elevated);
-            overflow: visible; /* allow grid overflow internally */
+            overflow: hidden; /* hide scrollbars outside */
             z-index: 2000;
             animation: slideUp 0.25s ease;
         }
@@ -650,11 +650,12 @@
 
         .emoji-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 0.25rem;
-            padding: 0.5rem;
-            max-height: 320px;
+            grid-template-columns: repeat(10, 1fr); /* more columns */
+            gap: 0.35rem;
+            padding: 0.6rem 0.6rem 0.8rem;
+            max-height: 460px; /* taller scroll area */
             overflow-y: auto;
+            scrollbar-width: thin;
         }
 
         .emoji-item {
@@ -1116,7 +1117,7 @@
                         <button class="gif-close" id="gif-close">&times;</button>
                     </div>
                     <div class="gif-grid" id="gif-grid">
-                        <div class="gif-loading">Search for GIFs above! 🎬</div>
+                        <div class="gif-loading">Loading trending GIFs... ⏳</div>
                     </div>
                 </div>
             </div>
@@ -2208,42 +2209,52 @@
             });
 
             async function searchGifs(query) {
-                gifGrid.innerHTML = '<div class="gif-loading">Searching... 🔍</div>';
+                const searching = query && query.length >= 2;
+                gifGrid.innerHTML = `<div class="gif-loading">${searching ? 'Searching... 🔍' : 'Loading trending GIFs... ⏳'}</div>`;
                 try {
-                    const response = await fetch(`/gif/search/?q=${encodeURIComponent(query)}`);
+                    const url = searching ? `/gif/search/?q=${encodeURIComponent(query)}` : '/gif/search/';
+                    const response = await fetch(url);
                     if (!response.ok) throw new Error('Request failed');
                     const data = await response.json();
-                    if (data.error) {
+                    if (data.error && (!data.results || data.results.length === 0)) {
                         gifGrid.innerHTML = `<div class="gif-loading">❌ ${data.error}</div>`;
                         return;
                     }
-                    displayGifs(data.results);
+                    displayGifs(data.results, searching);
                 } catch (err) {
                     console.error('GIF search error:', err);
                     gifGrid.innerHTML = '<div class="gif-loading">❌ Error loading GIFs. Try again!</div>';
                 }
             }
 
-            function displayGifs(gifs) {
+            function displayGifs(gifs, isSearch) {
                 if (!gifs || gifs.length === 0) {
-                    gifGrid.innerHTML = '<div class="gif-loading">No GIFs found 😕</div>';
+                    gifGrid.innerHTML = `<div class="gif-loading">${isSearch ? 'No GIFs found 😕' : 'No trending GIFs available.'}</div>`;
                     return;
                 }
-
                 gifGrid.innerHTML = '';
                 gifs.forEach(gif => {
                     const gifItem = document.createElement('div');
                     gifItem.className = 'gif-item';
-                    
                     const img = document.createElement('img');
-                    img.src = gif.media_formats.tinygif.url;
-                    img.alt = gif.content_description;
-                    
+                    // Support both original Tenor object structure and simplified proxy structure
+                    const directUrl = gif.url;
+                    let previewUrl = directUrl;
+                    let fullUrl = directUrl;
+                    let altText = gif.desc || gif.content_description || 'GIF';
+                    if (gif.media_formats) {
+                        const tiny = gif.media_formats.tinygif || gif.media_formats.gif || {};
+                        previewUrl = tiny.url || previewUrl;
+                        const full = gif.media_formats.gif || tiny || {};
+                        fullUrl = full.url || previewUrl;
+                        altText = gif.content_description || altText;
+                    }
+                    img.src = previewUrl;
+                    img.alt = altText;
                     gifItem.appendChild(img);
                     gifItem.addEventListener('click', () => {
-                        sendGif(gif.media_formats.gif.url, gif.content_description);
+                        sendGif(fullUrl, altText);
                     });
-                    
                     gifGrid.appendChild(gifItem);
                 });
             }
@@ -2258,8 +2269,12 @@
                 gifPicker.style.display = 'none';
                 gifBtn.classList.remove('active');
                 gifSearch.value = '';
-                gifGrid.innerHTML = '<div class="gif-loading">Search for GIFs above! 🎬</div>';
+                gifGrid.innerHTML = '<div class="gif-loading">Loading trending GIFs... ⏳</div>';
+                // Reload trending after send
+                setTimeout(() => searchGifs(''), 200);
             }
+            // Load initial trending GIFs
+            searchGifs('');
         } // End initializeEmojiAndGifPickers
 
         // ========== END EMOJI & GIF SYSTEM ==========

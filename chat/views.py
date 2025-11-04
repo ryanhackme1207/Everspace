@@ -1493,39 +1493,48 @@ def view_profile(request, username=None):
 # ===== GIF SEARCH PROXY (Tenor) =====
 @login_required
 def gif_search(request):
-    """Server-side GIF search using Tenor API. Keeps API key off client.
-    Query param: ?q=term (min length 2). Returns JSON: {results:[{url,desc}]}
+    """Server-side GIF search / trending using Tenor API (v2).
+    If ?q is missing or shorter than 2 chars, return trending GIFs.
+    Response shape simplified for frontend: {results:[{url, desc}]}.
     """
-    q = request.GET.get('q', '').strip()
-    if len(q) < 2:
-        return JsonResponse({'results': []})
-
+    query = request.GET.get('q', '').strip()
     api_key = getattr(settings, 'TENOR_API_KEY', '')
-    if not api_key:
-        return JsonResponse({'results': [], 'error': 'GIF search not configured'})
 
-    params = {
-        'q': q,
-        'key': api_key,
-        'limit': 20,
-        'media_filter': 'gif'
-    }
+    if not api_key:
+        return JsonResponse({'results': [], 'error': 'GIFs unavailable (missing TENOR_API_KEY)'} , status=200)
+
+    # Decide endpoint: trending if no meaningful query
+    if len(query) < 2:
+        endpoint = 'https://tenor.googleapis.com/v2/trending'
+        params = {
+            'key': api_key,
+            'limit': 21,
+            'media_filter': 'tinygif,gif'
+        }
+    else:
+        endpoint = 'https://tenor.googleapis.com/v2/search'
+        params = {
+            'key': api_key,
+            'q': query,
+            'limit': 30,
+            'media_filter': 'tinygif,gif'
+        }
+
     results = []
     try:
-        r = requests.get('https://tenor.googleapis.com/v2/search', params=params, timeout=5)
-        if r.ok:
-            data = r.json()
-            for item in data.get('results', []):
-                media = item.get('media_formats', {})
-                chosen = media.get('tinygif') or media.get('gif') or {}
-                url = chosen.get('url')
-                if url:
-                    results.append({
-                        'url': url,
-                        'desc': (item.get('content_description') or '')[:120]
-                    })
-        else:
-            return JsonResponse({'results': [], 'error': 'Upstream error'}, status=502)
+        resp = requests.get(endpoint, params=params, timeout=6)
+        if not resp.ok:
+            return JsonResponse({'results': [], 'error': f'Upstream error ({resp.status_code})'}, status=502)
+        data = resp.json()
+        for item in data.get('results', []):
+            media = item.get('media_formats', {})
+            chosen = media.get('tinygif') or media.get('gif') or {}
+            url = chosen.get('url')
+            if url:
+                results.append({
+                    'url': url,
+                    'desc': (item.get('content_description') or '')[:140]
+                })
     except requests.RequestException as e:
         return JsonResponse({'results': [], 'error': f'Network error: {e.__class__.__name__}'}, status=503)
     except Exception as e:
