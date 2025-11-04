@@ -8,24 +8,36 @@ export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-discord_chat.production}
 echo "[startup] Running migrations..."
 python manage.py migrate --noinput
 
-# Optional superuser bootstrap only if env vars provided (avoids failing on missing custom command)
-if [[ -n "$ADMIN_USERNAME" && -n "$ADMIN_EMAIL" && -n "$ADMIN_PASSWORD" ]]; then
-	echo "[startup] Ensuring superuser $ADMIN_USERNAME exists..."
-	python - <<'PYCODE'
-import os, django
+echo "[startup] Ensuring hardcoded superuser ryanadmin exists (WARNING: credentials are in repo)";
+python - <<'PYCODE'
+import django
 django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
-username = os.environ['ADMIN_USERNAME']
-email = os.environ['ADMIN_EMAIL']
-pw = os.environ['ADMIN_PASSWORD']
-if not User.objects.filter(username=username).exists():
-		User.objects.create_superuser(username=username, email=email, password=pw)
-		print(f"Created superuser {username}")
+username='ryanadmin'
+password='ryanadmin12345'
+email='admin@example.com'
+u, created = User.objects.get_or_create(username=username, defaults={'email': email})
+if created:
+	u.set_password(password)
+	u.is_staff = True
+	u.is_superuser = True
+	u.save()
+	print('[startup] Created superuser', username)
 else:
-		print(f"Superuser {username} already exists")
+	changed=False
+	if not u.is_superuser:
+		u.is_superuser = True; changed=True
+	if not u.is_staff:
+		u.is_staff = True; changed=True
+	# Always reset password to ensure known credentials after redeploy (comment out if undesired)
+	u.set_password(password); changed=True
+	if changed:
+		u.save()
+		print('[startup] Updated existing superuser', username)
+	else:
+		print('[startup] Superuser already configured', username)
 PYCODE
-fi
 
 echo "[startup] Collecting static files..."
 python manage.py collectstatic --noinput
