@@ -475,3 +475,51 @@ class Notification(models.Model):
             room=room,
             link='/chat/'
         )
+
+
+class Gift(models.Model):
+    """Predefined gifts that users can send"""
+    name = models.CharField(max_length=50, unique=True)  # e.g., "Rose", "Heart", "Gift Box"
+    description = models.TextField(blank=True)
+    icon_url = models.CharField(max_length=200)  # Relative URL to icon/emoji
+    emoji = models.CharField(max_length=10, blank=True)  # Unicode emoji or icon identifier
+    rarity = models.CharField(
+        max_length=20,
+        choices=[
+            ('common', 'Common'),
+            ('rare', 'Rare'),
+            ('epic', 'Epic'),
+            ('legendary', 'Legendary'),
+        ],
+        default='common'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['rarity', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.rarity})"
+
+
+class GiftTransaction(models.Model):
+    """Track gifts sent between users in rooms"""
+    gift = models.ForeignKey(Gift, on_delete=models.CASCADE, related_name='transactions')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_gifts')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_gifts')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='gift_transactions')
+    quantity = models.IntegerField(default=1)  # Number of same gifts sent in one transaction
+    message = models.TextField(blank=True, max_length=200)  # Optional message with gift
+    sent_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['-sent_at']
+        indexes = [
+            models.Index(fields=['receiver', '-sent_at']),
+            models.Index(fields=['sender', '-sent_at']),
+            models.Index(fields=['room', '-sent_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.sender.username} sent {self.quantity}x {self.gift.name} to {self.receiver.username}"
+

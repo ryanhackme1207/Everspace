@@ -28,17 +28,6 @@ echo "[startup] DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}"
 # Ensure Python path
 export PYTHONUNBUFFERED=1
 
-# Ensure TENOR_API_KEY is set (free tier key for GIF search)
-# Users can override by setting TENOR_API_KEY in Render environment variables
-# Get a free API key at: https://tenor.com/developer/keyregistration
-if [ -z "${TENOR_API_KEY:-}" ]; then
-	# EverSpace project Tenor API key
-	export TENOR_API_KEY="AIzaSyA3iOLnafGrcexjOUxYOGtALbgEQ_258Gs"
-	echo "[startup] Using EverSpace Tenor API key"
-else
-	echo "[startup] TENOR_API_KEY from environment override"
-fi
-
 # Always create superuser on first run (can be disabled by unsetting flag)
 export CREATE_DEFAULT_SUPERUSER=${CREATE_DEFAULT_SUPERUSER:-true}
 echo "[startup] CREATE_DEFAULT_SUPERUSER=${CREATE_DEFAULT_SUPERUSER}"

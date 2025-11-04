@@ -237,7 +237,3 @@ DEFAULT_FROM_EMAIL = 'noreply@gmail.com'
 
 # Rate Limiting
 RATELIMIT_ENABLE = True
-
-# Tenor API Key for GIF search (get your own key at https://tenor.com/developer/keyregistration)
-# For development, you can use Tenor's test key or leave empty to disable GIF search
-TENOR_API_KEY = os.environ.get('TENOR_API_KEY', '')  # Set in environment variables for production
