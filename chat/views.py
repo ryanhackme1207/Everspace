@@ -1880,9 +1880,39 @@ def get_gifts(request):
             'user_evercoin': user_profile.evercoin
         })
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'traceback': traceback.format_exc()
+
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def debug_gifts_status(request):
+    """Public endpoint to check if gifts and GIFs exist in the database"""
+    try:
+        from .models import Gift, GifFile, GifPack
+        
+        gifts_count = Gift.objects.count()
+        gif_files_count = GifFile.objects.count()
+        gif_packs_count = GifPack.objects.count()
+        
+        return JsonResponse({
+            'success': True,
+            'gifts_count': gifts_count,
+            'gif_files_count': gif_files_count,
+            'gif_packs_count': gif_packs_count,
+            'message': 'Debug info'
+        })
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
         }, status=500)
 
 

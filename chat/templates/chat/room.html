@@ -2508,24 +2508,61 @@
             const giftTabs = document.querySelectorAll('.gift-tab');
             const giftGrid = document.getElementById('gift-grid');
             const giftSearch = document.getElementById('gift-search');
-            const giftsData = {};
+            const giftsData = {
+                'common': [],
+                'rare': [],
+                'epic': [],
+                'legendary': []
+            };
             
             // Load gifts from server
             async function loadGifts() {
                 try {
-                    const response = await fetch('{% url "get_gifts" %}');
+                    const url = '{% url "get_gifts" %}';
+                    console.log('Loading gifts from URL:', url);
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'include',  // Include cookies for authentication
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log('Response status:', response.status);
+                    console.log('Response URL:', response.url);
+                    
+                    // Check if response is HTML (likely a redirect)
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('text/html')) {
+                        console.error('Received HTML instead of JSON - likely a redirect or login page');
+                        giftGrid.innerHTML = '<div class="gift-loading">Not authenticated - please reload page</div>';
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                     const data = await response.json();
+                    console.log('Gifts data received:', data);
                     if (data.success) {
-                        Object.assign(giftsData, data.gifts);
+                        // Clear and repopulate giftsData
+                        giftsData.common = data.gifts.common || [];
+                        giftsData.rare = data.gifts.rare || [];
+                        giftsData.epic = data.gifts.epic || [];
+                        giftsData.legendary = data.gifts.legendary || [];
+                        console.log('Updated giftsData:', giftsData);
+                        
                         // Update user's EV balance
                         if (data.user_evercoin !== undefined) {
                             document.getElementById('user-evercoin').textContent = data.user_evercoin;
                         }
                         displayGifts('all');
+                    } else {
+                        console.error('API returned success: false', data);
+                        giftGrid.innerHTML = '<div class="gift-loading">Error: ' + (data.error || 'Unknown error') + '</div>';
                     }
                 } catch (err) {
                     console.error('Error loading gifts:', err);
-                    giftGrid.innerHTML = '<div class="gift-loading">Error loading gifts</div>';
+                    giftGrid.innerHTML = '<div class="gift-loading">Error: ' + err.message + '</div>';
                 }
             }
 
@@ -2590,20 +2627,25 @@
 
             // Display gifts based on rarity filter
             function displayGifts(rarity) {
+                console.log('displayGifts called with rarity:', rarity);
+                console.log('Current giftsData:', giftsData);
                 giftGrid.innerHTML = '';
                 let giftsList = [];
                 
                 if (rarity === 'all') {
-                    giftsList = [
-                        ...giftsData.common,
-                        ...giftsData.rare,
-                        ...giftsData.epic,
-                        ...giftsData.legendary
-                    ];
+                    // Ensure we're working with arrays
+                    const common = Array.isArray(giftsData.common) ? giftsData.common : [];
+                    const rare = Array.isArray(giftsData.rare) ? giftsData.rare : [];
+                    const epic = Array.isArray(giftsData.epic) ? giftsData.epic : [];
+                    const legendary = Array.isArray(giftsData.legendary) ? giftsData.legendary : [];
+                    
+                    giftsList = [...common, ...rare, ...epic, ...legendary];
+                    console.log('All gifts:', giftsList);
                 } else {
-                    giftsList = giftsData[rarity] || [];
+                    giftsList = Array.isArray(giftsData[rarity]) ? giftsData[rarity] : [];
                 }
 
+                console.log('Final giftsList to display:', giftsList);
                 if (giftsList.length === 0) {
                     giftGrid.innerHTML = '<div class="gift-loading">No gifts available</div>';
                     return;
