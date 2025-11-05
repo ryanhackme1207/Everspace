@@ -1,0 +1,10 @@
+# Add these URL patterns to chat/urls.py
+
+# GIF System URLs
+path('gifs/packs/', views.get_gif_packs, name='get_gif_packs'),
+path('gifs/pack/<int:pack_id>/', views.get_gifs_by_pack, name='get_gifs_by_pack'),
+path('gifs/search/', views.search_gifs, name='search_gifs'),
+path('gifs/send/', views.send_gif, name='send_gif'),
+path('gifs/trending/', views.get_trending_gifs, name='get_trending_gifs'),
+path('gifs/picker/', views.gif_picker, name='gif_picker'),
+path('gifs/stats/', views.get_gif_stats, name='get_gif_stats'),
