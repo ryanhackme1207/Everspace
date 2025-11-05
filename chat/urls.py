@@ -34,4 +34,12 @@ urlpatterns = [
     # Gift System URLs
     path('chat/gifts/send/', views.send_gift, name='send_gift'),
     path('chat/gifts/list/', views.get_gifts, name='get_gifts'),
+    path('chat/gifts/search/', views.search_gifts, name='search_gifts'),
+    # GIF System URLs
+    path('chat/gifs/packs/', views.get_gif_packs, name='get_gif_packs'),
+    path('chat/gifs/pack/<int:pack_id>/', views.get_gifs_by_pack, name='get_gifs_by_pack'),
+    path('chat/gifs/search/', views.search_gifs, name='search_gifs'),
+    path('chat/gifs/send/', views.send_gif, name='send_gif'),
+    path('chat/gifs/trending/', views.get_trending_gifs, name='get_trending_gifs'),
+    path('chat/gifs/stats/', views.get_gif_stats, name='get_gif_stats'),
 ]

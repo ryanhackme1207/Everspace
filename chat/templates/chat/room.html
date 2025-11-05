@@ -694,9 +694,34 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 0.5rem;
             padding: 0.75rem 1rem;
             background: var(--darker-card);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .gift-search-input {
+            flex: 1;
+            min-width: 150px;
+            padding: 0.4rem 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .gift-search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .gift-search-input:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
         }
 
         .gift-close {
@@ -850,6 +875,163 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* GIF Picker Styles */
+        .gif-picker {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            flex-direction: column;
+            max-height: 450px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .gif-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 0.5rem;
+        }
+
+        .gif-picker-header span {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 0 0 auto;
+        }
+
+        .gif-search-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .gif-search-input:focus {
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .gif-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gif-close:hover {
+            color: var(--text-primary);
+        }
+
+        .gif-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .gif-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .gif-tab:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--accent-teal);
+        }
+
+        .gif-tab.active {
+            background: var(--accent-teal);
+            border-color: var(--accent-teal);
+            color: var(--darker-card);
+        }
+
+        .gif-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            padding: 0.75rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .gif-item {
+            position: relative;
+            cursor: pointer;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .gif-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gif-item:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .gif-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            grid-column: 1 / -1;
+        }
+
+        /* Message with GIF */
+        .message-gif {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 3px solid var(--accent-teal);
+            padding: 0.75rem;
+            border-radius: var(--border-radius-sm);
+            margin-top: 0.5rem;
+        }
+
+        .message-gif img {
+            max-width: 250px;
+            border-radius: var(--border-radius-sm);
         }
 
         /* Message with Gift */
@@ -1182,6 +1364,9 @@
                     <button type="button" class="toolbar-btn" id="gift-btn" title="Send Gift">
                         <i class="fas fa-gift"></i>
                     </button>
+                    <button type="button" class="toolbar-btn" id="gif-btn" title="Send GIF">
+                        <i class="fas fa-film"></i>
+                    </button>
                 </div>
                 <div class="input-form">
                     <input type="text" id="message-input" class="message-input" placeholder="Type your message..." required>
@@ -1211,6 +1396,7 @@
                 <div id="gift-picker" class="gift-picker" style="display: none;">
                     <div class="gift-picker-header">
                         <span>Select a Gift</span>
+                        <input type="text" id="gift-search" class="gift-search-input" placeholder="Search gifts...">
                         <button class="gift-close" id="gift-close">&times;</button>
                     </div>
                     <div class="gift-tabs">
@@ -1226,6 +1412,21 @@
                     <div id="gift-message-input-container" style="display: none; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                         <input type="text" id="gift-message" class="gift-message-input" placeholder="Add a message with your gift (optional)" maxlength="200">
                         <button id="confirm-gift-btn" class="confirm-gift-btn">Send Gift</button>
+                    </div>
+                </div>
+
+                <!-- GIF Picker -->
+                <div id="gif-picker" class="gif-picker" style="display: none;">
+                    <div class="gif-picker-header">
+                        <span>Select a GIF</span>
+                        <input type="text" id="gif-search" class="gif-search-input" placeholder="Search GIFs...">
+                        <button class="gif-close" id="gif-close">&times;</button>
+                    </div>
+                    <div class="gif-tabs" id="gif-tabs">
+                        <button class="gif-tab active" data-pack-id="all">All</button>
+                    </div>
+                    <div class="gif-grid" id="gif-grid">
+                        <div class="gif-loading">Loading GIFs... ⏳</div>
                     </div>
                 </div>
             </div>
@@ -2284,6 +2485,7 @@
             let selectedGift = null;
             const giftTabs = document.querySelectorAll('.gift-tab');
             const giftGrid = document.getElementById('gift-grid');
+            const giftSearch = document.getElementById('gift-search');
             const giftsData = {};
             
             // Load gifts from server
@@ -2300,6 +2502,64 @@
                     giftGrid.innerHTML = '<div class="gift-loading">Error loading gifts</div>';
                 }
             }
+
+            // Search gifts by name or description
+            async function searchGifts(query) {
+                if (!query || query.length < 1) {
+                    displayGifts('all');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`{% url "search_gifts" %}?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const searchResults = [
+                            ...data.gifts.common,
+                            ...data.gifts.rare,
+                            ...data.gifts.epic,
+                            ...data.gifts.legendary
+                        ];
+                        
+                        giftGrid.innerHTML = '';
+                        if (searchResults.length === 0) {
+                            giftGrid.innerHTML = '<div class="gift-loading">No gifts found</div>';
+                            return;
+                        }
+
+                        searchResults.forEach(gift => {
+                            const giftItem = document.createElement('div');
+                            giftItem.className = `gift-item ${gift.rarity}`;
+                            giftItem.innerHTML = `
+                                <div class="gift-item-emoji">${gift.emoji}</div>
+                                <div class="gift-item-name">${gift.name}</div>
+                            `;
+                            giftItem.addEventListener('click', () => selectGift(gift));
+                            giftGrid.appendChild(giftItem);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error searching gifts:', err);
+                }
+            }
+
+            // Gift search event listener
+            giftSearch.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length === 0) {
+                    // Reset to 'all' tab view
+                    document.querySelectorAll('.gift-tab').forEach(tab => {
+                        tab.classList.remove('active');
+                        if (tab.dataset.rarity === 'all') {
+                            tab.classList.add('active');
+                        }
+                    });
+                    displayGifts('all');
+                } else {
+                    searchGifts(query);
+                }
+            });
 
             // Display gifts based on rarity filter
             function displayGifts(rarity) {
@@ -2332,6 +2592,7 @@
             // Handle gift tab clicks
             giftTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
+                    giftSearch.value = ''; // Clear search
                     giftTabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     displayGifts(tab.dataset.rarity);
@@ -2392,9 +2653,202 @@
                 }
             });
 
+            // ========== GIF SYSTEM ==========
+            const gifBtn = document.getElementById('gif-btn');
+            const gifPicker = document.getElementById('gif-picker');
+            const gifClose = document.getElementById('gif-close');
+            const gifTabs = document.getElementById('gif-tabs');
+            const gifGrid = document.getElementById('gif-grid');
+            const gifSearch = document.getElementById('gif-search');
+            let gifPacksData = [];
+
+            // Toggle GIF picker
+            gifBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = gifPicker.style.display === 'block';
+                if (!isVisible) {
+                    loadGifPacks();
+                }
+                gifPicker.style.display = isVisible ? 'none' : 'block';
+                emojiPicker.style.display = 'none';
+                giftPicker.style.display = 'none';
+                gifBtn.classList.toggle('active');
+                emojiBtn.classList.remove('active');
+                giftBtn.classList.remove('active');
+            });
+
+            // Close GIF picker
+            gifClose.addEventListener('click', () => {
+                gifPicker.style.display = 'none';
+                gifBtn.classList.remove('active');
+            });
+
+            // Load GIF packs
+            async function loadGifPacks() {
+                try {
+                    const response = await fetch('/chat/gifs/packs/');
+                    const data = await response.json();
+                    if (data.success) {
+                        gifPacksData = data.packs;
+                        displayGifPackTabs();
+                        if (gifPacksData.length > 0) {
+                            loadGifsByPack(gifPacksData[0].id);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error loading GIF packs:', err);
+                    gifGrid.innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+                }
+            }
+
+            // Display GIF pack tabs
+            function displayGifPackTabs() {
+                gifTabs.innerHTML = '<button class="gif-tab active" data-pack-id="all">All</button>';
+                
+                gifPacksData.forEach(pack => {
+                    const tab = document.createElement('button');
+                    tab.className = 'gif-tab';
+                    tab.dataset.packId = pack.id;
+                    tab.textContent = `${pack.icon} ${pack.name}`;
+                    gifTabs.appendChild(tab);
+                });
+
+                document.querySelectorAll('.gif-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.gif-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        const packId = tab.dataset.packId;
+                        if (packId === 'all') {
+                            loadAllGifs();
+                        } else {
+                            loadGifsByPack(packId);
+                        }
+                    });
+                });
+            }
+
+            // Load all GIFs
+            async function loadAllGifs() {
+                try {
+                    gifGrid.innerHTML = '<div class="gif-loading">Loading all GIFs...</div>';
+                    let allGifs = [];
+                    
+                    for (let pack of gifPacksData) {
+                        const response = await fetch(`/chat/gifs/pack/${pack.id}/`);
+                        const data = await response.json();
+                        if (data.success) {
+                            allGifs = allGifs.concat(data.gifs);
+                        }
+                    }
+                    
+                    displayGifs(allGifs);
+                } catch (err) {
+                    console.error('Error loading all GIFs:', err);
+                    gifGrid.innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+                }
+            }
+
+            // Load GIFs by pack
+            async function loadGifsByPack(packId) {
+                try {
+                    gifGrid.innerHTML = '<div class="gif-loading">Loading GIFs...</div>';
+                    const response = await fetch(`/chat/gifs/pack/${packId}/`);
+                    const data = await response.json();
+                    if (data.success) {
+                        displayGifs(data.gifs);
+                    }
+                } catch (err) {
+                    console.error('Error loading GIFs:', err);
+                    gifGrid.innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+                }
+            }
+
+            // Display GIFs in grid
+            function displayGifs(gifs) {
+                gifGrid.innerHTML = '';
+                if (gifs.length === 0) {
+                    gifGrid.innerHTML = '<div class="gif-loading">No GIFs found</div>';
+                    return;
+                }
+
+                gifs.forEach(gif => {
+                    const gifItem = document.createElement('div');
+                    gifItem.className = 'gif-item';
+                    gifItem.innerHTML = `<img src="${gif.thumbnail || gif.url}" alt="${gif.title}" title="${gif.title}">`;
+                    gifItem.addEventListener('click', () => sendGif(gif));
+                    gifGrid.appendChild(gifItem);
+                });
+            }
+
+            // Search GIFs
+            gifSearch.addEventListener('input', async (e) => {
+                const query = e.target.value.trim();
+                if (query.length < 2) {
+                    if (gifPacksData.length > 0) {
+                        document.querySelectorAll('.gif-tab')[0].click();
+                    }
+                    return;
+                }
+
+                try {
+                    gifGrid.innerHTML = '<div class="gif-loading">Searching...</div>';
+                    const response = await fetch(`/chat/gifs/search/?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        displayGifs(data.gifs);
+                    }
+                } catch (err) {
+                    console.error('Error searching GIFs:', err);
+                    gifGrid.innerHTML = '<div class="gif-loading">Error searching GIFs</div>';
+                }
+            });
+
+            // Send GIF
+            async function sendGif(gif) {
+                try {
+                    const response = await fetch('/chat/gifs/send/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            gif_id: gif.id,
+                            room: roomName,
+                            message: ''
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        // Send the GIF URL to the room
+                        messageInput.value = `[GIF]${gif.url}[/GIF]`;
+                        document.getElementById('send-button').click();
+                        
+                        // Close picker
+                        gifPicker.style.display = 'none';
+                        gifBtn.classList.remove('active');
+                        gifSearch.value = '';
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (err) {
+                    console.error('Error sending GIF:', err);
+                    alert('Error sending GIF');
+                }
+            }
+
+            // Close pickers when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!gifPicker.contains(e.target) && e.target !== gifBtn && !gifBtn.contains(e.target)) {
+                    gifPicker.style.display = 'none';
+                    gifBtn.classList.remove('active');
+                }
+            });
+
         } // End initializeEmojiAndGiftPickers
 
-        // ========== END EMOJI & GIFT SYSTEM ==========
+        // ========== END EMOJI & GIFT & GIF SYSTEM ==========
 
     </script>
 </body>

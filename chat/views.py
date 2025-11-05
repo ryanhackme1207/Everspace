@@ -4,14 +4,15 @@ from django.contrib import messages
 from django_otp.decorators import otp_required
 from django_otp import user_has_device
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage, UserProfile
+from django.core.paginator import Paginator
+from .models import Room, Message, RoomMember, RoomBan, Friendship, PrivateMessage, UserProfile, GifPack, GifFile, GifUsageLog
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from functools import wraps
@@ -1721,4 +1722,273 @@ def get_gifts(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def search_gifts(request):
+    """Search gifts by name or description"""
+    try:
+        from .models import Gift
+        query = request.GET.get('q', '').strip()
+        
+        if not query or len(query) < 1:
+            return JsonResponse({'success': False, 'error': 'Query too short'}, status=400)
+        
+        # Search gifts by name or description
+        gifts = Gift.objects.filter(
+            models.Q(name__icontains=query) |
+            models.Q(description__icontains=query)
+        ).values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description')
+        
+        # Group by rarity
+        grouped = {
+            'common': [],
+            'rare': [],
+            'epic': [],
+            'legendary': []
+        }
+        
+        for gift in gifts:
+            rarity = gift['rarity']
+            if rarity in grouped:
+                grouped[rarity].append(gift)
+        
+        return JsonResponse({
+            'success': True,
+            'gifts': grouped,
+            'query': query,
+            'total': len(list(gifts))
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+# ============== GIF VIEWS ==============
+
+@login_required
+@require_http_methods(["GET"])
+def get_gif_packs(request):
+    """Get all active GIF packs"""
+    try:
+        packs = GifPack.objects.filter(is_active=True).values(
+            'id', 'name', 'icon', 'order'
+        )
+        
+        packs_list = []
+        for pack in packs:
+            gif_count = GifFile.objects.filter(pack_id=pack['id'], is_active=True).count()
+            packs_list.append({
+                'id': pack['id'],
+                'name': pack['name'],
+                'icon': pack['icon'],
+                'gif_count': gif_count
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'packs': packs_list
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_gifs_by_pack(request, pack_id):
+    """Get GIFs from a specific pack"""
+    try:
+        pack = GifPack.objects.get(id=pack_id, is_active=True)
+        page = request.GET.get('page', 1)
+        
+        gifs = GifFile.objects.filter(pack=pack, is_active=True).order_by('order')
+        
+        # Pagination
+        paginator = Paginator(gifs, 12)
+        page_obj = paginator.get_page(page)
+        
+        gifs_list = []
+        for gif in page_obj:
+            gifs_list.append({
+                'id': gif.id,
+                'title': gif.title,
+                'url': gif.get_url(),
+                'thumbnail': gif.thumbnail.url if gif.thumbnail else gif.get_url(),
+                'tags': gif.tags
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'pack': {
+                'id': pack.id,
+                'name': pack.name,
+                'icon': pack.icon
+            },
+            'gifs': gifs_list,
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number
+        })
+    except GifPack.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Pack not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def search_gifs(request):
+    """Search GIFs by title or tags"""
+    try:
+        query = request.GET.get('q', '').strip()
+        
+        if not query or len(query) < 2:
+            return JsonResponse({
+                'success': False,
+                'error': 'Search query too short'
+            }, status=400)
+        
+        gifs = GifFile.objects.filter(
+            models.Q(title__icontains=query) |
+            models.Q(tags__icontains=query),
+            is_active=True
+        ).order_by('-views')[:20]
+        
+        gifs_list = []
+        for gif in gifs:
+            gifs_list.append({
+                'id': gif.id,
+                'title': gif.title,
+                'pack_name': gif.pack.name,
+                'url': gif.get_url(),
+                'thumbnail': gif.thumbnail.url if gif.thumbnail else gif.get_url(),
+                'tags': gif.tags
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'query': query,
+            'gifs': gifs_list,
+            'count': len(gifs_list)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_gif(request):
+    """Send GIF to room"""
+    try:
+        data = json.loads(request.body)
+        gif_id = data.get('gif_id')
+        room_name = data.get('room')
+        message_text = data.get('message', '')
+        
+        gif = GifFile.objects.get(id=gif_id, is_active=True)
+        room = Room.objects.get(name=room_name)
+        
+        # Log usage
+        GifUsageLog.objects.create(
+            gif=gif,
+            user=request.user,
+            room=room,
+            message_text=message_text
+        )
+        
+        # Increment views
+        gif.increment_views()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f"[GIF]{gif.get_url()}[/GIF]",
+            'gif_url': gif.get_url()
+        })
+    except GifFile.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'GIF not found'
+        }, status=404)
+    except Room.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Room not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_trending_gifs(request):
+    """Get trending GIFs by view count"""
+    try:
+        gifs = GifFile.objects.filter(is_active=True).order_by('-views')[:10]
+        
+        gifs_list = []
+        for gif in gifs:
+            gifs_list.append({
+                'id': gif.id,
+                'title': gif.title,
+                'pack_name': gif.pack.name,
+                'url': gif.get_url(),
+                'thumbnail': gif.thumbnail.url if gif.thumbnail else gif.get_url(),
+                'views': gif.views
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'gifs': gifs_list
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_gif_stats(request):
+    """Get GIF usage statistics"""
+    try:
+        total_gifs = GifFile.objects.filter(is_active=True).count()
+        total_packs = GifPack.objects.filter(is_active=True).count()
+        total_sent = GifUsageLog.objects.filter(user=request.user).count()
+        total_views = GifFile.objects.filter(is_active=True).aggregate(
+            total=models.Sum('views')
+        )['total'] or 0
+        
+        return JsonResponse({
+            'success': True,
+            'stats': {
+                'total_gifs': total_gifs,
+                'total_packs': total_packs,
+                'user_sent': total_sent,
+                'total_views': total_views
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
 

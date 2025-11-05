@@ -523,3 +523,85 @@ class GiftTransaction(models.Model):
     def __str__(self):
         return f"{self.sender.username} sent {self.quantity}x {self.gift.name} to {self.receiver.username}"
 
+
+class GifPack(models.Model):
+    """Collection/Category of GIFs"""
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, default='')
+    icon = models.CharField(max_length=10, default='📦')
+    order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+    
+    def get_gif_count(self):
+        return self.gifs.filter(is_active=True).count()
+
+
+class GifFile(models.Model):
+    """Individual GIF file"""
+    pack = models.ForeignKey(GifPack, on_delete=models.CASCADE, related_name='gifs')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    gif_file = models.FileField(upload_to='gifs/')
+    thumbnail = models.ImageField(upload_to='gifs/thumbnails/', null=True, blank=True)
+    tags = models.TextField(default='', help_text='Comma-separated tags')
+    category = models.CharField(max_length=50, blank=True, default='')
+    source = models.CharField(max_length=200, blank=True, default='')
+    file_size = models.BigIntegerField(default=0)  # in bytes
+    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
+    duration = models.FloatField(default=0)  # in seconds
+    is_animated = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    views = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['pack', 'order', 'title']
+        indexes = [
+            models.Index(fields=['pack', '-created_at']),
+            models.Index(fields=['tags']),
+        ]
+    
+    def __str__(self):
+        return f"{self.pack.name} - {self.title}"
+    
+    def get_url(self):
+        """Get GIF URL"""
+        if self.gif_file:
+            return self.gif_file.url
+        return ''
+    
+    def increment_views(self):
+        """Increment view counter"""
+        self.views += 1
+        self.save(update_fields=['views'])
+
+
+class GifUsageLog(models.Model):
+    """Track GIF usage in rooms"""
+    gif = models.ForeignKey(GifFile, on_delete=models.CASCADE, related_name='usage_logs')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gif_usages')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='gif_usages')
+    message_text = models.TextField(blank=True, default='')
+    sent_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-sent_at']
+        indexes = [
+            models.Index(fields=['user', '-sent_at']),
+            models.Index(fields=['gif', '-sent_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} sent {self.gif.title} in {self.room.name}"
+
+
