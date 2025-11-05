@@ -813,6 +813,21 @@
             width: 100%;
         }
 
+        .gift-item-cost {
+            font-size: 0.7rem;
+            color: var(--accent-yellow);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            justify-content: center;
+        }
+
+        .gift-item-cost::before {
+            content: "💰";
+            font-size: 0.8rem;
+        }
+
         .gift-item.common { --rarity-color: #95a5a6; }
         .gift-item.rare { --rarity-color: #3498db; }
         .gift-item.epic { --rarity-color: #9b59b6; }
@@ -1397,6 +1412,7 @@
                     <div class="gift-picker-header">
                         <span>Select a Gift</span>
                         <input type="text" id="gift-search" class="gift-search-input" placeholder="Search gifts...">
+                        <div style="font-size: 0.85rem; color: var(--accent-yellow); white-space: nowrap;">💰 <span id="user-evercoin">0</span> EV</div>
                         <button class="gift-close" id="gift-close">&times;</button>
                     </div>
                     <div class="gift-tabs">
@@ -1410,6 +1426,12 @@
                         <div class="gift-loading">Loading gifts... ⏳</div>
                     </div>
                     <div id="gift-message-input-container" style="display: none; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="margin-bottom: 0.5rem;">
+                            <label style="display: block; margin-bottom: 0.3rem; font-size: 0.85rem; color: var(--accent-teal);">Select Recipient:</label>
+                            <select id="gift-recipient" style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                                <option value="">-- Choose a user --</option>
+                            </select>
+                        </div>
                         <input type="text" id="gift-message" class="gift-message-input" placeholder="Add a message with your gift (optional)" maxlength="200">
                         <button id="confirm-gift-btn" class="confirm-gift-btn">Send Gift</button>
                     </div>
@@ -2495,6 +2517,10 @@
                     const data = await response.json();
                     if (data.success) {
                         Object.assign(giftsData, data.gifts);
+                        // Update user's EV balance
+                        if (data.user_evercoin !== undefined) {
+                            document.getElementById('user-evercoin').textContent = data.user_evercoin;
+                        }
                         displayGifts('all');
                     }
                 } catch (err) {
@@ -2534,6 +2560,7 @@
                             giftItem.innerHTML = `
                                 <div class="gift-item-emoji">${gift.emoji}</div>
                                 <div class="gift-item-name">${gift.name}</div>
+                                <div style="font-size: 0.7rem; color: var(--accent-yellow); font-weight: 600;">${gift.cost || 100} EC</div>
                             `;
                             giftItem.addEventListener('click', () => selectGift(gift));
                             giftGrid.appendChild(giftItem);
@@ -2577,12 +2604,18 @@
                     giftsList = giftsData[rarity] || [];
                 }
 
+                if (giftsList.length === 0) {
+                    giftGrid.innerHTML = '<div class="gift-loading">No gifts available</div>';
+                    return;
+                }
+
                 giftsList.forEach(gift => {
                     const giftItem = document.createElement('div');
                     giftItem.className = `gift-item ${gift.rarity}`;
                     giftItem.innerHTML = `
                         <div class="gift-item-emoji">${gift.emoji}</div>
                         <div class="gift-item-name">${gift.name}</div>
+                        <div style="font-size: 0.7rem; color: var(--accent-yellow); font-weight: 600;">${gift.cost || 100} EC</div>
                     `;
                     giftItem.addEventListener('click', () => selectGift(gift));
                     giftGrid.appendChild(giftItem);
@@ -2600,8 +2633,31 @@
             });
 
             // Select a gift to send
+            // Load room users for gift recipient selection
+            async function loadGiftRecipients() {
+                try {
+                    const response = await fetch(`/chat/gifts/users/${roomName}/`);
+                    const data = await response.json();
+                    
+                    const recipientSelect = document.getElementById('gift-recipient');
+                    recipientSelect.innerHTML = '<option value="">-- Choose a user --</option>';
+                    
+                    if (data.success && data.users) {
+                        data.users.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.first_name || user.username;
+                            recipientSelect.appendChild(option);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading recipients:', err);
+                }
+            }
+
             function selectGift(gift) {
                 selectedGift = gift;
+                loadGiftRecipients();
                 document.getElementById('gift-message-input-container').style.display = 'block';
                 // Highlight selected gift
                 document.querySelectorAll('.gift-item').forEach(item => {
@@ -2616,13 +2672,16 @@
             document.getElementById('confirm-gift-btn').addEventListener('click', async () => {
                 if (!selectedGift) return;
 
-                const recipientUsername = prompt('Send gift to (username):');
-                if (!recipientUsername) return;
+                const recipientId = document.getElementById('gift-recipient').value;
+                if (!recipientId) {
+                    alert('Please select a recipient');
+                    return;
+                }
 
                 const message = document.getElementById('gift-message').value;
 
                 try {
-                    const response = await fetch('{% url "send_gift" %}', {
+                    const response = await fetch(`/chat/gifts/send-new/${roomName}/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2630,20 +2689,22 @@
                         },
                         body: JSON.stringify({
                             gift_id: selectedGift.id,
-                            recipient: recipientUsername,
-                            room: roomName,
+                            recipient_id: recipientId,
                             message: message
                         })
                     });
 
                     const data = await response.json();
                     if (data.success) {
-                        alert(`Gift sent to ${recipientUsername}! 🎉`);
+                        alert(`Gift sent! +${data.message}`);
                         giftPicker.style.display = 'none';
                         giftBtn.classList.remove('active');
                         document.getElementById('gift-message').value = '';
                         document.getElementById('gift-message-input-container').style.display = 'none';
+                        document.getElementById('gift-recipient').value = '';
                         selectedGift = null;
+                        // Show remaining Evercoin
+                        console.log('Remaining Evercoin:', data.remaining_evercoin);
                     } else {
                         alert(`Error: ${data.error}`);
                     }
