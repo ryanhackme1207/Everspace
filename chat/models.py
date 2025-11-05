@@ -19,6 +19,8 @@ class UserProfile(models.Model):
     pixel_avatar = models.CharField(max_length=50, blank=True, default='')
     username_changes_count = models.IntegerField(default=0)
     username_changes_year = models.IntegerField(default=timezone.now().year)
+    # Gift system
+    evercoin = models.BigIntegerField(default=0, help_text='Virtual currency for gifts')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -479,10 +481,25 @@ class Notification(models.Model):
 
 class Gift(models.Model):
     """Predefined gifts that users can send"""
-    name = models.CharField(max_length=50, unique=True)  # e.g., "Rose", "Heart", "Gift Box"
+    ANIMATION_CHOICES = [
+        ('dragon-fly', 'Dragon Flying'),
+        ('hearts-rain', 'Hearts Rain'),
+        ('fireworks', 'Fireworks Burst'),
+        ('sparkle-spin', 'Sparkle Spin'),
+        ('bounce', 'Bounce'),
+        ('float', 'Float Up'),
+        ('rotate-rainbow', 'Rainbow Rotate'),
+        ('crystal-drop', 'Crystal Drop'),
+        ('trophy-rise', 'Trophy Rise'),
+        ('crown-fall', 'Crown Falling'),
+        ('unicorn-gallop', 'Unicorn Gallop'),
+        ('phoenix-burn', 'Phoenix Burn'),
+    ]
+    
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
-    icon_url = models.CharField(max_length=200)  # Relative URL to icon/emoji
-    emoji = models.CharField(max_length=10, blank=True)  # Unicode emoji or icon identifier
+    icon_url = models.CharField(max_length=200)
+    emoji = models.CharField(max_length=10, blank=True)
     rarity = models.CharField(
         max_length=20,
         choices=[
@@ -493,13 +510,19 @@ class Gift(models.Model):
         ],
         default='common'
     )
+    cost = models.IntegerField(default=100, help_text='Cost in Evercoin')
+    animation = models.CharField(
+        max_length=50,
+        choices=ANIMATION_CHOICES,
+        default='sparkle-spin'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['rarity', 'name']
     
     def __str__(self):
-        return f"{self.name} ({self.rarity})"
+        return f"{self.name} ({self.rarity}) - {self.cost} EC"
 
 
 class GiftTransaction(models.Model):
@@ -508,9 +531,10 @@ class GiftTransaction(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_gifts')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_gifts')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='gift_transactions')
-    quantity = models.IntegerField(default=1)  # Number of same gifts sent in one transaction
-    message = models.TextField(blank=True, max_length=200)  # Optional message with gift
+    quantity = models.IntegerField(default=1)
+    message = models.TextField(blank=True, max_length=200)
     sent_at = models.DateTimeField(default=timezone.now)
+    intimacy_gained = models.IntegerField(default=0, help_text='Intimacy points gained from this gift')
     
     class Meta:
         ordering = ['-sent_at']
@@ -522,6 +546,44 @@ class GiftTransaction(models.Model):
     
     def __str__(self):
         return f"{self.sender.username} sent {self.quantity}x {self.gift.name} to {self.receiver.username}"
+
+
+class Intimacy(models.Model):
+    """Track intimacy points between two users (亲密度)"""
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='intimacy_as_user1')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='intimacy_as_user2')
+    points = models.IntegerField(default=0, help_text='Intimacy points (亲密度)')
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = [['user1', 'user2']]
+        indexes = [
+            models.Index(fields=['user1', '-points']),
+            models.Index(fields=['user2', '-points']),
+        ]
+    
+    def __str__(self):
+        return f"亲密度 {self.user1.username} <-> {self.user2.username}: {self.points}"
+    
+    @staticmethod
+    def get_intimacy(user_a, user_b):
+        """Get intimacy points between two users"""
+        if user_a.id > user_b.id:
+            user_a, user_b = user_b, user_a
+        
+        intimacy, _ = Intimacy.objects.get_or_create(user1=user_a, user2=user_b)
+        return intimacy.points
+    
+    @staticmethod
+    def add_intimacy(user_a, user_b, points):
+        """Add intimacy points between two users"""
+        if user_a.id > user_b.id:
+            user_a, user_b = user_b, user_a
+        
+        intimacy, _ = Intimacy.objects.get_or_create(user1=user_a, user2=user_b)
+        intimacy.points += points
+        intimacy.save()
+        return intimacy
 
 
 class GifPack(models.Model):

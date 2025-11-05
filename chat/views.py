@@ -1693,12 +1693,173 @@ def send_gift(request):
         }, status=500)
 
 
+# ============== NEW GIFT SYSTEM ==============
+
+@login_required
+@require_http_methods(["GET"])
+def get_room_users(request, room_name):
+    """Get online users in a room (for gift recipient selection)"""
+    try:
+        room = get_object_or_404(Room, name=room_name)
+        members = room.members.all().exclude(username=request.user.username).values(
+            'id', 'username', 'first_name'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'users': list(members)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_gift_new(request, room_name):
+    """Send a gift to a user with Evercoin deduction and intimacy increase"""
+    try:
+        from .models import Gift, GiftTransaction, Intimacy
+        import json
+        
+        data = json.loads(request.body)
+        gift_id = data.get('gift_id')
+        recipient_id = data.get('recipient_id')
+        message = data.get('message', '')
+        
+        # Validate inputs
+        if not gift_id or not recipient_id:
+            return JsonResponse({'success': False, 'error': 'Invalid gift or recipient'}, status=400)
+        
+        sender = request.user
+        recipient = get_object_or_404(User, id=recipient_id)
+        gift = get_object_or_404(Gift, id=gift_id)
+        room = get_object_or_404(Room, name=room_name)
+        
+        # Check Evercoin balance
+        sender_profile = sender.profile
+        if sender_profile.evercoin < gift.cost:
+            return JsonResponse({
+                'success': False,
+                'error': f'Not enough Evercoin! Need {gift.cost}, have {sender_profile.evercoin}'
+            }, status=400)
+        
+        # Deduct Evercoin
+        sender_profile.evercoin -= gift.cost
+        sender_profile.save()
+        
+        # Calculate intimacy gain (based on gift rarity)
+        rarity_points = {
+            'common': 5,
+            'rare': 15,
+            'epic': 30,
+            'legendary': 50
+        }
+        intimacy_points = rarity_points.get(gift.rarity, 5)
+        
+        # Create gift transaction
+        transaction = GiftTransaction.objects.create(
+            gift=gift,
+            sender=sender,
+            receiver=recipient,
+            room=room,
+            message=message,
+            intimacy_gained=intimacy_points
+        )
+        
+        # Add intimacy between users
+        Intimacy.add_intimacy(sender, recipient, intimacy_points)
+        
+        # Get current intimacy
+        total_intimacy = Intimacy.get_intimacy(sender, recipient)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Gift sent! +{intimacy_points} 亲密度',
+            'transaction_id': transaction.id,
+            'remaining_evercoin': sender_profile.evercoin,
+            'animation': gift.animation,
+            'gift_emoji': gift.emoji,
+            'gift_name': gift.name,
+            'intimacy_total': total_intimacy
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_user_intimacy(request):
+    """Get intimacy points with a specific user"""
+    try:
+        from .models import Intimacy
+        
+        target_user_id = request.GET.get('user_id')
+        if not target_user_id:
+            return JsonResponse({'success': False, 'error': 'Missing user_id'}, status=400)
+        
+        target_user = get_object_or_404(User, id=target_user_id)
+        points = Intimacy.get_intimacy(request.user, target_user)
+        
+        return JsonResponse({
+            'success': True,
+            'user': target_user.username,
+            'intimacy': points
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_leaderboard(request):
+    """Get intimacy leaderboard"""
+    try:
+        from .models import Intimacy
+        
+        # Get all intimacy records and sort by points
+        leaderboard = Intimacy.objects.filter(
+            models.Q(user1=request.user) | models.Q(user2=request.user)
+        ).order_by('-points')[:20]
+        
+        data = []
+        for item in leaderboard:
+            other_user = item.user2 if item.user1 == request.user else item.user1
+            data.append({
+                'username': other_user.username,
+                'intimacy': item.points
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'leaderboard': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
 @login_required
 def get_gifts(request):
-    """Get list of available gifts for sending"""
+    """Get list of available gifts for sending with costs"""
     try:
-        from .models import Gift
-        gifts = Gift.objects.all().values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description')
+        from .models import Gift, GiftTransaction, Intimacy
+        user_profile = request.user.profile
+        
+        gifts = Gift.objects.all().values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description', 'cost', 'animation')
         
         # Group by rarity
         grouped = {
@@ -1715,7 +1876,8 @@ def get_gifts(request):
         
         return JsonResponse({
             'success': True,
-            'gifts': grouped
+            'gifts': grouped,
+            'user_evercoin': user_profile.evercoin
         })
     except Exception as e:
         return JsonResponse({
@@ -1739,7 +1901,7 @@ def search_gifts(request):
         gifts = Gift.objects.filter(
             models.Q(name__icontains=query) |
             models.Q(description__icontains=query)
-        ).values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description')
+        ).values('id', 'name', 'emoji', 'icon_url', 'rarity', 'description', 'cost', 'animation')
         
         # Group by rarity
         grouped = {

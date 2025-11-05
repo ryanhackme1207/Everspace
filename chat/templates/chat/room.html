@@ -2688,12 +2688,19 @@
                 try {
                     const response = await fetch('/chat/gifs/packs/');
                     const data = await response.json();
+                    console.log('GIF Packs Response:', data);
                     if (data.success) {
                         gifPacksData = data.packs;
+                        console.log('Loaded packs:', gifPacksData);
                         displayGifPackTabs();
                         if (gifPacksData.length > 0) {
                             loadGifsByPack(gifPacksData[0].id);
+                        } else {
+                            loadAllGifs();
                         }
+                    } else {
+                        console.error('API returned success: false', data);
+                        gifGrid.innerHTML = '<div class="gif-loading">Error loading GIFs: ' + data.error + '</div>';
                     }
                 } catch (err) {
                     console.error('Error loading GIF packs:', err);
@@ -2751,11 +2758,16 @@
             // Load GIFs by pack
             async function loadGifsByPack(packId) {
                 try {
+                    console.log('Loading GIFs for pack:', packId);
                     gifGrid.innerHTML = '<div class="gif-loading">Loading GIFs...</div>';
                     const response = await fetch(`/chat/gifs/pack/${packId}/`);
                     const data = await response.json();
+                    console.log('Pack GIFs Response:', data);
                     if (data.success) {
                         displayGifs(data.gifs);
+                    } else {
+                        console.error('Pack GIFs error:', data);
+                        gifGrid.innerHTML = '<div class="gif-loading">Error: ' + data.error + '</div>';
                     }
                 } catch (err) {
                     console.error('Error loading GIFs:', err);
@@ -2765,8 +2777,9 @@
 
             // Display GIFs in grid
             function displayGifs(gifs) {
+                console.log('Displaying GIFs:', gifs);
                 gifGrid.innerHTML = '';
-                if (gifs.length === 0) {
+                if (!gifs || gifs.length === 0) {
                     gifGrid.innerHTML = '<div class="gif-loading">No GIFs found</div>';
                     return;
                 }
@@ -2774,7 +2787,9 @@
                 gifs.forEach(gif => {
                     const gifItem = document.createElement('div');
                     gifItem.className = 'gif-item';
-                    gifItem.innerHTML = `<img src="${gif.thumbnail || gif.url}" alt="${gif.title}" title="${gif.title}">`;
+                    const imgUrl = gif.thumbnail || gif.url;
+                    console.log('Loading GIF image:', imgUrl);
+                    gifItem.innerHTML = `<img src="${imgUrl}" alt="${gif.title}" title="${gif.title}">`;
                     gifItem.addEventListener('click', () => sendGif(gif));
                     gifGrid.appendChild(gifItem);
                 });

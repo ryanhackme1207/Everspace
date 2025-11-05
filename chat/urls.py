@@ -33,8 +33,12 @@ urlpatterns = [
     path('chat/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     # Gift System URLs
     path('chat/gifts/send/', views.send_gift, name='send_gift'),
+    path('chat/gifts/send-new/<str:room_name>/', views.send_gift_new, name='send_gift_new'),
     path('chat/gifts/list/', views.get_gifts, name='get_gifts'),
     path('chat/gifts/search/', views.search_gifts, name='search_gifts'),
+    path('chat/gifts/users/<str:room_name>/', views.get_room_users, name='get_room_users'),
+    path('chat/gifts/intimacy/', views.get_user_intimacy, name='get_user_intimacy'),
+    path('chat/gifts/leaderboard/', views.get_leaderboard, name='get_leaderboard'),
     # GIF System URLs
     path('chat/gifs/packs/', views.get_gif_packs, name='get_gif_packs'),
     path('chat/gifs/pack/<int:pack_id>/', views.get_gifs_by_pack, name='get_gifs_by_pack'),
