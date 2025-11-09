@@ -2646,20 +2646,11 @@ def submit_game_score(request):
         if game_type not in valid_games:
             return JsonResponse({'success': False, 'error': 'Invalid game type'}, status=400)
         
-        # Server-side validation of play time and reward
-        play_time_minutes = play_time / 60
-        
-        # If played less than 2 minutes, no reward
-        if play_time_minutes < 2:
+        # Server-side validation: Score must be 100+ for rewards
+        if score < 100:
             reward = 0
-        # If score is very low, minimum reward only
-        elif score < 50 and play_time_minutes < 5:
-            reward = min(reward, 20)
-        # If played less than 5 minutes, cap the reward
-        elif play_time_minutes < 5:
-            reward = min(reward, 150)
-        # Full reward for 5+ minutes
         else:
+            # Cap reward at 200 Evercoins maximum
             reward = min(reward, 200)
         
         # Create game session

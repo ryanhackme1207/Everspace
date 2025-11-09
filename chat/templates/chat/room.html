@@ -5079,49 +5079,28 @@
                 // Start cooldown timer
                 startCooldownTimer();
                 
-                // Create audio element with error handling
-                const audio = new Audio();
-                audio.crossOrigin = 'anonymous'; // Handle CORS
+                // Create audio element - don't set crossOrigin to avoid CORS issues
+                const audio = new Audio(sound.url);
                 audio.volume = 0.7;
                 
                 currentlyPlaying = { audio, button: btnElement };
                 btnElement.classList.add('playing');
                 
-                // Set source and load
-                audio.src = sound.url;
-                audio.load();
-                
-                // Play sound with retry logic
+                // Play sound
                 const playPromise = audio.play();
                 
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        console.log(`Playing sound: ${sound.name}`);
+                        console.log(`✓ Playing sound: ${sound.name}`);
                         // Share sound in chat after successful play
                         shareSound(sound);
                     }).catch(err => {
-                        console.error('Error playing sound:', err);
+                        console.error('❌ Error playing sound:', err);
                         btnElement.classList.remove('playing');
-                        
-                        // Try alternative: using fetch and blob
-                        fetch(sound.url, { mode: 'cors' })
-                            .then(response => response.blob())
-                            .then(blob => {
-                                const blobUrl = URL.createObjectURL(blob);
-                                const newAudio = new Audio(blobUrl);
-                                newAudio.volume = 0.7;
-                                return newAudio.play();
-                            })
-                            .then(() => {
-                                console.log(`Playing sound via blob: ${sound.name}`);
-                                shareSound(sound);
-                            })
-                            .catch(blobErr => {
-                                console.error('Blob fallback failed:', blobErr);
-                                showNotification(`⚠️ Could not play: ${sound.name}`, 'error');
-                                // Reset cooldown if sound failed
-                                lastSoundTime = 0;
-                            });
+                        showNotification(`⚠️ Could not play: ${sound.name}. Try another sound.`, 'error');
+                        // Reset cooldown if sound failed
+                        lastSoundTime = 0;
+                        currentlyPlaying = null;
                     });
                 }
                 
