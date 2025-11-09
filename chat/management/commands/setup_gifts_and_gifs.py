@@ -100,9 +100,9 @@ class Command(BaseCommand):
                 'icon': '😂',
                 'order': 1,
                 'gifs': [
-                    {'title': 'Laughing', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
-                    {'title': 'Funny Face', 'url': 'https://media.giphy.com/media/l0HlO0Rr5K1p0sSJi/giphy.gif'},
-                    {'title': 'LOL', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Laughing', 'url': 'https://media.giphy.com/media/3o7TKU9Z0i6VEKyOKI/giphy.gif'},
+                    {'title': 'Funny Face', 'url': 'https://media.giphy.com/media/l0MYtWjuAb0bdW13W8/giphy.gif'},
+                    {'title': 'LOL', 'url': 'https://media.giphy.com/media/g9GznKK0ZX9XC/giphy.gif'},
                 ]
             },
             'happy': {
@@ -110,9 +110,9 @@ class Command(BaseCommand):
                 'icon': '😊',
                 'order': 2,
                 'gifs': [
-                    {'title': 'Smile', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Excited', 'url': 'https://media.giphy.com/media/xT9IgEx8SbQ1vhBbao/giphy.gif'},
-                    {'title': 'Jumping', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                    {'title': 'Smile', 'url': 'https://media.giphy.com/media/xT9IgEx8SbQ1vhBbao/giphy.gif'},
+                    {'title': 'Excited', 'url': 'https://media.giphy.com/media/b1o4elW5H87dO/giphy.gif'},
+                    {'title': 'Happy Dance', 'url': 'https://media.giphy.com/media/l0HlO0Rr5K1p0sSJi/giphy.gif'},
                 ]
             },
             'love': {
@@ -120,8 +120,8 @@ class Command(BaseCommand):
                 'icon': '❤️',
                 'order': 3,
                 'gifs': [
-                    {'title': 'Heart Eyes', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Love', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                    {'title': 'Heart Eyes', 'url': 'https://media.giphy.com/media/B1p4UJRiKWXbq/giphy.gif'},
+                    {'title': 'Love', 'url': 'https://media.giphy.com/media/4cuyucPeVWbNS/giphy.gif'},
                     {'title': 'Kiss', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
                 ]
             },
@@ -130,9 +130,9 @@ class Command(BaseCommand):
                 'icon': '💼',
                 'order': 4,
                 'gifs': [
-                    {'title': 'Working Hard', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
-                    {'title': 'Busy', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Coffee Break', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                    {'title': 'Working Hard', 'url': 'https://media.giphy.com/media/13HgNZiMRLXjMI/giphy.gif'},
+                    {'title': 'Busy', 'url': 'https://media.giphy.com/media/1qJ4InN2yvDbu/giphy.gif'},
+                    {'title': 'Coffee Break', 'url': 'https://media.giphy.com/media/3o6Zt6KHxJTbXCnSvu/giphy.gif'},
                 ]
             },
             'cool': {
@@ -140,29 +140,29 @@ class Command(BaseCommand):
                 'icon': '😎',
                 'order': 5,
                 'gifs': [
-                    {'title': 'Cool Dude', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                    {'title': 'Cool Dude', 'url': 'https://media.giphy.com/media/l0HlGdZ6dmJBp8sZi/giphy.gif'},
                     {'title': 'Swagger', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Sunglasses', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                    {'title': 'Sunglasses', 'url': 'https://media.giphy.com/media/lCYSEA3lepBxo/giphy.gif'},
                 ]
             },
             'sad': {
                 'name': 'Sad',
-                'icon': '�',
+                'icon': '😢',
                 'order': 6,
                 'gifs': [
-                    {'title': 'Crying', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Sad Face', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
-                    {'title': 'Disappointed', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                    {'title': 'Crying', 'url': 'https://media.giphy.com/media/jUwpNzg9IcyrK/giphy.gif'},
+                    {'title': 'Sad Face', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Disappointed', 'url': 'https://media.giphy.com/media/GrUhLU9q3nyRG/giphy.gif'},
                 ]
             },
             'shocked': {
                 'name': 'Shocked',
-                'icon': '�',
+                'icon': '😲',
                 'order': 7,
                 'gifs': [
-                    {'title': 'Shocked Face', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Surprised', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
-                    {'title': 'Wow', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                    {'title': 'Shocked Face', 'url': 'https://media.giphy.com/media/l0HlTy9x8FZo0XO1i/giphy.gif'},
+                    {'title': 'Surprised', 'url': 'https://media.giphy.com/media/BfiYrCLpdv3kk/giphy.gif'},
+                    {'title': 'Wow', 'url': 'https://media.giphy.com/media/xTiTnRS5NHH0OwvyeA/giphy.gif'},
                 ]
             },
         }

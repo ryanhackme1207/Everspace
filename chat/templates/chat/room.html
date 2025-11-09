@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load chat_tags %}
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -1039,16 +1040,24 @@
 
         /* Message with GIF */
         .message-gif {
-            background: rgba(78, 205, 196, 0.1);
-            border-left: 3px solid var(--accent-teal);
-            padding: 0.75rem;
-            border-radius: var(--border-radius-sm);
-            margin-top: 0.5rem;
-        }
-
-        .message-gif img {
             max-width: 250px;
             border-radius: var(--border-radius-sm);
+            display: block;
+            margin: 0.5rem 0;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .message-gif:hover {
+            box-shadow: 0 6px 16px rgba(78, 205, 196, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .message-content .message-gif {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
         }
 
         /* Message with Gift */
@@ -1367,7 +1376,7 @@
                         <span class="username">{{ message.user.first_name|default:message.user.username }}</span>
                         <span class="timestamp">{{ message.timestamp|date:"M d, H:i" }}</span>
                     </div>
-                    <div class="message-content">{{ message.content }}</div>
+                    <div class="message-content">{{ message.content|render_message_content }}</div>
                 </div>
                 {% endfor %}
             </div>
