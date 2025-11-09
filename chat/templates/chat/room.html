@@ -4151,25 +4151,29 @@
                 card.addEventListener('click', () => {
                     const gameType = card.dataset.game;
                     let gameUrl = '';
+                    let windowSize = 'width=600,height=800,scrollbars=no,resizable=no';
                     
                     switch(gameType) {
                         case '2048':
                             gameUrl = '/games/2048/';
                             break;
                         case 'snake':
-                            alert('Snake game coming soon! 🐍');
-                            return;
+                            gameUrl = '/games/snake/';
+                            windowSize = 'width=600,height=750,scrollbars=no,resizable=no';
+                            break;
                         case 'flappy':
-                            alert('Flappy Bird coming soon! 🐦');
-                            return;
+                            gameUrl = '/games/flappy/';
+                            windowSize = 'width=500,height=750,scrollbars=no,resizable=no';
+                            break;
                         case 'memory':
-                            alert('Memory Cards coming soon! 🎴');
-                            return;
+                            gameUrl = '/games/memory/';
+                            windowSize = 'width=700,height=850,scrollbars=no,resizable=no';
+                            break;
                     }
                     
                     if (gameUrl) {
                         // Open game in new window
-                        const gameWindow = window.open(gameUrl, 'EverSpace Game', 'width=600,height=800,scrollbars=no,resizable=no');
+                        const gameWindow = window.open(gameUrl, 'EverSpace Game', windowSize);
                         if (gameWindow) {
                             gamesModal.style.display = 'none';
                             gamesBtn.classList.remove('active');

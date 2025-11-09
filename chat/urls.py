@@ -27,6 +27,7 @@ urlpatterns = [
     path('friends/set-nickname/', views.set_friend_nickname, name='set_friend_nickname'),
     path('friends/get-nickname/', views.get_friend_nickname, name='get_friend_nickname'),
     path('friends/block/', views.block_friend, name='block_friend'),
+    path('friends/unblock/', views.unblock_friend, name='unblock_friend'),
     path('friends/remove/', views.remove_friend, name='remove_friend'),
     path('friends/mark-as-read/', views.mark_messages_as_read, name='mark_messages_as_read'),
     # Message Management URLs
@@ -57,6 +58,9 @@ urlpatterns = [
     path('chat/gifs/stats/', views.get_gif_stats, name='get_gif_stats'),
     # Mini Games URLs
     path('games/2048/', views.game_2048, name='game_2048'),
+    path('games/snake/', views.game_snake, name='game_snake'),
+    path('games/flappy/', views.game_flappy, name='game_flappy'),
+    path('games/memory/', views.game_memory, name='game_memory'),
     path('games/submit-score/', views.submit_game_score, name='submit_game_score'),
     path('games/stats/', views.get_game_stats, name='get_game_stats'),
     # Debug endpoints

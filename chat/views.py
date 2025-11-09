@@ -1310,6 +1310,51 @@ def block_friend(request):
 
 @login_required
 @require_POST
+def unblock_friend(request):
+    """Unblock a blocked user"""
+    username = request.POST.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Username is required.'
+        })
+    
+    try:
+        blocked_user = get_object_or_404(User, username=username)
+        
+        # Get blocked friendship
+        friendship = Friendship.get_friendship(request.user, blocked_user)
+        
+        if not friendship:
+            return JsonResponse({
+                'success': False,
+                'message': 'No blocked relationship found.'
+            })
+        
+        if friendship.status != 'blocked':
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} is not blocked.'
+            })
+        
+        # Delete the blocked friendship so they can interact again
+        friendship.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'You have unblocked {username}. You can now interact with them again.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
+@login_required
+@require_POST
 def remove_friend(request):
     """Remove a friend - can send friend request again later"""
     username = request.POST.get('username', '').strip()
@@ -2562,6 +2607,24 @@ def get_gif_stats(request):
 def game_2048(request):
     """Render 2048 game"""
     return render(request, 'chat/games/2048.html')
+
+
+@login_required
+def game_snake(request):
+    """Render Snake game"""
+    return render(request, 'chat/games/snake.html')
+
+
+@login_required
+def game_flappy(request):
+    """Render Flappy Bird game"""
+    return render(request, 'chat/games/flappy.html')
+
+
+@login_required
+def game_memory(request):
+    """Render Memory Cards game"""
+    return render(request, 'chat/games/memory.html')
 
 
 @login_required
