@@ -57,6 +57,7 @@ urlpatterns = [
     path('chat/gifs/trending/', views.get_trending_gifs, name='get_trending_gifs'),
     path('chat/gifs/stats/', views.get_gif_stats, name='get_gif_stats'),
     # Mini Games URLs
+    path('games/', views.games_menu, name='games_menu'),
     path('games/2048/', views.game_2048, name='game_2048'),
     path('games/2048/multiplayer/', views.game_2048_multiplayer, name='game_2048_multiplayer'),
     path('games/snake/', views.game_snake, name='game_snake'),

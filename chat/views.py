@@ -2611,6 +2611,12 @@ def get_gif_stats(request):
 # ============== MINI GAMES SYSTEM ==============
 
 @login_required
+def games_menu(request):
+    """Render games menu"""
+    return redirect('/chat/')  # Redirect to chat for now
+
+
+@login_required
 def game_2048(request):
     """Render 2048 game"""
     return render(request, 'chat/games/2048.html')

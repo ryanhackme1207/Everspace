@@ -562,6 +562,18 @@
         .hidden {
             display: none !important;
         }
+
+        /* Pulse animation for waiting room */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 <body>
@@ -570,6 +582,9 @@
         <div>
             <h1 class="mode-title">🎮 2048 Game Mode</h1>
             <p style="text-align: center; opacity: 0.8;">Choose your battle style</p>
+            <div style="text-align: center; margin-top: 10px; color: #4ade80; font-size: 0.9em;">
+                <span id="onlineCount">0</span> players online
+            </div>
         </div>
         
         <div class="mode-buttons">
@@ -590,9 +605,35 @@
             </div>
         </div>
         
-        <a href="/games/" style="color: white; text-decoration: none; opacity: 0.7; margin-top: 20px;">
-            ← Back to Games
+        <a href="/chat/" style="color: white; text-decoration: none; opacity: 0.7; margin-top: 20px;">
+            ← Back to Chat
         </a>
+    </div>
+
+    <!-- Waiting Room -->
+    <div class="mode-selection hidden" id="waitingRoom">
+        <div style="text-align: center;">
+            <h1 class="mode-title">🔍 Finding Opponent...</h1>
+            <div style="margin: 30px 0;">
+                <div style="font-size: 48px; animation: pulse 1.5s ease-in-out infinite;">⏳</div>
+            </div>
+            <p style="opacity: 0.8; margin-bottom: 10px;">Searching for available players...</p>
+            <div style="color: #4ade80; font-size: 1.1em; margin-bottom: 20px;">
+                <span id="waitingOnlineCount">0</span> players online
+            </div>
+            <div style="color: #fbbf24; font-size: 0.9em; margin-bottom: 30px;">
+                Waiting: <span id="waitTimer">0</span>s
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="playWithBot()" style="padding: 12px 30px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 8px; font-size: 1em; cursor: pointer; transition: all 0.3s;">
+                    🤖 Play with Bot Instead
+                </button>
+                <button onclick="cancelMatchmaking()" style="padding: 12px 30px; background: rgba(255, 255, 255, 0.1); color: white; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 8px; font-size: 1em; cursor: pointer; transition: all 0.3s;">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Battle Arena (Multiplayer) -->
@@ -727,6 +768,10 @@
             updateDisplay();
         }
 
+        // Waiting room timer
+        let waitTimer = 0;
+        let waitTimerInterval = null;
+
         // Mode selection
         function startStandardMode() {
             window.location.href = '/games/2048/';
@@ -735,14 +780,45 @@
         function startMultiplayerMode() {
             gameMode = 'multiplayer';
             document.getElementById('modeSelection').classList.add('hidden');
-            document.getElementById('battleArena').style.display = 'block';
+            document.getElementById('waitingRoom').classList.remove('hidden');
+            
+            // Start wait timer
+            waitTimer = 0;
+            waitTimerInterval = setInterval(() => {
+                waitTimer++;
+                document.getElementById('waitTimer').textContent = waitTimer;
+            }, 1000);
             
             init();
-            initializeMultiplayer();
+            initializeMultiplayer(true); // Wait for real player
+        }
+
+        function playWithBot() {
+            // Cancel waiting and play with bot
+            if (gameSocket) {
+                gameSocket.close();
+            }
+            clearInterval(waitTimerInterval);
+            
+            document.getElementById('waitingRoom').classList.add('hidden');
+            document.getElementById('battleArena').style.display = 'block';
+            
+            initializeMultiplayer(false); // Play with bot
+        }
+
+        function cancelMatchmaking() {
+            // Cancel and go back to menu
+            if (gameSocket) {
+                gameSocket.close();
+            }
+            clearInterval(waitTimerInterval);
+            
+            document.getElementById('waitingRoom').classList.add('hidden');
+            document.getElementById('modeSelection').classList.remove('hidden');
         }
 
         // Multiplayer WebSocket setup
-        function initializeMultiplayer() {
+        function initializeMultiplayer(waitForPlayer = true) {
             // Generate a temporary game ID
             currentGameId = 'temp_' + Date.now();
             
@@ -756,7 +832,7 @@
                 // Try to find match or create bot game
                 gameSocket.send(JSON.stringify({
                     type: 'find_match',
-                    wait_for_player: false // Set true to wait for real player
+                    wait_for_player: waitForPlayer
                 }));
             };
             
@@ -776,11 +852,25 @@
 
         function handleWebSocketMessage(data) {
             switch(data.type) {
+                case 'online_count':
+                    // Update online count in both mode selection and waiting room
+                    document.getElementById('onlineCount').textContent = data.count;
+                    document.getElementById('waitingOnlineCount').textContent = data.count;
+                    break;
+                
                 case 'waiting':
-                    document.getElementById('matchmakingStatus').textContent = data.message;
+                    // Still waiting for opponent
+                    console.log('Waiting for opponent:', data.message);
                     break;
                     
                 case 'game_start':
+                    // Stop wait timer
+                    clearInterval(waitTimerInterval);
+                    
+                    // Hide waiting room, show battle arena
+                    document.getElementById('waitingRoom').classList.add('hidden');
+                    document.getElementById('battleArena').style.display = 'block';
+                    
                     currentGameId = data.game_id;
                     isBot = data.is_bot;
                     document.getElementById('player2Name').textContent = data.player2;
@@ -1370,7 +1460,7 @@
         }
 
         function backToMenu() {
-            window.location.href = '/games/';
+            window.location.href = '/chat/';
         }
 
         // Keyboard controls

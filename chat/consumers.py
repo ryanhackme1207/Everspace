@@ -479,6 +479,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 class Game2048Consumer(AsyncWebsocketConsumer):
     """WebSocket consumer for multiplayer 2048 game"""
     
+    # Track online users waiting for match
+    online_users = set()
+    
     async def connect(self):
         if not self.scope["user"].is_authenticated:
             await self.close()
@@ -492,14 +495,39 @@ class Game2048Consumer(AsyncWebsocketConsumer):
             return
         
         self.game_group_name = f'game2048_{self.game_id}'
+        self.lobby_group_name = 'game2048_lobby'
         
-        # Join game group
+        # Join game group and lobby
         await self.channel_layer.group_add(
             self.game_group_name,
             self.channel_name
         )
+        await self.channel_layer.group_add(
+            self.lobby_group_name,
+            self.channel_name
+        )
+        
+        # Add to online users
+        Game2048Consumer.online_users.add(self.user.username)
         
         await self.accept()
+        
+        # Send current online count to this user
+        await self.send(text_data=json.dumps({
+            'type': 'online_count',
+            'count': len(Game2048Consumer.online_users),
+            'users': list(Game2048Consumer.online_users)
+        }))
+        
+        # Broadcast online count to lobby
+        await self.channel_layer.group_send(
+            'game2048_lobby',
+            {
+                'type': 'online_count',
+                'count': len(Game2048Consumer.online_users),
+                'users': list(Game2048Consumer.online_users)
+            }
+        )
         
         # Get game state and send to player
         game_state = await self.get_game_state()
@@ -510,9 +538,29 @@ class Game2048Consumer(AsyncWebsocketConsumer):
             }))
     
     async def disconnect(self, close_code):
+        # Remove from online users
+        if hasattr(self, 'user'):
+            Game2048Consumer.online_users.discard(self.user.username)
+            
+            # Broadcast updated online count
+            await self.channel_layer.group_send(
+                'game2048_lobby',
+                {
+                    'type': 'online_count',
+                    'count': len(Game2048Consumer.online_users),
+                    'users': list(Game2048Consumer.online_users)
+                }
+            )
+        
         if hasattr(self, 'game_group_name'):
             await self.channel_layer.group_discard(
                 self.game_group_name,
+                self.channel_name
+            )
+        
+        if hasattr(self, 'lobby_group_name'):
+            await self.channel_layer.group_discard(
+                self.lobby_group_name,
                 self.channel_name
             )
     
@@ -542,7 +590,33 @@ class Game2048Consumer(AsyncWebsocketConsumer):
         
         if game:
             # Join existing game
-            await self.join_game(game['id'])
+            joined = await self.join_game(game['id'])
+            if joined:
+                # Update game_id and group
+                self.game_id = game['id']
+                self.game_group_name = f'game2048_{self.game_id}'
+                
+                # Join the new game group
+                await self.channel_layer.group_add(
+                    self.game_group_name,
+                    self.channel_name
+                )
+                
+                # Notify both players game has started
+                game_state = await self.get_game_state()
+                await self.channel_layer.group_send(
+                    self.game_group_name,
+                    {
+                        'type': 'game_start',
+                        'game_id': self.game_id,
+                        'player1': game_state['player1'],
+                        'player2': game_state['player2'],
+                        'is_bot': game_state['is_bot']
+                    }
+                )
+            else:
+                # Failed to join, create new game
+                await self.handle_find_match(data)
         else:
             # Check if user wants to wait or play with bot
             wait_for_player = data.get('wait_for_player', False)
@@ -550,6 +624,17 @@ class Game2048Consumer(AsyncWebsocketConsumer):
             if wait_for_player:
                 # Create new waiting game
                 game = await self.create_game(is_bot=False)
+                
+                # Update game_id
+                self.game_id = game['id']
+                self.game_group_name = f'game2048_{self.game_id}'
+                
+                # Join the new game group
+                await self.channel_layer.group_add(
+                    self.game_group_name,
+                    self.channel_name
+                )
+                
                 await self.send(text_data=json.dumps({
                     'type': 'waiting',
                     'game_id': game['id'],
@@ -558,7 +643,29 @@ class Game2048Consumer(AsyncWebsocketConsumer):
             else:
                 # Create bot game
                 game = await self.create_game(is_bot=True)
-                await self.start_game(game['id'])
+                
+                # Update game_id
+                self.game_id = game['id']
+                self.game_group_name = f'game2048_{self.game_id}'
+                
+                # Join the new game group
+                await self.channel_layer.group_add(
+                    self.game_group_name,
+                    self.channel_name
+                )
+                
+                # Notify game has started
+                game_state = await self.get_game_state()
+                await self.channel_layer.group_send(
+                    self.game_group_name,
+                    {
+                        'type': 'game_start',
+                        'game_id': self.game_id,
+                        'player1': game_state['player1'],
+                        'player2': game_state['player2'],
+                        'is_bot': game_state['is_bot']
+                    }
+                )
     
     async def handle_move(self, data):
         """Handle player move and calculate attacks/heals"""
@@ -644,6 +751,14 @@ class Game2048Consumer(AsyncWebsocketConsumer):
     async def game_victory(self, event):
         """Send victory notification"""
         await self.send(text_data=json.dumps(event))
+    
+    async def online_count(self, event):
+        """Send online users count update"""
+        await self.send(text_data=json.dumps({
+            'type': 'online_count',
+            'count': event['count'],
+            'users': event['users']
+        }))
     
     # Database operations
     @database_sync_to_async
