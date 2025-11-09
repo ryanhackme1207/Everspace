@@ -383,6 +383,19 @@
             box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
         }
 
+        .sound-toggle-btn {
+            background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%) !important;
+            border: none !important;
+            color: white !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .sound-toggle-btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0, 201, 255, 0.4) !important;
+            filter: brightness(1.1) !important;
+        }
+
         .primary-btn {
             background: var(--primary-gradient);
             border: none;
@@ -1566,6 +1579,9 @@
                             <i class="fas fa-user"></i>
                             {{ user.first_name|default:user.username }}
                         </div>
+                        <button id="soundToggleBtn" class="action-btn sound-toggle-btn" title="Toggle notification sounds">
+                            <i class="fas fa-volume-up me-1"></i><span id="soundToggleText">Sound On</span>
+                        </button>
                         {% if is_room_host %}
                             <a href="{% url 'chat:room_settings' room_name=room_name %}" class="action-btn settings-btn" title="Room Settings (Host Only)">
                                 <i class="fas fa-cog me-1"></i>Settings
@@ -1927,10 +1943,32 @@
             }
         }
         
+        // Sound toggle state (stored in localStorage)
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // Default: true
+        
+        // Update sound toggle button state
+        function updateSoundToggleButton() {
+            const btn = document.getElementById('soundToggleBtn');
+            const icon = btn.querySelector('i');
+            const text = document.getElementById('soundToggleText');
+            
+            if (soundEnabled) {
+                icon.className = 'fas fa-volume-up me-1';
+                text.textContent = 'Sound On';
+                btn.style.background = 'linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)';
+            } else {
+                icon.className = 'fas fa-volume-mute me-1';
+                text.textContent = 'Sound Off';
+                btn.style.background = 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)';
+            }
+        }
+        
         // Show notification toast with sound
         function showNotification(title, message, type = 'info') {
-            // Play notification sound
-            playNotificationSound(type);
+            // Play notification sound only if enabled
+            if (soundEnabled) {
+                playNotificationSound(type);
+            }
             
             const notification = document.createElement('div');
             notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
@@ -2154,8 +2192,8 @@
                 const messageId = data.message_id || Date.now();
                 const currentTimestamp = Math.floor(Date.now() / 1000);
                 
-                // Play sound for incoming messages (not from current user)
-                if (!isCurrentUser) {
+                // Play sound for incoming messages (not from current user) if sound is enabled
+                if (!isCurrentUser && soundEnabled) {
                     playMessageSound();
                 }
                 
@@ -2219,8 +2257,10 @@
                 
                 // Only show join notification if it's not the current user (to avoid showing join message for self)
                 if (data.username !== currentUsername) {
-                    // Play join sound
-                    playNotificationSound('info');
+                    // Play join sound if enabled
+                    if (soundEnabled) {
+                        playNotificationSound('info');
+                    }
                     
                     // Show join notification
                     const joinElement = document.createElement('div');
@@ -2252,21 +2292,23 @@
                 // Handle user leave
                 const displayName = data.display_name || data.username;
                 
-                // Play leave sound (subtle)
-                try {
-                    initAudioContext();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-                    oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.2);
-                } catch (e) {
-                    console.log('Audio not available');
+                // Play leave sound (subtle) if enabled
+                if (soundEnabled) {
+                    try {
+                        initAudioContext();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.2);
+                    } catch (e) {
+                        console.log('Audio not available');
+                    }
                 }
                 
                 // Remove user from active users list with animation
@@ -2993,6 +3035,24 @@
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             initializeEmojiAndGiftPickers();
+            
+            // Initialize sound toggle button
+            updateSoundToggleButton();
+            
+            // Sound toggle button event listener
+            const soundToggleBtn = document.getElementById('soundToggleBtn');
+            if (soundToggleBtn) {
+                soundToggleBtn.addEventListener('click', function() {
+                    soundEnabled = !soundEnabled;
+                    localStorage.setItem('soundEnabled', soundEnabled);
+                    updateSoundToggleButton();
+                    
+                    // Play a test sound when enabling
+                    if (soundEnabled) {
+                        playNotificationSound('success');
+                    }
+                });
+            }
         });
 
         function initializeEmojiAndGiftPickers() {

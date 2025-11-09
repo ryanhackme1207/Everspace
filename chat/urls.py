@@ -28,6 +28,7 @@ urlpatterns = [
     path('friends/get-nickname/', views.get_friend_nickname, name='get_friend_nickname'),
     path('friends/block/', views.block_friend, name='block_friend'),
     path('friends/remove/', views.remove_friend, name='remove_friend'),
+    path('friends/mark-as-read/', views.mark_messages_as_read, name='mark_messages_as_read'),
     # Message Management URLs
     path('chat/message/unsend/', views.unsend_message, name='unsend_message'),
     # Profile URLs

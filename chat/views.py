@@ -248,6 +248,24 @@ def create_room(request):
         # Automatically add the creator as host member
         room.add_member(request.user, role='host')
         
+        # Send WebSocket notification to all clients about new room
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'room_list_updates',
+            {
+                'type': 'room_created',
+                'room': {
+                    'name': room.name,
+                    'description': room.description,
+                    'is_private': room.visibility == 'private',
+                    'creator': request.user.first_name or request.user.username
+                }
+            }
+        )
+        
         return JsonResponse({
             'success': True, 
             'message': f'Room "{room_name}" created successfully!',
@@ -422,6 +440,15 @@ def delete_room(request, room_name):
         from django.core.cache import cache
         cache_key = f"active_users_{room_name}"
         cache.delete(cache_key)
+        
+        # Send WebSocket notification to room list clients
+        async_to_sync(channel_layer.group_send)(
+            'room_list_updates',
+            {
+                'type': 'room_deleted',
+                'room_name': room_name
+            }
+        )
         
         room_obj.delete()
         messages.success(request, f'Room "{room_name}" has been deleted successfully.')
@@ -1298,6 +1325,39 @@ def remove_friend(request):
         return JsonResponse({
             'success': True,
             'message': f'You have removed {username} from your friends. You can send a friend request again later.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
+@login_required
+@require_POST
+def mark_messages_as_read(request):
+    """Mark private messages from a sender as read"""
+    sender_username = request.POST.get('sender_username', '').strip()
+    
+    if not sender_username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Sender username is required.'
+        })
+    
+    try:
+        sender = get_object_or_404(User, username=sender_username)
+        
+        # Mark all unread messages from this sender as read
+        PrivateMessage.objects.filter(
+            sender=sender,
+            receiver=request.user,
+            is_read=False
+        ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True
         })
         
     except Exception as e:

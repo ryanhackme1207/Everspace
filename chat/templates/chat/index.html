@@ -2386,6 +2386,182 @@
         if (Notification.permission === 'default') {
             Notification.requestPermission();
         }
+
+        // ===== Live Room List Updates via WebSocket =====
+        let roomListSocket = null;
+        
+        function connectRoomListSocket() {
+            const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+            const wsPath = `${wsScheme}://${window.location.host}/ws/room-list/`;
+            
+            roomListSocket = new WebSocket(wsPath);
+
+            roomListSocket.onopen = function(e) {
+                console.log('[RoomList WebSocket] Connected');
+            };
+
+            roomListSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('[RoomList WebSocket] Received:', data);
+
+                if (data.type === 'room_created') {
+                    // Add new room to the list
+                    addRoomToList(data.room);
+                } else if (data.type === 'room_deleted') {
+                    // Remove room from the list
+                    removeRoomFromList(data.room_name);
+                } else if (data.type === 'room_updated') {
+                    // Update room information
+                    updateRoomInList(data.room);
+                }
+            };
+
+            roomListSocket.onerror = function(e) {
+                console.error('[RoomList WebSocket] Error:', e);
+            };
+
+            roomListSocket.onclose = function(e) {
+                console.log('[RoomList WebSocket] Disconnected. Reconnecting in 3s...');
+                setTimeout(connectRoomListSocket, 3000);
+            };
+        }
+
+        function addRoomToList(room) {
+            const roomsGrid = document.querySelector('.rooms-grid');
+            if (!roomsGrid) return;
+
+            // Remove "no rooms" message if it exists
+            const emptyMessage = roomsGrid.querySelector('.col-12.text-center');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            // Check if room already exists
+            const existingRoom = Array.from(roomsGrid.querySelectorAll('.room-card')).find(
+                card => card.href && card.href.includes(`/chat/${room.name}/`)
+            );
+            if (existingRoom) return;
+
+            // Create room card with animation
+            const roomCard = document.createElement('a');
+            roomCard.href = `/chat/${room.name}/`;
+            roomCard.className = 'room-card';
+            roomCard.style.animation = 'fadeInUp 0.5s ease';
+            
+            roomCard.innerHTML = `
+                <div class="room-icon">
+                    ${room.is_private ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-hashtag"></i>'}
+                </div>
+                <div class="room-name">
+                    ${room.name}
+                    ${room.is_private ? '<span class="room-privacy-badge"><i class="fas fa-lock"></i> Private</span>' : ''}
+                </div>
+                <div class="room-description">
+                    ${room.description || `Join the conversation in room ${room.name}`}
+                </div>
+                <div class="room-stats">
+                    <span><i class="fas fa-comments me-1"></i>0 messages</span>
+                    ${room.creator ? `<span><i class="fas fa-user me-1"></i>by ${room.creator}</span>` : ''}
+                    <span class="room-number">#${room.name}</span>
+                    <span><i class="fas fa-arrow-right"></i></span>
+                </div>
+            `;
+
+            roomsGrid.appendChild(roomCard);
+
+            // Show notification
+            showRoomNotification(`New room created: #${room.name}`, 'success');
+        }
+
+        function removeRoomFromList(roomName) {
+            const roomsGrid = document.querySelector('.rooms-grid');
+            if (!roomsGrid) return;
+
+            const roomCards = Array.from(roomsGrid.querySelectorAll('.room-card'));
+            const roomCard = roomCards.find(card => card.href && card.href.includes(`/chat/${roomName}/`));
+            
+            if (roomCard) {
+                // Animate removal
+                roomCard.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => roomCard.remove(), 300);
+                
+                // Show notification
+                showRoomNotification(`Room #${roomName} was deleted`, 'info');
+            }
+        }
+
+        function updateRoomInList(room) {
+            const roomsGrid = document.querySelector('.rooms-grid');
+            if (!roomsGrid) return;
+
+            const roomCards = Array.from(roomsGrid.querySelectorAll('.room-card'));
+            const roomCard = roomCards.find(card => card.href && card.href.includes(`/chat/${room.name}/`));
+            
+            if (roomCard) {
+                // Update room information
+                const descriptionEl = roomCard.querySelector('.room-description');
+                if (descriptionEl && room.description) {
+                    descriptionEl.textContent = room.description;
+                }
+            }
+        }
+
+        function showRoomNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'info'}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 90px;
+                right: 20px;
+                z-index: 10000;
+                min-width: 300px;
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                animation: slideInRight 0.3s ease;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)' : 'linear-gradient(135deg, #4ECDC4 0%, #45B7D1 100%)'};
+                color: white;
+                font-weight: 500;
+            `;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add fadeOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: scale(1); }
+                to { opacity: 0; transform: scale(0.9); }
+            }
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize WebSocket connection
+        connectRoomListSocket();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (roomListSocket) {
+                roomListSocket.close();
+            }
+        });
     </script>
 </body>
 </html>

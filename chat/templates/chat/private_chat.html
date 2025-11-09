@@ -824,6 +824,217 @@
                     document.getElementById('displayName').textContent = data.nickname;
                 }
             });
+
+        // ===== WebSocket for Real-Time Updates =====
+        let privateSocket = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+
+        function connectWebSocket() {
+            const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+            const wsPath = `${wsScheme}://${window.location.host}/ws/private-chat/${friendUsername}/`;
+            
+            privateSocket = new WebSocket(wsPath);
+
+            privateSocket.onopen = function(e) {
+                console.log('[WebSocket] Connected to private chat');
+                reconnectAttempts = 0;
+            };
+
+            privateSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('[WebSocket] Received:', data);
+
+                if (data.type === 'chat_message') {
+                    // Only add message if it's from the friend (not our own message)
+                    if (data.sender !== currentUsername) {
+                        addMessage(data.message, false, new Date(data.timestamp));
+                        playMessageSound();
+                        
+                        // Mark as read
+                        fetch('/friends/mark-as-read/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: `sender_username=${friendUsername}`
+                        });
+                    }
+                } else if (data.type === 'user_status') {
+                    // Update online status
+                    const statusDot = document.querySelector('.status-dot');
+                    const statusText = document.querySelector('.friend-status');
+                    if (data.status === 'online') {
+                        statusDot.style.background = '#10b981';
+                        statusText.innerHTML = '<span class="status-dot"></span> Online';
+                    } else {
+                        statusDot.style.background = '#6b7280';
+                        statusText.innerHTML = '<span class="status-dot" style="background: #6b7280;"></span> Offline';
+                    }
+                } else if (data.type === 'typing') {
+                    // Show typing indicator
+                    showTypingIndicator(data.is_typing);
+                }
+            };
+
+            privateSocket.onerror = function(e) {
+                console.error('[WebSocket] Error:', e);
+            };
+
+            privateSocket.onclose = function(e) {
+                console.log('[WebSocket] Disconnected');
+                
+                // Attempt to reconnect
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    console.log(`[WebSocket] Reconnecting... Attempt ${reconnectAttempts}`);
+                    setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+                }
+            };
+        }
+
+        // Initialize WebSocket connection
+        connectWebSocket();
+
+        // Sound Effects for Messages
+        let audioContext = null;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playMessageSound() {
+            initAudioContext();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Typing Indicator
+        let typingTimeout;
+        const messageInput = document.getElementById('messageInput');
+
+        messageInput.addEventListener('input', () => {
+            clearTimeout(typingTimeout);
+            
+            if (privateSocket && privateSocket.readyState === WebSocket.OPEN) {
+                privateSocket.send(JSON.stringify({
+                    type: 'typing',
+                    is_typing: true
+                }));
+            }
+            
+            typingTimeout = setTimeout(() => {
+                if (privateSocket && privateSocket.readyState === WebSocket.OPEN) {
+                    privateSocket.send(JSON.stringify({
+                        type: 'typing',
+                        is_typing: false
+                    }));
+                }
+            }, 1000);
+        });
+
+        function showTypingIndicator(isTyping) {
+            let indicator = document.getElementById('typingIndicator');
+            
+            if (isTyping) {
+                if (!indicator) {
+                    const container = document.getElementById('messagesContainer');
+                    indicator = document.createElement('div');
+                    indicator.id = 'typingIndicator';
+                    indicator.className = 'message';
+                    indicator.innerHTML = `
+                        <div class="message-avatar">
+                            ${friendUsername.substring(0, 1).toUpperCase()}
+                        </div>
+                        <div class="message-content-wrapper">
+                            <div class="message-bubble" style="background: rgba(78, 205, 196, 0.1);">
+                                <span class="typing-dots">
+                                    <span style="animation: typing 1.4s infinite;">.</span>
+                                    <span style="animation: typing 1.4s infinite 0.2s;">.</span>
+                                    <span style="animation: typing 1.4s infinite 0.4s;">.</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(indicator);
+                    scrollToBottom();
+                }
+            } else {
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+        }
+
+        // Enhanced Send Message with WebSocket
+        const originalSendMessage = sendMessage;
+        sendMessage = function() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Send via WebSocket if connected
+            if (privateSocket && privateSocket.readyState === WebSocket.OPEN) {
+                privateSocket.send(JSON.stringify({
+                    type: 'chat_message',
+                    message: message
+                }));
+                
+                // Add to UI immediately
+                input.value = '';
+                addMessage(message, true, new Date());
+                
+                // Stop typing indicator
+                privateSocket.send(JSON.stringify({
+                    type: 'typing',
+                    is_typing: false
+                }));
+            } else {
+                // Fallback to HTTP if WebSocket not available
+                originalSendMessage();
+            }
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (privateSocket) {
+                privateSocket.close();
+            }
+        });
+
+        // Add typing animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes typing {
+                0%, 60%, 100% { opacity: 0; }
+                30% { opacity: 1; }
+            }
+            .typing-dots {
+                display: inline-block;
+                font-size: 1.5rem;
+                line-height: 1;
+            }
+            .typing-dots span {
+                display: inline-block;
+                margin: 0 2px;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
