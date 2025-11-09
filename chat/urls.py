@@ -22,6 +22,8 @@ urlpatterns = [
     path('friends/respond-request/', views.respond_friend_request, name='respond_friend_request'),
     path('friends/chat/<str:username>/', views.private_chat, name='private_chat'),
     path('friends/send-message/', views.send_private_message, name='send_private_message'),
+    # Message Management URLs
+    path('chat/message/unsend/', views.unsend_message, name='unsend_message'),
     # Profile URLs
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/<str:username>/', views.view_profile, name='view_profile'),

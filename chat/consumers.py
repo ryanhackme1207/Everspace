@@ -207,9 +207,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             display_name = f"{self.user.first_name} {self.user.last_name}".strip() or username
 
             # Save message to database - check if room still exists
-            message_saved = await self.save_message(self.user, self.room_name, message)
+            message_id = await self.save_message(self.user, self.room_name, message)
             
-            if not message_saved:
+            if not message_id:
                 # Room no longer exists or user is banned - disconnect user
                 await self.send(text_data=json.dumps({
                     'type': 'room_deleted',
@@ -226,7 +226,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'message': message,
                     'username': username,
                     'display_name': display_name,
-                    'timestamp': self.get_timestamp()
+                    'timestamp': self.get_timestamp(),
+                    'message_id': message_id
                 }
             )
         except json.JSONDecodeError:
@@ -239,6 +240,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         username = event['username']
         display_name = event.get('display_name', username)
         timestamp = event['timestamp']
+        message_id = event.get('message_id')
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
@@ -246,7 +248,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': message,
             'username': username,
             'display_name': display_name,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'message_id': message_id
         }))
 
     # Handle user join event
@@ -297,6 +300,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # Close the connection
         await self.close()
+
+    # Handle message deletion event
+    async def delete_message(self, event):
+        message_id = event['message_id']
+        username = event['username']
+        
+        # Send message deletion notification to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'delete_message',
+            'message_id': message_id,
+            'username': username
+        }))
 
     # Handle user kicked event
     async def user_kicked(self, event):
@@ -354,15 +369,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = Room.objects.get(name=room_name)
             # Check if user is banned from this room
             if room.is_user_banned(user):
-                return False
+                return None
             # Check if user is still a member of the room (not kicked)
             if not room.members.filter(user=user).exists():
-                return False
-            Message.objects.create(user=user, room=room, content=message)
-            return True
+                return None
+            msg = Message.objects.create(user=user, room=room, content=message)
+            return msg.id
         except Room.DoesNotExist:
             # Room no longer exists
-            return False
+            return None
 
     def get_timestamp(self):
         from django.utils import timezone

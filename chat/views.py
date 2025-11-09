@@ -1135,6 +1135,62 @@ def send_private_message(request):
         })
 
 
+@ajax_login_required
+@require_POST
+def unsend_message(request):
+    """Delete a message if it's within 2 minutes of sending"""
+    try:
+        message_id = request.POST.get('message_id')
+        
+        if not message_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Message ID is required.'
+            })
+        
+        message = get_object_or_404(Message, id=message_id)
+        
+        # Check if user can delete the message
+        if not message.can_be_deleted(request.user):
+            return JsonResponse({
+                'success': False,
+                'message': 'You can only delete your own messages within 2 minutes of sending.'
+            })
+        
+        # Mark message as deleted
+        message.is_deleted = True
+        message.content = '[Message deleted]'
+        message.save()
+        
+        # Broadcast deletion to all users in the room via WebSocket
+        try:
+            channel_layer = get_channel_layer()
+            room_group = f'chat_{message.room.name}'
+            
+            async_to_sync(channel_layer.group_send)(
+                room_group,
+                {
+                    'type': 'delete_message',
+                    'message_id': message_id,
+                    'username': request.user.username
+                }
+            )
+        except Exception as e:
+            print(f"[UNSEND ERROR] Failed to send WebSocket notification: {str(e)}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Message deleted successfully.'
+        })
+        
+    except Exception as e:
+        print(f"[UNSEND ERROR] Exception: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
 # Profile Management Views
 @login_required
 def edit_profile(request):

@@ -226,9 +226,17 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
+    is_deleted = models.BooleanField(default=False)
     
     def __str__(self):
         return f'{self.user.username}: {self.content[:50]}'
+    
+    def can_be_deleted(self, user):
+        """Check if message can be deleted by the user (within 2 minutes)"""
+        if self.user != user or self.is_deleted:
+            return False
+        time_diff = timezone.now() - self.timestamp
+        return time_diff.total_seconds() <= 120  # 2 minutes = 120 seconds
     
     class Meta:
         ordering = ['timestamp']
