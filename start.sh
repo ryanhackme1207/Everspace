@@ -46,6 +46,10 @@ rm -rf staticfiles/ || true
 python manage.py collectstatic --noinput --clear -v 2 || { echo "[startup][ERROR] collectstatic failed"; exit 1; }
 echo "[startup] Static files collected successfully"
 
+echo "[startup] Setting up gifts and GIFs (this may take a moment)..."
+python manage.py setup_gifts_and_gifs 2>&1 || { echo "[startup][WARNING] setup_gifts_and_gifs encountered an issue, but continuing..."; }
+echo "[startup] Gifts and GIFs setup step completed"
+
 # Optional: create superuser only if flagged
 if [ "${CREATE_DEFAULT_SUPERUSER:-false}" = "true" ]; then
 	echo "[startup] Creating default superuser if missing (controlled by CREATE_DEFAULT_SUPERUSER)"
