@@ -1437,6 +1437,53 @@
             pointer-events: none;
         }
 
+        /* Dragon Effect */
+        .gift-dragon {
+            position: absolute;
+            font-size: 8rem;
+            pointer-events: none;
+            z-index: 9999;
+            filter: drop-shadow(0 0 30px rgba(255, 69, 0, 1)) drop-shadow(0 0 60px rgba(255, 140, 0, 0.8));
+            animation: dragonFly 4s ease-in-out;
+        }
+
+        /* Firework Effect */
+        .gift-firework {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .firework-trail {
+            position: absolute;
+            width: 4px;
+            height: 60px;
+            background: linear-gradient(to top, transparent, #fff);
+            animation: fireworkTrail 1s ease-out;
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: fireworkBurst 1s ease-out forwards;
+        }
+
+        /* Epic Background Overlay for Legendary */
+        .epic-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #9400d3, #ff1493, #00ffff);
+            background-size: 400% 400%;
+            animation: rainbowWave 3s ease infinite;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
         .gift-animation-content {
             text-align: center;
             position: relative;
@@ -1632,45 +1679,140 @@
         @keyframes luxuryPulse {
             0%, 100% {
                 transform: scale(1);
-                filter: drop-shadow(0 0 40px gold) drop-shadow(0 0 80px orange);
+                filter: drop-shadow(0 0 40px gold) drop-shadow(0 0 80px orange) drop-shadow(0 0 120px rgba(255, 215, 0, 0.6));
             }
-            50% {
-                transform: scale(1.15);
-                filter: drop-shadow(0 0 60px gold) drop-shadow(0 0 120px orange);
+            33% {
+                transform: scale(1.2);
+                filter: drop-shadow(0 0 70px gold) drop-shadow(0 0 140px orange) drop-shadow(0 0 200px rgba(255, 215, 0, 0.8));
+            }
+            66% {
+                transform: scale(0.95);
+                filter: drop-shadow(0 0 50px gold) drop-shadow(0 0 100px orange) drop-shadow(0 0 150px rgba(255, 215, 0, 0.7));
             }
         }
 
-        /* Legendary Gift Animation (1000+ coins) */
+        /* Legendary Gift Animation (1000+ coins) - EPIC! */
         @keyframes legendaryExplode {
             0% {
                 transform: scale(0) rotate(0deg);
                 opacity: 0;
-                filter: drop-shadow(0 0 0px white);
+                filter: drop-shadow(0 0 0px white) brightness(1);
+            }
+            15% {
+                transform: scale(2.5) rotate(90deg);
+                opacity: 1;
+                filter: drop-shadow(0 0 150px #ff00ff) drop-shadow(0 0 250px #00ffff) drop-shadow(0 0 300px #ffd700) brightness(2);
             }
             30% {
-                transform: scale(2) rotate(180deg);
-                opacity: 1;
-                filter: drop-shadow(0 0 100px #ff00ff) drop-shadow(0 0 200px #00ffff);
+                transform: scale(1.5) rotate(180deg);
+                filter: drop-shadow(0 0 120px #ff00ff) drop-shadow(0 0 220px #00ffff) drop-shadow(0 0 280px #ffd700) brightness(1.8);
             }
-            60% {
-                transform: scale(0.8) rotate(270deg);
-                filter: drop-shadow(0 0 80px #ff00ff) drop-shadow(0 0 160px #00ffff);
+            50% {
+                transform: scale(2) rotate(270deg);
+                filter: drop-shadow(0 0 140px #ff1493) drop-shadow(0 0 240px #00ff00) drop-shadow(0 0 320px #ff4500) brightness(2.2);
+            }
+            70% {
+                transform: scale(1.2) rotate(360deg);
+                filter: drop-shadow(0 0 100px #ff00ff) drop-shadow(0 0 200px #00ffff) drop-shadow(0 0 260px #ffd700) brightness(1.6);
             }
             100% {
-                transform: scale(1) rotate(360deg);
-                filter: drop-shadow(0 0 60px #ff00ff) drop-shadow(0 0 120px #00ffff);
+                transform: scale(1.3) rotate(360deg);
+                filter: drop-shadow(0 0 80px #ff00ff) drop-shadow(0 0 160px #00ffff) drop-shadow(0 0 220px #ffd700) brightness(1.5);
             }
         }
 
         @keyframes legendaryRotate {
-            from {
+            0% {
                 transform: rotate(0deg) scale(1);
             }
-            50% {
-                transform: rotate(180deg) scale(1.1);
+            25% {
+                transform: rotate(90deg) scale(1.3);
             }
-            to {
+            50% {
+                transform: rotate(180deg) scale(1.15);
+            }
+            75% {
+                transform: rotate(270deg) scale(1.25);
+            }
+            100% {
                 transform: rotate(360deg) scale(1);
+            }
+        }
+
+        /* Dragon Flying Animation */
+        @keyframes dragonFly {
+            0% {
+                left: -200px;
+                top: 20%;
+                transform: rotate(-10deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            25% {
+                top: 30%;
+                transform: rotate(5deg) scale(1.2);
+            }
+            50% {
+                top: 25%;
+                left: 50%;
+                transform: rotate(-5deg) scale(1.5);
+            }
+            75% {
+                top: 35%;
+                transform: rotate(10deg) scale(1.2);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                left: 120%;
+                top: 20%;
+                transform: rotate(15deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* Fireworks Animation */
+        @keyframes fireworkBurst {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fireworkTrail {
+            0% {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+        }
+
+        /* Epic Rainbow Waves */
+        @keyframes rainbowWave {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
             }
         }
 
@@ -3187,8 +3329,11 @@
             const intimacyBadge = overlay.querySelector('.gift-intimacy-badge');
             const particlesContainer = document.getElementById('giftParticles');
             
-            // Clear previous particles
+            // Clear previous particles and effects
             particlesContainer.innerHTML = '';
+            
+            // Remove previous dragons and fireworks
+            document.querySelectorAll('.gift-dragon, .gift-firework, .epic-background').forEach(el => el.remove());
             
             // Remove all animation classes
             emojiDisplay.className = 'gift-emoji-display';
@@ -3220,24 +3365,41 @@
                 particleCount = 10;
                 particleColor = '#4ECDC4';
                 displayDuration = 3000;
+                playGiftSound('basic');
             } else if (cost < 500) {
                 // Premium gift: Spin and glow
                 animationClass = 'gift-premium';
-                particleCount = 30;
+                particleCount = 40;
                 particleColor = '#FF6B6B';
-                displayDuration = 4000;
+                displayDuration = 4500;
+                playGiftSound('premium');
             } else if (cost < 1000) {
-                // Luxury gift: Float and pulse
+                // Luxury gift: Float and pulse with enhanced effects
                 animationClass = 'gift-luxury';
-                particleCount = 50;
+                particleCount = 80;
                 particleColor = '#FFD700';
-                displayDuration = 5000;
+                displayDuration = 5500;
+                playGiftSound('luxury');
+                // Add mini fireworks for luxury
+                createMiniFireworks(overlay, 3);
             } else {
-                // Legendary gift: Explode and rotate with rainbow particles
+                // LEGENDARY EPIC gift: Dragons, fireworks, rainbow explosion!
                 animationClass = 'gift-legendary';
-                particleCount = 100;
+                particleCount = 150;
                 particleColor = 'rainbow';
-                displayDuration = 6000;
+                displayDuration = 7000;
+                playGiftSound('legendary');
+                
+                // Add epic background
+                const epicBg = document.createElement('div');
+                epicBg.className = 'epic-background';
+                overlay.appendChild(epicBg);
+                
+                // Create flying dragons
+                createFlyingDragons(overlay, 3);
+                
+                // Create massive fireworks display
+                createFireworksDisplay(overlay, 8);
             }
             
             // Add animation class
@@ -3305,6 +3467,222 @@
                 }
                 
                 container.appendChild(particle);
+            }
+        }
+
+        // Create flying dragons for legendary gifts
+        function createFlyingDragons(container, count) {
+            const dragonEmojis = ['🐉', '🐲', '🦖'];
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const dragon = document.createElement('div');
+                    dragon.className = 'gift-dragon';
+                    dragon.textContent = dragonEmojis[i % dragonEmojis.length];
+                    dragon.style.top = (20 + Math.random() * 40) + '%';
+                    dragon.style.animationDelay = (i * 0.8) + 's';
+                    dragon.style.animationDuration = (3.5 + Math.random() * 1) + 's';
+                    container.appendChild(dragon);
+                    
+                    // Remove after animation
+                    setTimeout(() => dragon.remove(), 5000);
+                }, i * 800);
+            }
+        }
+
+        // Create fireworks display for legendary gifts
+        function createFireworksDisplay(container, count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    createSingleFirework(container);
+                }, i * 400);
+            }
+        }
+
+        // Create mini fireworks for luxury gifts
+        function createMiniFireworks(container, count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    createSingleFirework(container, true);
+                }, i * 600);
+            }
+        }
+
+        // Create a single firework burst
+        function createSingleFirework(container, mini = false) {
+            const firework = document.createElement('div');
+            firework.className = 'gift-firework';
+            
+            // Random position
+            const x = 20 + Math.random() * 60;
+            const y = 20 + Math.random() * 60;
+            firework.style.left = x + '%';
+            firework.style.top = y + '%';
+            
+            // Create trail
+            const trail = document.createElement('div');
+            trail.className = 'firework-trail';
+            firework.appendChild(trail);
+            
+            container.appendChild(firework);
+            
+            // Create burst after trail
+            setTimeout(() => {
+                trail.remove();
+                const particleCount = mini ? 15 : 30;
+                const colors = ['#FF6B6B', '#4ECDC4', '#FFD700', '#FF69B4', '#00FFFF', '#FF00FF', '#00FF00', '#FF4500'];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'firework-particle';
+                    
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const distance = mini ? 50 + Math.random() * 50 : 80 + Math.random() * 100;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    particle.style.setProperty('--tx', tx + 'px');
+                    particle.style.setProperty('--ty', ty + 'px');
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
+                    
+                    firework.appendChild(particle);
+                }
+                
+                // Clean up
+                setTimeout(() => firework.remove(), 1500);
+            }, mini ? 400 : 800);
+        }
+
+        // Play sound effects for gifts using Web Audio API
+        function playGiftSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (type === 'basic') {
+                // Simple bell sound
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+            } else if (type === 'premium') {
+                // Sparkle sound
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(1200 + i * 200, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }, i * 100);
+                }
+                
+            } else if (type === 'luxury') {
+                // Magical chime sound
+                const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                frequencies.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.8);
+                    }, i * 150);
+                });
+                
+            } else if (type === 'legendary') {
+                // EPIC sound effect - dragon roar + explosion + chimes
+                
+                // Dragon roar (deep rumble)
+                const roar = audioContext.createOscillator();
+                const roarGain = audioContext.createGain();
+                roar.connect(roarGain);
+                roarGain.connect(audioContext.destination);
+                roar.frequency.setValueAtTime(60, audioContext.currentTime);
+                roar.frequency.exponentialRampToValueAtTime(120, audioContext.currentTime + 0.5);
+                roar.type = 'sawtooth';
+                roarGain.gain.setValueAtTime(0.4, audioContext.currentTime);
+                roarGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                roar.start(audioContext.currentTime);
+                roar.stop(audioContext.currentTime + 1);
+                
+                // Explosion sound
+                setTimeout(() => {
+                    const explosion = audioContext.createOscillator();
+                    const explosionGain = audioContext.createGain();
+                    explosion.connect(explosionGain);
+                    explosionGain.connect(audioContext.destination);
+                    explosion.frequency.setValueAtTime(200, audioContext.currentTime);
+                    explosion.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.4);
+                    explosion.type = 'sawtooth';
+                    explosionGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    explosionGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    explosion.start(audioContext.currentTime);
+                    explosion.stop(audioContext.currentTime + 0.4);
+                }, 300);
+                
+                // Epic ascending chimes
+                setTimeout(() => {
+                    const epicFrequencies = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+                    epicFrequencies.forEach((freq, i) => {
+                        setTimeout(() => {
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                            oscillator.type = 'sine';
+                            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                            
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.6);
+                        }, i * 80);
+                    });
+                }, 600);
+                
+                // Firework sounds
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fw = audioContext.createOscillator();
+                        const fwGain = audioContext.createGain();
+                        fw.connect(fwGain);
+                        fwGain.connect(audioContext.destination);
+                        fw.frequency.setValueAtTime(2000, audioContext.currentTime);
+                        fw.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+                        fw.type = 'sawtooth';
+                        fwGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        fwGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        fw.start(audioContext.currentTime);
+                        fw.stop(audioContext.currentTime + 0.2);
+                    }, 1000 + i * 300);
+                }
             }
         }
 
