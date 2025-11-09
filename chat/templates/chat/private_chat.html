@@ -726,35 +726,7 @@
             return cookieValue;
         }
 
-        // Send Message
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
-
-            fetch('/friends/send-message/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: `username=${friendUsername}&content=${encodeURIComponent(message)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    input.value = '';
-                    addMessage(message, true, new Date());
-                } else {
-                    alert(data.message || 'Failed to send message');
-                }
-            });
-        }
+        // sendMessage function will be defined after WebSocket setup (see below)
 
         // Store friend's display name (will be updated if nickname exists)
         let friendDisplayName = friendUsername;
@@ -1250,21 +1222,24 @@
             }
         }
 
-        // Enhanced Send Message with WebSocket
-        const originalSendMessage = sendMessage;
-        sendMessage = function() {
+        // Override Send Message to use WebSocket
+        function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (!message) return;
 
+            console.log('[Send] Attempting to send message:', message);
+            console.log('[Send] WebSocket state:', privateSocket ? privateSocket.readyState : 'null');
+
             // Send via WebSocket if connected
             if (privateSocket && privateSocket.readyState === WebSocket.OPEN) {
+                console.log('[Send] Sending via WebSocket');
                 privateSocket.send(JSON.stringify({
                     type: 'chat_message',
                     message: message
                 }));
                 
-                // Add to UI immediately
+                // Add to UI immediately for sender
                 input.value = '';
                 addMessage(message, true, new Date());
                 
@@ -1274,10 +1249,42 @@
                     is_typing: false
                 }));
             } else {
+                console.warn('[Send] WebSocket not connected, using HTTP fallback');
                 // Fallback to HTTP if WebSocket not available
-                originalSendMessage();
+                fetch('/friends/send-message/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `username=${friendUsername}&content=${encodeURIComponent(message)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        input.value = '';
+                        addMessage(message, true, new Date());
+                    } else {
+                        alert(data.message || 'Failed to send message');
+                    }
+                })
+                .catch(err => {
+                    console.error('[Send] HTTP fallback error:', err);
+                    alert('Failed to send message');
+                });
             }
-        };
+        }
+
+        // Attach send message event listeners
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        console.log('[Private Chat] Event listeners attached, WebSocket initialized');
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
