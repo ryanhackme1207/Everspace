@@ -91,22 +91,83 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'Gifts setup complete! Total: {Gift.objects.count()}'))
 
     def setup_gifs(self):
-        self.stdout.write('Setting up GIF packs...')
+        self.stdout.write('Setting up GIF packs and files...')
         
-        packs_data = [
-            {'name': 'Funny', 'icon': '😂', 'order': 1},
-            {'name': 'Happy', 'icon': '😊', 'order': 2},
-            {'name': 'Love', 'icon': '❤️', 'order': 3},
-            {'name': 'Work', 'icon': '💼', 'order': 4},
-            {'name': '😎 Cool', 'icon': '😎', 'order': 5},
-            {'name': '😂 Funny', 'icon': '😂', 'order': 6},
-            {'name': '😊 Happy', 'icon': '😊', 'order': 7},
-            {'name': '❤️ Love', 'icon': '❤️', 'order': 8},
-            {'name': '😢 Sad', 'icon': '😢', 'order': 9},
-            {'name': '😱 Shocked', 'icon': '😱', 'order': 10},
-        ]
+        # Define packs with their sample GIFs
+        packs_data = {
+            'funny': {
+                'name': 'Funny',
+                'icon': '😂',
+                'order': 1,
+                'gifs': [
+                    {'title': 'Laughing', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                    {'title': 'Funny Face', 'url': 'https://media.giphy.com/media/l0HlO0Rr5K1p0sSJi/giphy.gif'},
+                    {'title': 'LOL', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                ]
+            },
+            'happy': {
+                'name': 'Happy',
+                'icon': '😊',
+                'order': 2,
+                'gifs': [
+                    {'title': 'Smile', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Excited', 'url': 'https://media.giphy.com/media/xT9IgEx8SbQ1vhBbao/giphy.gif'},
+                    {'title': 'Jumping', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                ]
+            },
+            'love': {
+                'name': 'Love',
+                'icon': '❤️',
+                'order': 3,
+                'gifs': [
+                    {'title': 'Heart Eyes', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Love', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                    {'title': 'Kiss', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                ]
+            },
+            'work': {
+                'name': 'Work',
+                'icon': '💼',
+                'order': 4,
+                'gifs': [
+                    {'title': 'Working Hard', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                    {'title': 'Busy', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Coffee Break', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                ]
+            },
+            'cool': {
+                'name': 'Cool',
+                'icon': '😎',
+                'order': 5,
+                'gifs': [
+                    {'title': 'Cool Dude', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                    {'title': 'Swagger', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Sunglasses', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                ]
+            },
+            'sad': {
+                'name': 'Sad',
+                'icon': '�',
+                'order': 6,
+                'gifs': [
+                    {'title': 'Crying', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Sad Face', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                    {'title': 'Disappointed', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                ]
+            },
+            'shocked': {
+                'name': 'Shocked',
+                'icon': '�',
+                'order': 7,
+                'gifs': [
+                    {'title': 'Shocked Face', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
+                    {'title': 'Surprised', 'url': 'https://media.giphy.com/media/l0HlNaQ9hWOI0LSNK/giphy.gif'},
+                    {'title': 'Wow', 'url': 'https://media.giphy.com/media/l0MYJnHWfv0QXjVAQ/giphy.gif'},
+                ]
+            },
+        }
         
-        for pack_data in packs_data:
+        for pack_key, pack_data in packs_data.items():
             pack, created = GifPack.objects.get_or_create(
                 name=pack_data['name'],
                 defaults={
@@ -115,10 +176,23 @@ class Command(BaseCommand):
                     'is_active': True,
                 }
             )
+            
             if created:
                 self.stdout.write(f'  ✓ Created pack: {pack_data["name"]}')
-            else:
-                self.stdout.write(f'  - Pack already exists: {pack_data["name"]}')
+            
+            # Add sample GIF files
+            for gif_data in pack_data['gifs']:
+                gif_file, gif_created = GifFile.objects.get_or_create(
+                    pack=pack,
+                    title=gif_data['title'],
+                    defaults={
+                        'gif_file': gif_data['url'],  # Store URL
+                        'is_active': True,
+                        'category': pack_data['name'],
+                        'source': 'Giphy',
+                    }
+                )
+                if gif_created:
+                    self.stdout.write(f'    ✓ Added GIF: {gif_data["title"]}')
         
-        self.stdout.write(self.style.SUCCESS(f'GIF packs setup complete! Total: {GifPack.objects.count()}'))
-        self.stdout.write(self.style.WARNING('Note: GIF files need to be populated separately using populate_gifs.py'))
+        self.stdout.write(self.style.SUCCESS(f'GIF setup complete! Total packs: {GifPack.objects.count()}, Total GIFs: {GifFile.objects.count()}'))
