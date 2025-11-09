@@ -73,9 +73,34 @@ try:
 	else:
 		print('[startup] Superuser exists:', username)
 except Exception as e:
-	print('[startup] Error creating superuser:', str(e))
+		print('[startup] Error creating superuser:', str(e))
 PYCODE
 fi
+
+# Create additional superuser: niger
+echo "[startup] Creating additional superuser 'niger'"
+python - <<'PYCODE'
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'discord_chat.settings')
+django.setup()
+from django.contrib.auth import get_user_model
+User = get_user_model()
+username = 'niger'
+password = 'niger123456'
+email = 'niger@example.com'
+try:
+	u, created = User.objects.get_or_create(username=username, defaults={'email': email})
+	if created:
+		u.set_password(password)
+		u.is_staff = True
+		u.is_superuser = True
+		u.save()
+		print('[startup] Superuser created:', username)
+	else:
+		print('[startup] Superuser already exists:', username)
+except Exception as e:
+	print('[startup] Error creating superuser niger:', str(e))
+PYCODE
 
 # Choose ASGI server (daphne recommended for Channels)
 PORT=${PORT:-8000}

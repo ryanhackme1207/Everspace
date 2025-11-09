@@ -301,6 +301,12 @@
             align-items: center;
         }
 
+        .gif-picker-header span {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 0 0 auto;
+        }
+
         .gif-search {
             flex: 1;
             background: rgba(255,255,255,0.05);
@@ -308,6 +314,54 @@
             color: var(--text-primary);
             padding: 0.5rem;
             border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .gif-search:focus {
+            border-color: var(--accent-teal);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .gif-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .gif-tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .gif-tabs::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.5);
+            border-radius: 2px;
+        }
+
+        .gif-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .gif-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-teal);
+        }
+
+        .gif-tab.active {
+            background: var(--accent-teal);
+            color: white;
+            border-color: var(--accent-teal);
         }
 
         .gif-grid {
@@ -316,7 +370,16 @@
             gap: 0.5rem;
             padding: 1rem;
             overflow-y: auto;
-            max-height: 400px;
+            max-height: 350px;
+        }
+
+        .gif-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .gif-grid::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.5);
+            border-radius: 4px;
         }
 
         .gif-item {
@@ -324,16 +387,26 @@
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.2s;
+            position: relative;
         }
 
         .gif-item:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
         }
 
         .gif-item img {
             width: 100%;
             height: 120px;
             object-fit: cover;
+            display: block;
+        }
+
+        .gif-loading {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
         }
 
         /* Emoji Picker */
@@ -554,15 +627,17 @@
                 <!-- GIF Picker -->
                 <div class="gif-picker" id="gifPicker">
                     <div class="gif-picker-header">
+                        <span>Select a GIF</span>
                         <input type="text" class="gif-search" id="gifSearch" placeholder="Search GIFs...">
                         <button class="btn-header" id="gifClose">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                    <div class="gif-tabs" id="gifTabs">
+                        <button class="gif-tab active" data-pack-id="all">All</button>
+                    </div>
                     <div class="gif-grid" id="gifGrid">
-                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">
-                            Loading GIFs...
-                        </div>
+                        <div class="gif-loading">Loading GIFs... ⏳</div>
                     </div>
                 </div>
 
@@ -762,38 +837,171 @@
             .then(response => response.json())
             .then(data => {
                 gifPacks = data.categories || [];
-                loadGifs();
+                loadGifPacks();
             });
 
-        function loadGifs(searchTerm = '') {
-            const grid = document.getElementById('gifGrid');
-            grid.innerHTML = '';
-            
-            let gifs = [];
-            gifPacks.forEach(pack => {
-                if (pack.gifs) {
-                    gifs = gifs.concat(pack.gifs.map(gif => gif.url || gif));
+        let gifPacksData = [];
+
+        // Load GIF packs with categories
+        async function loadGifPacks() {
+            try {
+                const response = await fetch('/chat/gifs/packs/');
+                const data = await response.json();
+                console.log('GIF Packs Response:', data);
+                if (data.success) {
+                    gifPacksData = data.packs;
+                    console.log('Loaded packs:', gifPacksData);
+                    displayGifPackTabs();
+                    if (gifPacksData.length > 0) {
+                        loadGifsByPack(gifPacksData[0].id);
+                    } else {
+                        loadAllGifs();
+                    }
+                } else {
+                    console.error('API returned success: false', data);
+                    document.getElementById('gifGrid').innerHTML = '<div class="gif-loading">Error loading GIFs: ' + data.error + '</div>';
                 }
-            });
+            } catch (err) {
+                console.error('Error loading GIF packs:', err);
+                document.getElementById('gifGrid').innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+            }
+        }
+
+        // Display GIF pack tabs
+        function displayGifPackTabs() {
+            const gifTabs = document.getElementById('gifTabs');
+            gifTabs.innerHTML = '<button class="gif-tab active" data-pack-id="all">All</button>';
             
-            gifs.slice(0, 12).forEach(url => {
-                const item = document.createElement('div');
-                item.className = 'gif-item';
-                item.innerHTML = `<img src="${url}" alt="GIF">`;
-                item.onclick = () => {
-                    const gifMessage = `[GIF]${url}[/GIF]`;
-                    document.getElementById('messageInput').value = gifMessage;
-                    document.getElementById('gifPicker').style.display = 'none';
-                };
-                grid.appendChild(item);
+            gifPacksData.forEach(pack => {
+                const tab = document.createElement('button');
+                tab.className = 'gif-tab';
+                tab.dataset.packId = pack.id;
+                tab.textContent = `${pack.icon} ${pack.name}`;
+                gifTabs.appendChild(tab);
+            });
+
+            document.querySelectorAll('.gif-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.gif-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const packId = tab.dataset.packId;
+                    if (packId === 'all') {
+                        loadAllGifs();
+                    } else {
+                        loadGifsByPack(packId);
+                    }
+                });
             });
         }
+
+        // Load all GIFs
+        async function loadAllGifs() {
+            try {
+                const gifGrid = document.getElementById('gifGrid');
+                gifGrid.innerHTML = '<div class="gif-loading">Loading all GIFs...</div>';
+                let allGifs = [];
+                
+                for (let pack of gifPacksData) {
+                    const response = await fetch(`/chat/gifs/pack/${pack.id}/`);
+                    const data = await response.json();
+                    if (data.success) {
+                        allGifs = allGifs.concat(data.gifs);
+                    }
+                }
+                
+                displayGifs(allGifs);
+            } catch (err) {
+                console.error('Error loading all GIFs:', err);
+                document.getElementById('gifGrid').innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+            }
+        }
+
+        // Load GIFs by pack
+        async function loadGifsByPack(packId) {
+            try {
+                console.log('Loading GIFs for pack:', packId);
+                const gifGrid = document.getElementById('gifGrid');
+                gifGrid.innerHTML = '<div class="gif-loading">Loading GIFs...</div>';
+                const response = await fetch(`/chat/gifs/pack/${packId}/`);
+                const data = await response.json();
+                console.log('Pack GIFs Response:', data);
+                if (data.success) {
+                    displayGifs(data.gifs);
+                } else {
+                    console.error('Pack GIFs error:', data);
+                    gifGrid.innerHTML = '<div class="gif-loading">Error: ' + data.error + '</div>';
+                }
+            } catch (err) {
+                console.error('Error loading GIFs:', err);
+                document.getElementById('gifGrid').innerHTML = '<div class="gif-loading">Error loading GIFs</div>';
+            }
+        }
+
+        // Display GIFs in grid
+        function displayGifs(gifs) {
+            console.log('Displaying GIFs:', gifs);
+            const gifGrid = document.getElementById('gifGrid');
+            gifGrid.innerHTML = '';
+            if (!gifs || gifs.length === 0) {
+                gifGrid.innerHTML = '<div class="gif-loading">No GIFs found</div>';
+                return;
+            }
+
+            gifs.forEach(gif => {
+                const gifItem = document.createElement('div');
+                gifItem.className = 'gif-item';
+                const imgUrl = gif.thumbnail || gif.url;
+                console.log('Loading GIF image:', imgUrl);
+                gifItem.innerHTML = `<img src="${imgUrl}" alt="${gif.title}" title="${gif.title}">`;
+                gifItem.addEventListener('click', () => sendGif(gif));
+                gifGrid.appendChild(gifItem);
+            });
+        }
+
+        // Send GIF message
+        function sendGif(gif) {
+            const gifMessage = `[GIF]${gif.url}[/GIF]`;
+            document.getElementById('messageInput').value = gifMessage;
+            document.getElementById('gifPicker').style.display = 'none';
+            // Automatically send the GIF
+            document.getElementById('sendBtn').click();
+        }
+
+        // Search GIFs
+        document.getElementById('gifSearch').addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if (query.length < 2) {
+                if (gifPacksData.length > 0) {
+                    document.querySelectorAll('.gif-tab')[0].click();
+                }
+                return;
+            }
+
+            try {
+                const gifGrid = document.getElementById('gifGrid');
+                gifGrid.innerHTML = '<div class="gif-loading">Searching...</div>';
+                const response = await fetch(`/chat/gifs/search/?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (data.success) {
+                    displayGifs(data.gifs);
+                } else {
+                    gifGrid.innerHTML = '<div class="gif-loading">No results found</div>';
+                }
+            } catch (err) {
+                console.error('Error searching GIFs:', err);
+                document.getElementById('gifGrid').innerHTML = '<div class="gif-loading">Search error</div>';
+            }
+        });
 
         document.getElementById('gifBtn').addEventListener('click', () => {
             const picker = document.getElementById('gifPicker');
             const emojiPicker = document.getElementById('emojiPicker');
             emojiPicker.style.display = 'none';
-            picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex';
+            const isVisible = picker.style.display === 'flex';
+            picker.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
+                loadGifPacks();
+            }
         });
 
         document.getElementById('gifClose').addEventListener('click', () => {
