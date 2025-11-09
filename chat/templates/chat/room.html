@@ -1199,6 +1199,128 @@
             20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
+        /* Gift Animation Overlay - TikTok Style */
+        #gift-animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .gift-animation-content {
+            text-align: center;
+            animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .gift-sender-info, .gift-receiver-info {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+            margin: 1rem 0;
+        }
+
+        .gift-emoji-display {
+            font-size: 15rem;
+            animation: giftBounce 1s ease-in-out, giftRotate 2s linear infinite;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+            margin: 2rem 0;
+        }
+
+        .gift-receiver-info {
+            color: #ec4899;
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.8);
+        }
+
+        .gift-intimacy-badge {
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ec4899, #f59e0b);
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            animation: pulse 1s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.6);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes giftBounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
+        }
+
+        @keyframes giftRotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Intimacy Badge Styles */
+        .intimacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            background: linear-gradient(135deg, #ec4899, #f59e0b);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+            margin-left: 0.5rem;
+        }
+
+        .intimacy-badge-large {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            gap: 0.5rem;
+        }
+
         /* Very Small Screen Fixes */
         @media (max-width: 576px) {
             .chat-container {
@@ -1313,6 +1435,16 @@
     <form id="csrf-form" style="display:none;">
         {% csrf_token %}
     </form>
+    
+    <!-- Gift Animation Overlay (TikTok Style) -->
+    <div id="gift-animation-overlay" style="display: none;">
+        <div class="gift-animation-content">
+            <div class="gift-sender-info"></div>
+            <div class="gift-emoji-display"></div>
+            <div class="gift-receiver-info"></div>
+            <div class="gift-intimacy-badge"></div>
+        </div>
+    </div>
     
     <!-- Particles Background -->
     <div id="particles"></div>
@@ -1997,6 +2129,9 @@
                         deleteBtn.remove();
                     }
                 }
+            } else if (data.type === 'gift_animation') {
+                // Handle gift animation - TikTok style full-screen overlay
+                showGiftAnimation(data);
             }
         };
 
@@ -2057,6 +2192,33 @@
                     messageInput.focus();
                 }, 300);
             }
+        }
+
+        // Function to show TikTok-style gift animation
+        function showGiftAnimation(data) {
+            const overlay = document.getElementById('gift-animation-overlay');
+            const senderInfo = overlay.querySelector('.gift-sender-info');
+            const emojiDisplay = overlay.querySelector('.gift-emoji-display');
+            const receiverInfo = overlay.querySelector('.gift-receiver-info');
+            const intimacyBadge = overlay.querySelector('.gift-intimacy-badge');
+            
+            // Set content
+            senderInfo.textContent = data.sender_display;
+            emojiDisplay.textContent = data.gift_emoji;
+            receiverInfo.innerHTML = `sent ${data.gift_name} to<br>${data.recipient_display}`;
+            intimacyBadge.innerHTML = `💖 +${data.intimacy_gained} 亲密度 (Total: ${data.intimacy_total})`;
+            
+            // Show overlay
+            overlay.style.display = 'flex';
+            
+            // Hide after 3 seconds with fade out
+            setTimeout(() => {
+                overlay.style.animation = 'fadeOut 0.5s ease-out';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.style.animation = 'fadeIn 0.3s ease-out';
+                }, 500);
+            }, 3000);
         }
 
         // Function to update delete button visibility based on 2-minute rule

@@ -1844,6 +1844,32 @@ def send_gift_new(request, room_name):
         # Get current intimacy
         total_intimacy = Intimacy.get_intimacy(sender, recipient)
         
+        # Broadcast gift animation to all users in the room
+        try:
+            channel_layer = get_channel_layer()
+            room_group = f'chat_{room_name}'
+            
+            sender_display_name = f"{sender.first_name} {sender.last_name}".strip() or sender.username
+            recipient_display_name = f"{recipient.first_name} {recipient.last_name}".strip() or recipient.username
+            
+            async_to_sync(channel_layer.group_send)(
+                room_group,
+                {
+                    'type': 'gift_animation',
+                    'sender_username': sender.username,
+                    'sender_display': sender_display_name,
+                    'recipient_username': recipient.username,
+                    'recipient_display': recipient_display_name,
+                    'gift_name': gift.name,
+                    'gift_emoji': gift.emoji,
+                    'animation': gift.animation,
+                    'intimacy_gained': intimacy_points,
+                    'intimacy_total': total_intimacy
+                }
+            )
+        except Exception as e:
+            print(f"[GIFT BROADCAST ERROR] {str(e)}")
+        
         return JsonResponse({
             'success': True,
             'message': f'Gift sent! +{intimacy_points} 亲密度',

@@ -313,6 +313,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'username': username
         }))
 
+    # Handle gift animation event
+    async def gift_animation(self, event):
+        # Send gift animation to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'gift_animation',
+            'sender_username': event['sender_username'],
+            'sender_display': event['sender_display'],
+            'recipient_username': event['recipient_username'],
+            'recipient_display': event['recipient_display'],
+            'gift_name': event['gift_name'],
+            'gift_emoji': event['gift_emoji'],
+            'animation': event['animation'],
+            'intimacy_gained': event['intimacy_gained'],
+            'intimacy_total': event['intimacy_total']
+        }))
+
     # Handle user kicked event
     async def user_kicked(self, event):
         username = event['username']
