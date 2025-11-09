@@ -84,9 +84,9 @@ class Command(BaseCommand):
                 }
             )
             if created:
-                self.stdout.write(f'  ✓ Created: {gift_data["name"]} ({gift_data["cost"]} EC)')
+                self.stdout.write(f'  [+] Created: {gift_data["name"]} ({gift_data["cost"]} EC)')
             else:
-                self.stdout.write(f'  - Already exists: {gift_data["name"]}')
+                self.stdout.write(f'  [-] Already exists: {gift_data["name"]}')
         
         self.stdout.write(self.style.SUCCESS(f'Gifts setup complete! Total: {Gift.objects.count()}'))
 
@@ -178,7 +178,7 @@ class Command(BaseCommand):
             )
             
             if created:
-                self.stdout.write(f'  ✓ Created pack: {pack_data["name"]}')
+                self.stdout.write(f'  [+] Created pack: {pack_data["name"]}')
             
             # Add sample GIF files
             for gif_data in pack_data['gifs']:
@@ -186,13 +186,13 @@ class Command(BaseCommand):
                     pack=pack,
                     title=gif_data['title'],
                     defaults={
-                        'gif_file': gif_data['url'],  # Store URL
+                        'gif_file': gif_data['url'],  # Store URL directly
                         'is_active': True,
                         'category': pack_data['name'],
                         'source': 'Giphy',
                     }
                 )
                 if gif_created:
-                    self.stdout.write(f'    ✓ Added GIF: {gif_data["title"]}')
+                    self.stdout.write(f'    [+] Added GIF: {gif_data["title"]} ({gif_data["url"]})')
         
         self.stdout.write(self.style.SUCCESS(f'GIF setup complete! Total packs: {GifPack.objects.count()}, Total GIFs: {GifFile.objects.count()}'))

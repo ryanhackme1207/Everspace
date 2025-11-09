@@ -637,9 +637,17 @@ class GifFile(models.Model):
         return f"{self.pack.name} - {self.title}"
     
     def get_url(self):
-        """Get GIF URL"""
+        """Get GIF URL - handles both FileField objects and direct URLs"""
         if self.gif_file:
-            return self.gif_file.url
+            gif_str = str(self.gif_file)
+            # Check if it's a full URL (starts with http:// or https://)
+            if gif_str.startswith(('http://', 'https://')):
+                return gif_str
+            # If it's a FileField object with a URL method, use it
+            if hasattr(self.gif_file, 'url'):
+                return self.gif_file.url
+            # Otherwise, it's a local file path
+            return f'/media/{gif_str}'
         return ''
     
     def increment_views(self):
