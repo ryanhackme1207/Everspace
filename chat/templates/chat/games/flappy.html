@@ -430,13 +430,24 @@
             document.getElementById('gameOver').classList.add('appear');
             document.getElementById('startMessage').style.display = 'none';
 
-            // Calculate reward: 4 coins per pipe passed
-            const reward = Math.max(40, Math.min(180, score * 4 + 40));
+            // Calculate reward: Score 100+ only
+            let reward = 0;
+            let rewardMessage = '';
+            
+            if (score < 100) {
+                rewardMessage = '⚠️ Score must be 100 or above to earn rewards!';
+                reward = 0;
+            } else {
+                reward = Math.max(50, Math.min(200, score * 2));
+                rewardMessage = `🪙 +${reward} Evercoins Earned!`;
+            }
 
-            document.getElementById('rewardDisplay').textContent = `🪙 +${reward} Evercoins Earned!`;
+            document.getElementById('rewardDisplay').textContent = rewardMessage;
 
-            // Submit score
-            submitScore(score, reward);
+            // Submit score only if reward > 0
+            if (reward > 0) {
+                submitScore(score, reward);
+            }
         }
 
         function submitScore(score, reward) {
@@ -447,7 +458,7 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    game: 'flappy',
+                    game_type: 'flappy',
                     score: score,
                     reward: reward
                 })

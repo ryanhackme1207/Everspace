@@ -389,26 +389,41 @@
                 document.getElementById('bestMoves').textContent = bestMoves;
             }
             
-            // Calculate reward based on efficiency
-            let baseReward = 20;
-            if (difficulty === 'easy') {
-                baseReward = totalPairs * 2.5; // 6 pairs = 15 base
-            } else if (difficulty === 'medium') {
-                baseReward = totalPairs * 3; // 8 pairs = 24 base
+            // Calculate score: Higher score for fewer moves
+            const calculatedScore = totalPairs * 100 - moves * 5;
+            
+            // Reward: Score 100+ only
+            let reward = 0;
+            let rewardMessage = '';
+            
+            if (calculatedScore < 100) {
+                rewardMessage = '⚠️ Score must be 100 or above to earn rewards!';
+                reward = 0;
             } else {
-                baseReward = totalPairs * 3.5; // 10 pairs = 35 base
+                // Calculate reward based on efficiency
+                let baseReward = 20;
+                if (difficulty === 'easy') {
+                    baseReward = totalPairs * 2.5; // 6 pairs = 15 base
+                } else if (difficulty === 'medium') {
+                    baseReward = totalPairs * 3; // 8 pairs = 24 base
+                } else {
+                    baseReward = totalPairs * 3.5; // 10 pairs = 35 base
+                }
+                
+                // Bonus for efficiency
+                const perfectMoves = totalPairs;
+                const efficiency = perfectMoves / moves;
+                const efficiencyBonus = Math.floor(baseReward * efficiency * 2);
+                reward = Math.max(20, Math.min(100, Math.floor(baseReward + efficiencyBonus)));
+                rewardMessage = `🪙 +${reward} Evercoins Earned!`;
             }
             
-            // Bonus for efficiency
-            const perfectMoves = totalPairs;
-            const efficiency = perfectMoves / moves;
-            const efficiencyBonus = Math.floor(baseReward * efficiency * 2);
-            const reward = Math.max(20, Math.min(100, Math.floor(baseReward + efficiencyBonus)));
+            document.getElementById('rewardDisplay').textContent = rewardMessage;
             
-            document.getElementById('rewardDisplay').textContent = `🪙 +${reward} Evercoins Earned!`;
-            
-            // Submit score
-            submitScore(moves, reward);
+            // Submit score only if reward > 0
+            if (reward > 0) {
+                submitScore(calculatedScore, reward);
+            }
         }
 
         function restartGame() {
@@ -416,7 +431,7 @@
             startGame();
         }
 
-        function submitScore(moves, reward) {
+        function submitScore(score, reward) {
             fetch('/chat/games/submit-score/', {
                 method: 'POST',
                 headers: {
@@ -424,8 +439,8 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    game: 'memory',
-                    score: totalPairs * 100 - moves * 5, // Higher score for fewer moves
+                    game_type: 'memory',
+                    score: score,
                     reward: reward
                 })
             })

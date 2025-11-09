@@ -5152,6 +5152,11 @@
             // Share sound in chat via WebSocket
             function shareSound(sound) {
                 try {
+                    if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+                        showNotification('⚠️ Not connected to chat. Please refresh the page.', 'error');
+                        return;
+                    }
+                    
                     const soundMessage = {
                         type: 'sound',
                         sound_name: sound.name,
@@ -5161,6 +5166,7 @@
                         timestamp: new Date().toISOString()
                     };
                     
+                    console.log('Sending sound message:', soundMessage);
                     chatSocket.send(JSON.stringify(soundMessage));
                     
                     // Show notification
@@ -5173,7 +5179,7 @@
                     }, 500);
                 } catch (err) {
                     console.error('Error sharing sound:', err);
-                    showNotification('Error sharing sound', 'error');
+                    showNotification('⚠️ Error sharing sound', 'error');
                 }
             }
 

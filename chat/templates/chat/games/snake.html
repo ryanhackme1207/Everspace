@@ -601,26 +601,16 @@
             let reward = 0;
             let timeMessage = '';
             
-            // Reward calculation based on time and score
-            if (playTimeMinutes < 2) {
-                timeMessage = '<div class="time-warning">⚠️ Played less than 2 minutes - No reward!</div>';
+            // Reward calculation: Score 100+ only
+            if (score < 100) {
+                timeMessage = '<div class="time-warning">⚠️ Score must be 100 or above to earn rewards!</div>';
                 reward = 0;
-            } else if (score < 50) {
-                timeMessage = '<div class="time-warning">📊 Low score - Minimum reward only</div>';
-                reward = 20;
-            } else if (playTimeMinutes >= 5) {
-                // Full reward calculation for 5+ minutes
+            } else {
+                // Calculate reward based on score
                 reward = Math.floor(score / 10) * 5 + Math.floor(snake.length / 5) * 10;
                 reward = Math.max(50, Math.min(200, reward));
-                timeMessage = '<div class="time-success">✅ Great session! Full reward earned!</div>';
+                timeMessage = '<div class="time-success">✅ Great score! Reward earned!</div>';
                 createConfetti();
-            } else {
-                // Partial reward for 2-5 minutes
-                const timeRatio = playTimeMinutes / 5;
-                const baseReward = Math.floor(score / 10) * 3 + Math.floor(snake.length / 5) * 5;
-                reward = Math.floor(baseReward * timeRatio);
-                reward = Math.max(30, Math.min(150, reward));
-                timeMessage = `<div style="color: #f59e0b; padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; margin: 12px 0; font-weight: 600;">⏱️ Partial reward (${Math.floor(playTimeMinutes)} min). Play 5+ min for full reward!</div>`;
             }
 
             document.getElementById('timeMessage').innerHTML = timeMessage;
