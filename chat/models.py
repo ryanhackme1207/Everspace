@@ -365,6 +365,22 @@ class Friendship(models.Model):
             return None
 
 
+class FriendNickname(models.Model):
+    """Custom nicknames for friends (only visible to the user who set it)"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friend_nicknames')
+    friend = models.ForeignKey(User, on_delete=models.CASCADE, related_name='nicknamed_by')
+    nickname = models.CharField(max_length=100, help_text='Custom name for this friend (supports emojis)')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['user', 'friend']
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f'{self.user.username}\'s nickname for {self.friend.username}: {self.nickname}'
+
+
 class PrivateMessage(models.Model):
     """Private messages between friends"""
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_private_messages')

@@ -1147,6 +1147,166 @@ def send_private_message(request):
         })
 
 
+@login_required
+@require_POST
+def set_friend_nickname(request):
+    """Set a custom nickname for a friend"""
+    friend_username = request.POST.get('friend_username', '').strip()
+    nickname = request.POST.get('nickname', '').strip()
+    
+    if not friend_username or not nickname:
+        return JsonResponse({
+            'success': False,
+            'message': 'Friend username and nickname are required.'
+        })
+    
+    try:
+        friend = get_object_or_404(User, username=friend_username)
+        
+        # Check if users are friends
+        if not Friendship.are_friends(request.user, friend):
+            return JsonResponse({
+                'success': False,
+                'message': 'You can only set nicknames for friends.'
+            })
+        
+        # Create or update nickname
+        from chat.models import FriendNickname
+        nickname_obj, created = FriendNickname.objects.update_or_create(
+            user=request.user,
+            friend=friend,
+            defaults={'nickname': nickname}
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Nickname saved successfully!',
+            'nickname': nickname
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
+@login_required
+def get_friend_nickname(request):
+    """Get custom nickname for a friend"""
+    friend_username = request.GET.get('friend_username', '').strip()
+    
+    if not friend_username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Friend username is required.'
+        })
+    
+    try:
+        friend = get_object_or_404(User, username=friend_username)
+        
+        from chat.models import FriendNickname
+        nickname_obj = FriendNickname.objects.filter(
+            user=request.user,
+            friend=friend
+        ).first()
+        
+        if nickname_obj:
+            return JsonResponse({
+                'success': True,
+                'nickname': nickname_obj.nickname
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'nickname': None
+            })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
+@login_required
+@require_POST
+def block_friend(request):
+    """Block a friend - cannot send friend request again"""
+    username = request.POST.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Username is required.'
+        })
+    
+    try:
+        friend = get_object_or_404(User, username=username)
+        
+        # Get friendship
+        friendship = Friendship.get_friendship(request.user, friend)
+        
+        if not friendship:
+            return JsonResponse({
+                'success': False,
+                'message': 'No friendship found.'
+            })
+        
+        # Block the friend
+        friendship.block()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'You have blocked {username}. They cannot send friend requests again.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
+@login_required
+@require_POST
+def remove_friend(request):
+    """Remove a friend - can send friend request again later"""
+    username = request.POST.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({
+            'success': False,
+            'message': 'Username is required.'
+        })
+    
+    try:
+        friend = get_object_or_404(User, username=username)
+        
+        # Get friendship
+        friendship = Friendship.get_friendship(request.user, friend)
+        
+        if not friendship:
+            return JsonResponse({
+                'success': False,
+                'message': 'No friendship found.'
+            })
+        
+        # Delete the friendship (allows re-requesting later)
+        friendship.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'You have removed {username} from your friends. You can send a friend request again later.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        })
+
+
 @ajax_login_required
 @require_POST
 def unsend_message(request):

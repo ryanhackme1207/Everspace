@@ -263,6 +263,20 @@
             }
         }
 
+        @keyframes notificationPulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         /* Enhanced user list styling */
         .user-item {
             transition: all 0.3s ease !important;
@@ -1835,8 +1849,89 @@
             return cookieValue;
         }
         
-        // Show notification toast
+        // Sound effect functions using Web Audio API
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioContext;
+        
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new AudioContext();
+            }
+        }
+        
+        function playNotificationSound(type = 'info') {
+            try {
+                initAudioContext();
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Different sounds for different notification types
+                if (type === 'success') {
+                    // Success: Pleasant ascending chime
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                } else if (type === 'error') {
+                    // Error: Descending alert
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } else {
+                    // Info: Friendly notification beep
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.08);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                }
+            } catch (e) {
+                console.log('Audio not available:', e);
+            }
+        }
+        
+        function playMessageSound() {
+            try {
+                initAudioContext();
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Quick pop sound for new messages
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                console.log('Audio not available:', e);
+            }
+        }
+        
+        // Show notification toast with sound
         function showNotification(title, message, type = 'info') {
+            // Play notification sound
+            playNotificationSound(type);
+            
             const notification = document.createElement('div');
             notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
             notification.style.cssText = `
@@ -1849,7 +1944,7 @@
                 padding: 1rem;
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                animation: slideInRight 0.3s ease;
+                animation: slideInRight 0.3s ease, notificationPulse 0.5s ease;
             `;
             notification.innerHTML = `
                 <strong>${title}</strong><br>
@@ -2059,6 +2154,11 @@
                 const messageId = data.message_id || Date.now();
                 const currentTimestamp = Math.floor(Date.now() / 1000);
                 
+                // Play sound for incoming messages (not from current user)
+                if (!isCurrentUser) {
+                    playMessageSound();
+                }
+                
                 // Set data attributes
                 messageElement.setAttribute('data-message-id', messageId);
                 messageElement.setAttribute('data-timestamp', currentTimestamp);
@@ -2119,6 +2219,9 @@
                 
                 // Only show join notification if it's not the current user (to avoid showing join message for self)
                 if (data.username !== currentUsername) {
+                    // Play join sound
+                    playNotificationSound('info');
+                    
                     // Show join notification
                     const joinElement = document.createElement('div');
                     joinElement.className = 'system-message';
@@ -2148,6 +2251,23 @@
             } else if (data.type === 'user_leave') {
                 // Handle user leave
                 const displayName = data.display_name || data.username;
+                
+                // Play leave sound (subtle)
+                try {
+                    initAudioContext();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    console.log('Audio not available');
+                }
                 
                 // Remove user from active users list with animation
                 removeUserFromList(data.username);

@@ -336,20 +336,20 @@
                 <div class="friend-item">
                     <div class="friend-info">
                         <div class="friend-avatar">
-                            {{ friend.username|slice:":1"|upper }}
+                            {{ friend.user.username|slice:":1"|upper }}
                         </div>
                         <div class="friend-details">
-                            <h6>{{ friend.username }}</h6>
+                            <h6>{{ friend.user.username }}</h6>
                             <p class="friend-status">
                                 <i class="fas fa-circle text-success me-1"></i>Online
                             </p>
                         </div>
                     </div>
                     <div class="friend-actions">
-                        <a href="{% url 'chat:private_chat' friend.username %}" class="btn btn-chat">
+                        <a href="{% url 'chat:private_chat' friend.user.username %}" class="btn btn-chat">
                             <i class="fas fa-comment me-1"></i>Chat
                         </a>
-                        <button class="btn btn-remove" onclick="removeFriend('{{ friend.username }}')">
+                        <button class="btn btn-remove" onclick="removeFriend('{{ friend.user.username }}')">
                             <i class="fas fa-user-minus me-1"></i>Remove
                         </button>
                     </div>

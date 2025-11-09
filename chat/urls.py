@@ -24,6 +24,10 @@ urlpatterns = [
     path('friends/respond-request/', views.respond_friend_request, name='respond_friend_request'),
     path('friends/chat/<str:username>/', views.private_chat, name='private_chat'),
     path('friends/send-message/', views.send_private_message, name='send_private_message'),
+    path('friends/set-nickname/', views.set_friend_nickname, name='set_friend_nickname'),
+    path('friends/get-nickname/', views.get_friend_nickname, name='get_friend_nickname'),
+    path('friends/block/', views.block_friend, name='block_friend'),
+    path('friends/remove/', views.remove_friend, name='remove_friend'),
     # Message Management URLs
     path('chat/message/unsend/', views.unsend_message, name='unsend_message'),
     # Profile URLs
