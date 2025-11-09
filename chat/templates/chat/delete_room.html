@@ -9,22 +9,16 @@
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --dark-bg: #1a1d29;
-            --dark-card: #252837;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --border-radius-lg: 24px;
-            --border-radius-md: 16px;
-            --border-radius-sm: 12px;
-            --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+            --danger-glow: rgba(252, 70, 107, 0.5);
+            --glass-bg: rgba(20, 25, 40, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --border-radius: 24px;
         }
 
         * {
@@ -35,122 +29,550 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .glass-container {
-            min-height: 100vh;
-            padding: 2rem 0;
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Animated particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(252, 70, 107, 0.8), transparent);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.3;
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+                opacity: 0.6;
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+                opacity: 0.4;
+            }
+        }
+
+        .delete-container {
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideInUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-glass);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .glass-title {
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* Danger icon with advanced animations */
+        .danger-icon-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+        }
+
+        .danger-icon {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(252, 70, 107, 0.2), rgba(63, 94, 251, 0.2));
+            border-radius: 50%;
+            border: 3px solid rgba(252, 70, 107, 0.5);
+            font-size: 3.5rem;
+            color: #FC466B;
+            position: relative;
+            animation: iconPulse 2s ease-in-out infinite, iconRotate 10s linear infinite;
+            box-shadow: 0 0 40px var(--danger-glow),
+                        0 0 80px var(--danger-glow) inset;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 40px var(--danger-glow), 0 0 80px var(--danger-glow) inset;
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 60px var(--danger-glow), 0 0 100px var(--danger-glow) inset;
+            }
+        }
+
+        @keyframes iconRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .danger-icon i {
+            animation: shake 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(252, 70, 107, 0.8));
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-5deg); }
+            20%, 40%, 60%, 80% { transform: rotate(5deg); }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border: 2px solid rgba(252, 70, 107, 0.5);
+            border-radius: 50%;
+            animation: ripple 2s infinite;
+        }
+
+        .ripple:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .ripple:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .ripple:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 120px;
+                height: 120px;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        .title {
             font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            color: white;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, #FC466B, #3F5EFB, #FC466B);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
+            animation: gradientText 3s linear infinite;
+        }
+
+        @keyframes gradientText {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Warning alert */
+        .warning-alert {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+            border-left: 4px solid #ffc107;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            animation: alertGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes alertGlow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+            }
+        }
+
+        .warning-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: alertScan 3s infinite;
+        }
+
+        @keyframes alertScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .warning-alert-content {
+            position: relative;
+            z-index: 1;
+            color: #ffc107;
+            font-weight: 500;
+        }
+
+        /* Room info card */
+        .room-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(252, 70, 107, 0.2);
+            border-color: rgba(252, 70, 107, 0.3);
+        }
+
+        .room-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .room-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .room-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .room-info-item i {
+            width: 20px;
+            text-align: center;
+            color: #FC466B;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-custom {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-custom:active::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #FC466B, #3F5EFB);
+            color: white;
+            box-shadow: 0 8px 30px rgba(252, 70, 107, 0.4);
+            position: relative;
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(252, 70, 107, 0.6);
+        }
+
+        .btn-delete:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        /* Countdown indicator */
+        .countdown-indicator {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: #ffc107;
+            font-weight: 600;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .danger-icon-wrapper {
+                width: 100px;
+                height: 100px;
+            }
+
+            .danger-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="glass-container">
-    <div class="container-fluid h-100">
-        <div class="row h-100 justify-content-center align-items-center">
-            <div class="col-lg-6 col-md-8">
-                <div class="glass-card p-4">
-                    <div class="text-center mb-4">
-                        <div class="warning-icon mb-3">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b6b;"></i>
-                        </div>
-                        <h2 class="glass-title mb-2">Delete Room</h2>
-                        <p class="text-muted">Are you sure you want to delete this room?</p>
-                    </div>
+    <!-- Animated particles background -->
+    <div class="particles" id="particles"></div>
 
-                    <div class="alert alert-warning glass-alert" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Warning:</strong> This action cannot be undone. All messages in this room will be permanently deleted.
-                    </div>
-
-                    <div class="room-info glass-card p-3 mb-4">
-                        <h4 class="mb-2">
-                            <i class="fas fa-hashtag me-2"></i>{{ room_name }}
-                        </h4>
-                        <p class="text-muted mb-1">
-                            <i class="fas fa-calendar me-2"></i>Created: {{ room_obj.created_at|date:"M d, Y g:i A" }}
-                        </p>
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-user me-2"></i>Creator: {{ room_obj.creator.first_name|default:room_obj.creator.username }}
-                        </p>
-                        {% if room_obj.messages.count > 0 %}
-                        <p class="text-muted mb-0 mt-2">
-                            <i class="fas fa-comments me-2"></i>{{ room_obj.messages.count }} message{{ room_obj.messages.count|pluralize }} will be deleted
-                        </p>
-                        {% endif %}
-                    </div>
-
-                    <form method="post" class="text-center">
-                        {% csrf_token %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                            <a href="{% url 'chat:chat_room' room_name=room_name %}" class="btn btn-secondary btn-lg me-md-2">
-                                <i class="fas fa-arrow-left me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('Are you absolutely sure? This cannot be undone!')">
-                                <i class="fas fa-trash me-2"></i>Delete Room
-                            </button>
-                        </div>
-                    </form>
+    <div class="delete-container">
+        <div class="glass-card">
+            <!-- Danger icon with ripple effects -->
+            <div class="danger-icon-wrapper">
+                <div class="ripple"></div>
+                <div class="ripple"></div>
+                <div class="ripple"></div>
+                <div class="danger-icon">
+                    <i class="fas fa-skull-crossbones"></i>
                 </div>
             </div>
+
+            <h1 class="title">Danger Zone</h1>
+            <p class="subtitle">You're about to delete this room permanently</p>
+
+            <!-- Warning alert -->
+            <div class="warning-alert">
+                <div class="warning-alert-content">
+                    <i class="fas fa-radiation me-2"></i>
+                    <strong>⚠️ CRITICAL WARNING:</strong> This action is irreversible! All messages, history, and data will be permanently destroyed.
+                </div>
+            </div>
+
+            <!-- Room info card -->
+            <div class="room-card">
+                <div class="room-name">
+                    <i class="fas fa-hashtag"></i>
+                    {{ room_name }}
+                </div>
+                <div class="room-info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Created: {{ room_obj.created_at|date:"M d, Y g:i A" }}</span>
+                </div>
+                <div class="room-info-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Creator: {{ room_obj.creator.first_name|default:room_obj.creator.username }}</span>
+                </div>
+                {% if room_obj.messages.count > 0 %}
+                <div class="room-info-item">
+                    <i class="fas fa-comments"></i>
+                    <span>{{ room_obj.messages.count }} message{{ room_obj.messages.count|pluralize }} will be deleted</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action buttons -->
+            <form method="post" id="deleteForm">
+                {% csrf_token %}
+                <div class="button-group">
+                    <a href="{% url 'chat:chat_room' room_name=room_name %}" class="btn-custom btn-cancel">
+                        <i class="fas fa-shield-alt me-2"></i>Keep Safe
+                    </a>
+                    <button type="button" class="btn-custom btn-delete" id="deleteBtn">
+                        <i class="fas fa-trash-alt me-2"></i>Confirm Delete
+                    </button>
+                </div>
+                <div class="countdown-indicator" id="countdown"></div>
+            </form>
         </div>
     </div>
-</div>
 
-<style>
-.warning-icon {
-    animation: pulse 2s infinite;
-}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Create animated particles
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 6 + 3 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = Math.random() * 10 + 10 + 's';
+                particles.appendChild(particle);
+            }
+        }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+        // Confirmation with countdown
+        let clickCount = 0;
+        const deleteBtn = document.getElementById('deleteBtn');
+        const countdown = document.getElementById('countdown');
+        const deleteForm = document.getElementById('deleteForm');
 
-.room-info {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-}
+        deleteBtn.addEventListener('click', function() {
+            clickCount++;
+            
+            if (clickCount === 1) {
+                deleteBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Click Again to Confirm';
+                deleteBtn.style.background = 'linear-gradient(135deg, #ff9a00, #ff5e00)';
+                countdown.style.display = 'block';
+                countdown.innerHTML = '<i class="fas fa-hourglass-half me-2"></i>Click one more time to permanently delete';
+                
+                // Reset after 3 seconds
+                setTimeout(function() {
+                    if (clickCount === 1) {
+                        clickCount = 0;
+                        deleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Confirm Delete';
+                        deleteBtn.style.background = 'linear-gradient(135deg, #FC466B, #3F5EFB)';
+                        countdown.style.display = 'none';
+                    }
+                }, 3000);
+            } else if (clickCount === 2) {
+                // Show final countdown
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+                deleteBtn.style.background = 'linear-gradient(135deg, #d32f2f, #c62828)';
+                
+                let count = 3;
+                countdown.innerHTML = `<i class="fas fa-bomb me-2"></i>Deleting in ${count}...`;
+                
+                const countdownInterval = setInterval(function() {
+                    count--;
+                    if (count > 0) {
+                        countdown.innerHTML = `<i class="fas fa-bomb me-2"></i>Deleting in ${count}...`;
+                    } else {
+                        clearInterval(countdownInterval);
+                        countdown.innerHTML = '<i class="fas fa-fire me-2"></i>Goodbye forever...';
+                        setTimeout(function() {
+                            deleteForm.submit();
+                        }, 500);
+                    }
+                }, 1000);
+            }
+        });
 
-.glass-alert {
-    background: rgba(255, 193, 7, 0.1);
-    border: 1px solid rgba(255, 193, 7, 0.3);
-    color: #ffc107;
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-danger:hover {
-    background: linear-gradient(135deg, #ee5a24, #ff6b6b);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(238, 90, 36, 0.3);
-}
-</style>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        // Initialize particles on load
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
 </body>
 </html>
