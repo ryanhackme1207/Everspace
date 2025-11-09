@@ -103,6 +103,8 @@ class Command(BaseCommand):
                     {'title': 'Laughing', 'url': 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjFhbDlzeXJ3anl2cmZnbTdxZGttOXY2cnZrYjU2b3puanVoMHI5cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/cYZkY9HeKgofpQnOUl/giphy.gif'},
                     {'title': 'Funny Face', 'url': 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemFqNDMyY2lkY2pqNDd3dDhobXk2dHN4eGU3ZzVqdTl0cHRqbXVkbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/pWO49XP9L7TxbgQVib/giphy.gif'},
                     {'title': 'LOL', 'url': 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm5yZWc5bGp0Z3I2cGU0bTdncTBkM3pzOTQ1czU3YTI2dmp3enh2biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZfK4cXKJTTay1Ava29/giphy.gif'},
+                    {'title': 'Hilarious', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm1xbGlnZ2RicG5xN2YxN25mcjJ3YzN4cXFraHZmdmV6eG1xa2VpYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JIX9t2j0ZTN9S/giphy.gif'},
+                    {'title': 'Giggle', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2Y2anJxYnVia2R0dTRqbGl5NHZnYWlqM3VnOHJ6NWJqYXB2OWVjdCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oEjI6SIIHBdRxXI40/giphy.gif'},
                 ]
             },
             'happy': {
@@ -113,6 +115,8 @@ class Command(BaseCommand):
                     {'title': 'Smile', 'url': 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2s5dXdiZ3MxNm9xeWZ0amMxM2xxbTBmbjk3YWxmaTl6NzM5bzBsdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/pyHTKJ4G9WGQKd12cl/giphy.gif'},
                     {'title': 'Excited', 'url': 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTZ4dms4eXI4MzRreWgyYzQxbWpveTJ3ZmZvNGI1ZzhjY25vbW5mZCZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/IN2JswkB122n6/giphy.gif'},
                     {'title': 'Happy Dance', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2d6d3FxeXBjcnJydGU1cWhnZzd4NGttdGlrd3cwNnRvdWxmeWcxYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/H7wajFPnZGdRWaQeu0/giphy.gif'},
+                    {'title': 'Joy', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZWJkOWc0YmRmaHVlaHh2OGwzeTB1dHNuN3czZ2Vwbm9qaDN5YWsxYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/XR9Dp54ZC4dji/giphy.gif'},
+                    {'title': 'Celebrate', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXFubHM4bjBmY3Z3ejJ1d3piZ24zY2p5M3hkaHozNXB6anR4aG0yYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/artj92V8o75VPL7AeQ/giphy.gif'},
                 ]
             },
             'love': {
