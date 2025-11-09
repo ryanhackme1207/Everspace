@@ -270,7 +270,7 @@
 </head>
 <body>
     <div class="profile-container">
-        <a href="{% url 'chat_index' %}" class="back-button">
+        <a href="{% url 'chat:chat_index' %}" class="back-button">
             <i class="fas fa-arrow-left"></i>
             Back to Chat
         </a>
@@ -303,7 +303,7 @@
                         <div style="max-width:600px; margin:0.75rem auto 1rem; font-size:0.95rem; line-height:1.4; color:var(--text-secondary); white-space:pre-line;">{{ profile.bio|default:"No bio yet." }}</div>
                     {% else %}
                         {% if is_own_profile %}
-                            <div style="margin:0.75rem auto 1rem; font-size:0.85rem; opacity:0.6;">Add a bio in <a href="{% url 'edit_profile' %}" style="color:var(--accent-purple); text-decoration:none;">Edit Profile</a> to tell others about you.</div>
+                            <div style="margin:0.75rem auto 1rem; font-size:0.85rem; opacity:0.6;">Add a bio in <a href="{% url 'chat:edit_profile' %}" style="color:var(--accent-purple); text-decoration:none;">Edit Profile</a> to tell others about you.</div>
                         {% endif %}
                     {% endif %}
                     <p class="profile-email">
@@ -314,12 +314,12 @@
 
                 <div class="profile-actions">
                     {% if is_own_profile %}
-                        <a href="{% url 'edit_profile' %}" class="action-btn primary">
+                        <a href="{% url 'chat:edit_profile' %}" class="action-btn primary">
                             <i class="fas fa-edit"></i>
                             Edit Profile
                         </a>
                     {% else %}
-                        <a href="{% url 'private_chat' profile_user.username %}" class="action-btn primary">
+                        <a href="{% url 'chat:private_chat' profile_user.username %}" class="action-btn primary">
                             <i class="fas fa-comment"></i>
                             Send Message
                         </a>

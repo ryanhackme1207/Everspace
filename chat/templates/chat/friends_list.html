@@ -236,11 +236,11 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'chat_index' %}">
+            <a class="navbar-brand" href="{% url 'chat:chat_index' %}">
                 <i class="fas fa-comments me-2"></i>ChatRoom
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="btn btn-outline-light me-2" href="{% url 'chat_index' %}">
+                <a class="btn btn-outline-light me-2" href="{% url 'chat:chat_index' %}">
                     <i class="fas fa-home me-2"></i>Rooms
                 </a>
                 <a class="btn btn-outline-light" href="{% url 'auth_logout' %}">
@@ -346,7 +346,7 @@
                         </div>
                     </div>
                     <div class="friend-actions">
-                        <a href="{% url 'private_chat' friend.username %}" class="btn btn-chat">
+                        <a href="{% url 'chat:private_chat' friend.username %}" class="btn btn-chat">
                             <i class="fas fa-comment me-1"></i>Chat
                         </a>
                         <button class="btn btn-remove" onclick="removeFriend('{{ friend.username }}')">
@@ -374,7 +374,7 @@
     <script>
         // Friend Request Functions
         function respondToRequest(requestId, status) {
-            fetch('{% url "respond_friend_request" %}', {
+            fetch('{% url "chat:respond_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -432,7 +432,7 @@
                 return;
             }
 
-            fetch('{% url "send_friend_request" %}', {
+            fetch('{% url "chat:send_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

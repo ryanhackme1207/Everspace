@@ -1290,7 +1290,7 @@
             </a>
             <div class="d-flex align-items-center">
                 <div class="user-info me-3">
-                    <a href="{% url 'my_profile' %}" class="user-avatar" title="View My Profile">
+                    <a href="{% url 'chat:my_profile' %}" class="user-avatar" title="View My Profile">
                         {% if user.profile.pixel_avatar %}
                             <img src="/static/chat/images/pixel_avatars/{{ user.profile.pixel_avatar }}.png" alt="{{ user.username }}">
                         {% elif user.profile.profile_picture %}
@@ -1324,10 +1324,10 @@
                         </div>
                     </div>
                     
-                    <a href="{% url 'my_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="View My Profile">
+                    <a href="{% url 'chat:my_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="View My Profile">
                         <i class="fas fa-user me-1"></i>My Profile
                     </a>
-                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="Edit Profile">
+                    <a href="{% url 'chat:edit_profile' %}" class="btn btn-outline-modern btn-sm me-2" title="Edit Profile">
                         <i class="fas fa-user-edit me-1"></i>Edit
                     </a>
                     <div class="dropdown me-2">
