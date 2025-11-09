@@ -38,9 +38,10 @@ class UserProfileAdmin(admin.ModelAdmin):
     
     def evercoin_display(self, obj):
         """Display evercoin with emoji"""
+        formatted_amount = f"{obj.evercoin:,}"
         return format_html(
-            '<span style="font-weight: bold; color: #f59e0b;">💰 {:,}</span>',
-            obj.evercoin
+            '<span style="font-weight: bold; color: #f59e0b;">💰 {}</span>',
+            formatted_amount
         )
     evercoin_display.short_description = "Evercoin Balance"
     
@@ -207,9 +208,10 @@ class GiftAdmin(admin.ModelAdmin):
     )
     
     def cost_display(self, obj):
+        formatted_cost = f"{obj.cost:,}"
         return format_html(
-            '<span style="font-weight: bold; color: #f59e0b;">💰 {:,}</span>',
-            obj.cost
+            '<span style="font-weight: bold; color: #f59e0b;">💰 {}</span>',
+            formatted_cost
         )
     cost_display.short_description = "Cost"
 
@@ -224,9 +226,10 @@ class GiftTransactionAdmin(admin.ModelAdmin):
     date_hierarchy = 'sent_at'
     
     def intimacy_display(self, obj):
+        formatted_intimacy = f"{obj.intimacy_gained:,}"
         return format_html(
-            '<span style="color: #ec4899;">� {:,}</span>',
-            obj.intimacy_gained
+            '<span style="color: #ec4899;">💖 {}</span>',
+            formatted_intimacy
         )
     intimacy_display.short_description = "Intimacy"
     
