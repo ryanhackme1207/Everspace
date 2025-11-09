@@ -45,6 +45,24 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Media files configuration - critical for GIFs and Gifts
+MEDIA_URL = '/media/'
+# Use Render's persistent disk mount point if available, otherwise use local media folder
+RENDER_DISK_MOUNT = os.environ.get('RENDER_DISK_MOUNT_PATH')
+if RENDER_DISK_MOUNT:
+    MEDIA_ROOT = os.path.join(RENDER_DISK_MOUNT, 'media')
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Ensure media root exists
+try:
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    # Create subdirectories
+    for subdir in ['gifs', 'gifs/thumbnails', 'profile_pictures', 'cover_images']:
+        os.makedirs(os.path.join(MEDIA_ROOT, subdir), exist_ok=True)
+except Exception as e:
+    print(f"Warning: Could not create media directories: {e}")
+
 # WhiteNoise middleware is already configured in base settings.py
 
 # Redis configuration for production

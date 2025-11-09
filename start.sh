@@ -32,6 +32,10 @@ export PYTHONUNBUFFERED=1
 export CREATE_DEFAULT_SUPERUSER=${CREATE_DEFAULT_SUPERUSER:-true}
 echo "[startup] CREATE_DEFAULT_SUPERUSER=${CREATE_DEFAULT_SUPERUSER}"
 
+echo "[startup] Setting up media directories..."
+python manage.py setup_media --verbose || { echo "[startup][ERROR] setup_media failed"; exit 1; }
+echo "[startup] Media directories setup completed"
+
 echo "[startup] Applying migrations..."
 python manage.py migrate --noinput || { echo "[startup][ERROR] migrate failed"; exit 1; }
 

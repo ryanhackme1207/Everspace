@@ -13,6 +13,12 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
+      - key: RENDER_DISK_MOUNT_PATH
+        value: /var/data
+    disks:
+      - name: media_storage
+        mountPath: /var/data
+        sizeGB: 1
   
   - type: redis
     name: everspace-redis
