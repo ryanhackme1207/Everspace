@@ -119,6 +119,18 @@ def index(request):
             sender=request.user,
             status='pending'
         ).select_related('receiver', 'receiver__profile')
+        
+        # Get blocked users
+        blocked_users = []
+        blocked_relationships = Friendship.objects.filter(
+            models.Q(sender=request.user) | models.Q(receiver=request.user),
+            status='blocked'
+        ).select_related('sender__profile', 'receiver__profile')
+        
+        for blocked in blocked_relationships:
+            blocked_user = blocked.receiver if blocked.sender == request.user else blocked.sender
+            UserProfile.objects.get_or_create(user=blocked_user)
+            blocked_users.append(blocked_user)
     
     return render(request, 'chat/index.html', {
         'rooms': rooms,
@@ -126,6 +138,7 @@ def index(request):
         'friends': friends,
         'incoming_requests': incoming_requests,
         'outgoing_requests': outgoing_requests,
+        'blocked_users': blocked_users if request.user.is_authenticated else [],
     })
 
 @login_required

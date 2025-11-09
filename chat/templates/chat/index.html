@@ -693,7 +693,7 @@
             box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
         }
 
-        .btn-friend-block {
+        .btn-friend-unblock {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -704,14 +704,13 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            background: linear-gradient(135deg, #6b7280, #4b5563);
+            background: linear-gradient(135deg, var(--accent-mint), #A8E6CF);
             color: white;
         }
 
-        .btn-friend-block:hover {
+        .btn-friend-unblock:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
-            background: linear-gradient(135deg, #4b5563, #374151);
+            box-shadow: 0 8px 20px rgba(150, 206, 180, 0.4);
         }
 
         .btn-friend-chat {
@@ -1601,9 +1600,6 @@
                                     <a href="{% url 'chat:private_chat' friend.username %}" class="btn-friend-chat" title="Send Message">
                                         <i class="fas fa-comment"></i>
                                     </a>
-                                    <button class="btn-friend-block" onclick="blockFriend('{{ friend.username }}')" title="Block Friend">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
                                     <button class="btn-friend-remove" onclick="removeFriend('{{ friend.username }}')" title="Remove Friend">
                                         <i class="fas fa-user-minus"></i>
                                     </button>
@@ -1621,6 +1617,43 @@
                         </div>
                     {% endif %}
                 </div>
+
+                <!-- Blocked Friends -->
+                {% if blocked_users %}
+                <div class="friends-subsection" style="margin-top: 2rem;">
+                    <h4 class="subsection-title">
+                        <i class="fas fa-ban me-2"></i>
+                        Blocked Users ({{ blocked_users|length }})
+                    </h4>
+                    
+                    <div class="friends-grid">
+                        {% for blocked_user in blocked_users %}
+                        <div class="friend-card" style="opacity: 0.7; border: 1px solid rgba(107, 114, 128, 0.3);">
+                            <div class="friend-avatar" style="filter: grayscale(100%);">
+                                {% if blocked_user.profile.pixel_avatar %}
+                                    <img src="/static/chat/images/pixel_avatars/{{ blocked_user.profile.pixel_avatar }}.png" alt="{{ blocked_user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif blocked_user.profile.profile_picture %}
+                                    <img src="{{ blocked_user.profile.profile_picture.url }}" alt="{{ blocked_user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    {{ blocked_user.username|slice:":1"|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="friend-info">
+                                <h6>{{ blocked_user.username }}</h6>
+                                <p class="friend-status" style="color: var(--text-muted);">
+                                    <i class="fas fa-ban me-1"></i>Blocked
+                                </p>
+                            </div>
+                            <div class="friend-actions">
+                                <button class="btn-friend-unblock" onclick="unblockFriend('{{ blocked_user.username }}')" title="Unblock User">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
 
@@ -2112,6 +2145,35 @@
             })
             .catch(error => {
                 showNotification('An error occurred while removing the friend.', 'error');
+            });
+        }
+
+        function unblockFriend(username) {
+            if (!confirm(`Unblock ${username}? You will be able to send friend requests again.`)) {
+                return;
+            }
+
+            fetch('/friends/unblock/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `username=${username}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('An error occurred while unblocking the user.', 'error');
             });
         }
 

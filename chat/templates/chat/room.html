@@ -2723,6 +2723,55 @@
             } else if (data.type === 'gift_animation') {
                 // Handle gift animation - TikTok style full-screen overlay
                 showGiftAnimation(data);
+            } else if (data.type === 'ownership_transferred') {
+                // Handle ownership transfer notification
+                const transferElement = document.createElement('div');
+                transferElement.className = 'system-message';
+                transferElement.style.cssText = `
+                    text-align: center;
+                    padding: 1rem;
+                    margin: 1rem 0;
+                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.1));
+                    border: 2px solid rgba(255, 215, 0, 0.4);
+                    border-radius: 12px;
+                    color: #fbbf24;
+                    font-size: 0.95rem;
+                    animation: fadeInUp 0.3s ease-out;
+                    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+                `;
+                transferElement.innerHTML = `
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">
+                        Room Ownership Transferred
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">
+                        <strong>${data.old_owner}</strong> transferred ownership to <strong>${data.new_owner}</strong>
+                    </div>
+                `;
+                messagesContainer.appendChild(transferElement);
+                scrollToBottom();
+                
+                // Play notification sound if enabled
+                if (soundEnabled) {
+                    playNotificationSound('success');
+                }
+                
+                // Show toast notification
+                showToast('Ownership Transfer', data.message, 'warning');
+                
+                // If current user is the new owner, show special notification
+                if (data.new_owner === currentUsername) {
+                    setTimeout(() => {
+                        showToast('Congratulations!', 'You are now the owner of this room!', 'success');
+                    }, 1000);
+                }
+                
+                // Refresh page after 2 seconds to update UI permissions
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             }
         };
 

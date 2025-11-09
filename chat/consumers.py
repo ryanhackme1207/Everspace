@@ -371,6 +371,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'display_name': username,
             }))
 
+    async def ownership_transferred(self, event):
+        """Handle room ownership transfer notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'ownership_transferred',
+            'old_owner': event['old_owner'],
+            'new_owner': event['new_owner'],
+            'message': event['message']
+        }))
+
     @database_sync_to_async
     def check_room_exists(self):
         try:
