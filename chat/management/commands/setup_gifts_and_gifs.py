@@ -100,9 +100,9 @@ class Command(BaseCommand):
                 'icon': '😂',
                 'order': 1,
                 'gifs': [
-                    {'title': 'Laughing', 'url': 'https://media.giphy.com/media/3o7TKU9Z0i6VEKyOKI/giphy.gif'},
-                    {'title': 'Funny Face', 'url': 'https://media.giphy.com/media/l0MYtWjuAb0bdW13W8/giphy.gif'},
-                    {'title': 'LOL', 'url': 'https://media.giphy.com/media/g9GznKK0ZX9XC/giphy.gif'},
+                    {'title': 'Laughing', 'url': 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjFhbDlzeXJ3anl2cmZnbTdxZGttOXY2cnZrYjU2b3puanVoMHI5cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/cYZkY9HeKgofpQnOUl/giphy.gif'},
+                    {'title': 'Funny Face', 'url': 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemFqNDMyY2lkY2pqNDd3dDhobXk2dHN4eGU3ZzVqdTl0cHRqbXVkbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/pWO49XP9L7TxbgQVib/giphy.gif'},
+                    {'title': 'LOL', 'url': 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm5yZWc5bGp0Z3I2cGU0bTdncTBkM3pzOTQ1czU3YTI2dmp3enh2biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZfK4cXKJTTay1Ava29/giphy.gif'},
                 ]
             },
             'happy': {
@@ -110,9 +110,9 @@ class Command(BaseCommand):
                 'icon': '😊',
                 'order': 2,
                 'gifs': [
-                    {'title': 'Smile', 'url': 'https://media.giphy.com/media/xT9IgEx8SbQ1vhBbao/giphy.gif'},
-                    {'title': 'Excited', 'url': 'https://media.giphy.com/media/b1o4elW5H87dO/giphy.gif'},
-                    {'title': 'Happy Dance', 'url': 'https://media.giphy.com/media/l0HlO0Rr5K1p0sSJi/giphy.gif'},
+                    {'title': 'Smile', 'url': 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2s5dXdiZ3MxNm9xeWZ0amMxM2xxbTBmbjk3YWxmaTl6NzM5bzBsdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/pyHTKJ4G9WGQKd12cl/giphy.gif'},
+                    {'title': 'Excited', 'url': 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTZ4dms4eXI4MzRreWgyYzQxbWpveTJ3ZmZvNGI1ZzhjY25vbW5mZCZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/IN2JswkB122n6/giphy.gif'},
+                    {'title': 'Happy Dance', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2d6d3FxeXBjcnJydGU1cWhnZzd4NGttdGlrd3cwNnRvdWxmeWcxYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/H7wajFPnZGdRWaQeu0/giphy.gif'},
                 ]
             },
             'love': {
@@ -120,9 +120,9 @@ class Command(BaseCommand):
                 'icon': '❤️',
                 'order': 3,
                 'gifs': [
-                    {'title': 'Heart Eyes', 'url': 'https://media.giphy.com/media/B1p4UJRiKWXbq/giphy.gif'},
-                    {'title': 'Love', 'url': 'https://media.giphy.com/media/4cuyucPeVWbNS/giphy.gif'},
-                    {'title': 'Kiss', 'url': 'https://media.giphy.com/media/l0HlQY2KjoYB1v7EYo/giphy.gif'},
+                    {'title': 'Heart Eyes', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGo3cDhxZ3p0NXUzNXlzbnR2dzk4emx1aGltbWRnanZvMGl6aWk1MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/G5X63GrrLjjVK/giphy.gif'},
+                    {'title': 'Love', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTF6ZTlyYmVvdWtzOTB0dG50ZnNhOGEyNGk4eDRzOTBvbHp4eTlhcCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/MDJ9IbxxvDUQM/giphy.gif'},
+                    {'title': 'Kiss', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmp3aGZvdXBtZTh6MWprZXRlNW00ZnNicWtxNnVrMGo3ZmdqYzI0bSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/bGm9FuBCGg4SY/giphy.gif'},
                 ]
             },
             'work': {
@@ -130,9 +130,9 @@ class Command(BaseCommand):
                 'icon': '💼',
                 'order': 4,
                 'gifs': [
-                    {'title': 'Working Hard', 'url': 'https://media.giphy.com/media/13HgNZiMRLXjMI/giphy.gif'},
-                    {'title': 'Busy', 'url': 'https://media.giphy.com/media/1qJ4InN2yvDbu/giphy.gif'},
-                    {'title': 'Coffee Break', 'url': 'https://media.giphy.com/media/3o6Zt6KHxJTbXCnSvu/giphy.gif'},
+                    {'title': 'Working Hard', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHBpOHdxY3Z0d2VvMmxjenJudWozanFvZmRidHdqb3l0bWN0Y2RydSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xTiN0DvoDyWQey2B8I/giphy.gif'},
+                    {'title': 'Busy', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWN6OWxkZ2J1b2Zlemx0cGx0bWszMXlnM2U0ZmpqZnZsMjR6cDkyZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7btNhMBytxAM6YBa/giphy.gif'},
+                    {'title': 'Coffee Break', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnpvaHN6bWdvZ29hOXA0dWRrYnFnY3dvYnp4ZGJqemF3bjJnaGhybSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6fJ1OqbJFjnLgfuM/giphy.gif'},
                 ]
             },
             'cool': {
@@ -140,9 +140,9 @@ class Command(BaseCommand):
                 'icon': '😎',
                 'order': 5,
                 'gifs': [
-                    {'title': 'Cool Dude', 'url': 'https://media.giphy.com/media/l0HlGdZ6dmJBp8sZi/giphy.gif'},
-                    {'title': 'Swagger', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Sunglasses', 'url': 'https://media.giphy.com/media/lCYSEA3lepBxo/giphy.gif'},
+                    {'title': 'Cool Dude', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXkxdWxhdnVuMW5ibHdiaWlkbnBrZmg1NHk5cTBxc251cmJ3cGRsZiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0IydMNwRPUo0yvHG/giphy.gif'},
+                    {'title': 'Swagger', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHhvdnh6YTNuNGVvY3Z0M3dmemF0OGNiYjB6MGFudGJwYzRobDdzdCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/YoV992AlZr7W8/giphy.gif'},
+                    {'title': 'Sunglasses', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeXh1bDB5OTVydzltdDB1OTV3dms0N3FyMWFrZHV0c2k1YW1zb2Z1aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/YRuFixSNWFVcXaxpmX/giphy.gif'},
                 ]
             },
             'sad': {
@@ -150,9 +150,9 @@ class Command(BaseCommand):
                 'icon': '😢',
                 'order': 6,
                 'gifs': [
-                    {'title': 'Crying', 'url': 'https://media.giphy.com/media/jUwpNzg9IcyrK/giphy.gif'},
-                    {'title': 'Sad Face', 'url': 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'},
-                    {'title': 'Disappointed', 'url': 'https://media.giphy.com/media/GrUhLU9q3nyRG/giphy.gif'},
+                    {'title': 'Crying', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHU3Y3lic2s5OWVpZGVqdGM4bnN2MnY2eXBuZGRvdnd4cTFiZGJ4NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ROF8OQvDmxytW/giphy.gif'},
+                    {'title': 'Sad Face', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbjY2bTFqcGswY2p2cDNidGhlZXBqZGxqcGk4NHpoMDlld2d1ZTk4cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ISOckXUybVfQ4/giphy.gif'},
+                    {'title': 'Disappointed', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmdvNnNqb3dnYjN0YWV0c2F4OTB1cXFnZ2lzZWhuaDJyZWMwN3NvcCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/d2lcHJTG5Tscg/giphy.gif'},
                 ]
             },
             'shocked': {
@@ -160,9 +160,9 @@ class Command(BaseCommand):
                 'icon': '😲',
                 'order': 7,
                 'gifs': [
-                    {'title': 'Shocked Face', 'url': 'https://media.giphy.com/media/l0HlTy9x8FZo0XO1i/giphy.gif'},
-                    {'title': 'Surprised', 'url': 'https://media.giphy.com/media/BfiYrCLpdv3kk/giphy.gif'},
-                    {'title': 'Wow', 'url': 'https://media.giphy.com/media/xTiTnRS5NHH0OwvyeA/giphy.gif'},
+                    {'title': 'Shocked Face', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjZpNmF4ZDk1ODRtbGJ0YzQ5YWx1cHE3MTg4bWV0M2ZpMXYyY3oxdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o72F8t9TDi2xVnxOE/giphy.gif'},
+                    {'title': 'Surprised', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjh4NW5wZmJkMGVtN2U5dWxhczBubHY0NmphbzBqajRpZ2Rnb3IxayZlcD12MV9naWZzX3NlYXJjaCZjdD1n/PUBxelwT57jsQ/giphy.gif'},
+                    {'title': 'Wow', 'url': 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExajRvdGQ0bnBvY3Z6ajN1ZWwxNGxpaGxtNm1zODBxYmo3MDJvMzI0NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26ufdipQqU2lhNA4g/giphy.gif'},
                 ]
             },
         }

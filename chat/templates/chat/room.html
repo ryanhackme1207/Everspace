@@ -1040,13 +1040,17 @@
 
         /* Message with GIF */
         .message-gif {
-            max-width: 250px;
+            max-width: 300px;
+            max-height: 300px;
+            width: auto;
+            height: auto;
             border-radius: var(--border-radius-sm);
             display: block;
             margin: 0.5rem 0;
             border: 1px solid rgba(78, 205, 196, 0.3);
             box-shadow: 0 4px 12px rgba(78, 205, 196, 0.15);
             transition: all 0.2s ease;
+            object-fit: contain;
         }
 
         .message-gif:hover {
@@ -1055,9 +1059,8 @@
         }
 
         .message-content .message-gif {
-            max-width: 100%;
-            width: 100%;
-            max-height: 400px;
+            max-width: 300px;
+            max-height: 300px;
         }
 
         /* Message with Gift */
