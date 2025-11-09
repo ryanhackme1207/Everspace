@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game - Earn Evercoins</title>
+    <title>🐍 Snake Game - Earn Evercoins</title>
     <style>
         * {
             margin: 0;
@@ -12,188 +12,287 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #06d6a0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            animation: gradientShift 20s ease infinite;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            overflow: hidden;
+            padding: 15px;
+            overflow-x: hidden;
         }
 
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
+            0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         .game-container {
-            background: white;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-            max-width: 550px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            max-width: 620px;
             width: 100%;
             text-align: center;
+            position: relative;
         }
 
         .game-title {
-            font-size: 48px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #11998e, #38ef7d);
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
+            animation: titleBounce 2s ease-in-out infinite;
         }
 
-        .score-container {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            gap: 10px;
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
-        .score-box {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            flex: 1;
+            padding: 14px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .score-label {
-            font-size: 12px;
+        .stat-box:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .stat-label {
+            font-size: 11px;
             opacity: 0.9;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
-        .score-value {
-            font-size: 24px;
+        .stat-value {
+            font-size: 22px;
             font-weight: bold;
             margin-top: 5px;
         }
 
         #gameCanvas {
-            border: 3px solid #11998e;
-            border-radius: 12px;
-            background: #f0f0f0;
-            margin: 20px auto;
+            border: 4px solid #667eea;
+            border-radius: 15px;
+            background: #f8f9fa;
+            margin: 15px auto;
             display: block;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 100%;
+            height: auto;
+            transition: transform 0.2s;
         }
 
         .controls {
-            margin: 20px 0;
-            color: #666;
-            font-size: 14px;
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            font-size: 13px;
+            color: #555;
         }
 
         .btn {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 12px;
-            font-size: 16px;
+            padding: 16px 38px;
+            border-radius: 14px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            margin: 5px;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin: 8px 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 140px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
-        .game-over {
+        .modal {
             display: none;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 16px;
-            margin: 20px 0;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+            align-items: center;
+            justify-content: center;
         }
 
-        .game-over h2 {
-            color: #e74c3c;
-            margin-bottom: 10px;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            animation: scaleIn 0.4s;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .modal-score {
+            font-size: 52px;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 20px 0;
+            animation: numberPop 0.6s;
+        }
+
+        @keyframes numberPop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
         }
 
         .reward-display {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-            font-size: 20px;
+            font-size: 30px;
             font-weight: bold;
+            color: #10b981;
+            margin: 20px 0;
+            padding: 18px;
+            background: linear-gradient(135deg, #d4fc79, #96e6a1);
+            border-radius: 14px;
+            animation: shine 2s infinite;
         }
 
-        @keyframes appear {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
+        @keyframes shine {
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.8); }
+        }
+
+        .time-warning {
+            color: #ef4444;
+            font-size: 15px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 10px;
+            border: 2px solid #ef4444;
+            font-weight: 600;
+        }
+
+        .time-success {
+            color: #10b981;
+            font-size: 15px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            border: 2px solid #10b981;
+            font-weight: 600;
+        }
+
+        @keyframes confettiFall {
             to {
-                opacity: 1;
-                transform: scale(1);
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
             }
         }
 
-        .appear {
-            animation: appear 0.3s ease-out;
+        @media (max-width: 640px) {
+            .game-title { font-size: 32px; }
+            .stats-container { gap: 8px; }
+            .stat-box { padding: 10px; }
+            .stat-value { font-size: 18px; }
+            .btn { padding: 14px 28px; font-size: 15px; min-width: 120px; }
+            .modal-content { padding: 30px 20px; }
+            .modal-title { font-size: 28px; }
+            .modal-score { font-size: 42px; }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <div class="game-header">
-            <div class="game-title">🐍 Snake</div>
-            <p style="color: #666;">Eat apples, grow longer, earn coins!</p>
-        </div>
-
-        <div class="score-container">
-            <div class="score-box">
-                <div class="score-label">Score</div>
-                <div class="score-value" id="score">0</div>
+        <div class="game-title">🐍 SNAKE GAME</div>
+        <p style="color: #666; margin-bottom: 15px;">🍎 Eat & Grow | ⏱️ Play 5+ mins for full reward!</p>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
             </div>
-            <div class="score-box">
-                <div class="score-label">High Score</div>
-                <div class="score-value" id="highScore">0</div>
+            <div class="stat-box">
+                <div class="stat-label">Time</div>
+                <div class="stat-value" id="timer">0:00</div>
             </div>
-            <div class="score-box">
-                <div class="score-label">Length</div>
-                <div class="score-value" id="length">3</div>
+            <div class="stat-box">
+                <div class="stat-label">Length</div>
+                <div class="stat-value" id="length">3</div>
             </div>
         </div>
 
         <canvas id="gameCanvas" width="400" height="400"></canvas>
 
         <div class="controls">
-            <p>🎮 Use Arrow Keys to move</p>
-            <p>🍎 Eat apples to grow and score</p>
+            <p>🎮 Use Arrow Keys to control the snake</p>
+            <p>💡 Play 5+ minutes to earn maximum Evercoins!</p>
         </div>
 
-        <div class="game-over" id="gameOver">
-            <h2>🎮 Game Over!</h2>
-            <p style="font-size: 20px; margin: 10px 0;">Final Score: <strong id="finalScore">0</strong></p>
-            <div class="reward-display" id="rewardDisplay"></div>
-            <button class="btn" onclick="restartGame()">Play Again</button>
-            <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Close</button>
-        </div>
+        <button class="btn" onclick="startGame()" id="startBtn">🎮 Start Game</button>
+        <button class="btn" onclick="pauseGame()" id="pauseBtn" style="display:none;">⏸️ Pause</button>
+        <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #ef4444, #dc2626);">❌ Exit</button>
+    </div>
 
-        <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
-        <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Exit</button>
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">🎮 Game Over!</div>
+            <div class="modal-score" id="finalScore">Score: 0</div>
+            <div id="timeMessage"></div>
+            <div class="reward-display" id="rewardDisplay">🪙 +0 Evercoins</div>
+            <button class="btn" onclick="playAgain()">🔄 Play Again</button>
+            <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #ef4444, #dc2626);">❌ Close</button>
+        </div>
     </div>
 
     <script>
@@ -209,105 +308,202 @@
         let score = 0;
         let gameLoop = null;
         let gameSpeed = 100;
-        let highScore = localStorage.getItem('snakeHighScore') || 0;
-        document.getElementById('highScore').textContent = highScore;
+        let isPaused = false;
+        
+        // Time tracking
+        let gameStartTime = null;
+        let gameEndTime = null;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'eat':
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'gameover':
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'start':
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(554.37, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = '-10px';
+                    confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confetti.style.animation = 'confettiFall 3s linear forwards';
+                    confetti.style.zIndex = '9999';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        function updateTimer() {
+            elapsedSeconds++;
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const seconds = elapsedSeconds % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
 
         // Keyboard controls
         document.addEventListener('keydown', changeDirection);
 
         function changeDirection(event) {
-            const LEFT = 37;
-            const UP = 38;
-            const RIGHT = 39;
-            const DOWN = 40;
-
-            const keyPressed = event.keyCode;
-            const goingUp = dy === -1;
-            const goingDown = dy === 1;
-            const goingRight = dx === 1;
-            const goingLeft = dx === -1;
-
-            if (keyPressed === LEFT && !goingRight) {
-                dx = -1;
-                dy = 0;
-            }
-            if (keyPressed === UP && !goingDown) {
-                dx = 0;
-                dy = -1;
-            }
-            if (keyPressed === RIGHT && !goingLeft) {
-                dx = 1;
-                dy = 0;
-            }
-            if (keyPressed === DOWN && !goingUp) {
-                dx = 0;
-                dy = 1;
+            switch(event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    if (dy === 0) { dx = 0; dy = -1; }
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    if (dy === 0) { dx = 0; dy = 1; }
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    if (dx === 0) { dx = -1; dy = 0; }
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    if (dx === 0) { dx = 1; dy = 0; }
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    if (gameLoop && !isPaused) pauseGame();
+                    break;
             }
         }
 
         function startGame() {
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('gameOver').style.display = 'none';
             snake = [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}];
             dx = 1;
             dy = 0;
             score = 0;
-            gameSpeed = 100;
-            updateScore();
+            elapsedSeconds = 0;
+            isPaused = false;
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('length').textContent = snake.length;
+            document.getElementById('timer').textContent = '0:00';
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            gameStartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            
             placeFood();
+            playSound('start');
+            
+            if (gameLoop) clearInterval(gameLoop);
             gameLoop = setInterval(update, gameSpeed);
         }
 
-        function restartGame() {
+        function pauseGame() {
+            if (isPaused) {
+                gameLoop = setInterval(update, gameSpeed);
+                timerInterval = setInterval(updateTimer, 1000);
+                document.getElementById('pauseBtn').textContent = '⏸️ Pause';
+                isPaused = false;
+            } else {
+                clearInterval(gameLoop);
+                clearInterval(timerInterval);
+                document.getElementById('pauseBtn').textContent = '▶️ Resume';
+                isPaused = true;
+            }
+        }
+
+        function playAgain() {
+            document.getElementById('gameOverModal').style.display = 'none';
             startGame();
         }
 
         function update() {
-            // Move snake
-            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-
-            // Check wall collision
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+            moveSnake();
+            if (checkCollision()) {
                 gameOver();
                 return;
             }
-
-            // Check self collision
-            for (let i = 0; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
-                    gameOver();
-                    return;
-                }
-            }
-
-            snake.unshift(head);
-
-            // Check food collision
-            if (head.x === food.x && head.y === food.y) {
+            if (checkFoodCollision()) {
                 score += 10;
-                updateScore();
+                document.getElementById('score').textContent = score;
+                snake.push({...snake[snake.length - 1]});
+                document.getElementById('length').textContent = snake.length;
                 placeFood();
-                // Increase speed slightly
-                if (gameSpeed > 50) {
-                    gameSpeed -= 2;
-                    clearInterval(gameLoop);
-                    gameLoop = setInterval(update, gameSpeed);
-                }
-            } else {
-                snake.pop();
+                playSound('eat');
+                
+                // Visual feedback
+                canvas.style.transform = 'scale(1.02)';
+                setTimeout(() => canvas.style.transform = 'scale(1)', 100);
             }
-
             draw();
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            snake.pop();
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                return true;
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkFoodCollision() {
+            return snake[0].x === food.x && snake[0].y === food.y;
         }
 
         function draw() {
             // Clear canvas
-            ctx.fillStyle = '#f0f0f0';
+            ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Draw grid
-            ctx.strokeStyle = '#e0e0e0';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 0.5;
             for (let i = 0; i <= tileCount; i++) {
                 ctx.beginPath();
                 ctx.moveTo(i * gridSize, 0);
@@ -319,44 +515,66 @@
                 ctx.stroke();
             }
 
-            // Draw snake
-            snake.forEach((segment, index) => {
-                if (index === 0) {
-                    // Head
-                    ctx.fillStyle = '#11998e';
-                    ctx.shadowColor = 'rgba(17, 153, 142, 0.5)';
-                    ctx.shadowBlur = 10;
-                } else {
-                    // Body
-                    ctx.fillStyle = '#38ef7d';
-                    ctx.shadowBlur = 0;
-                }
-                ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
-                ctx.shadowBlur = 0;
-            });
-
-            // Draw food
-            ctx.fillStyle = '#e74c3c';
-            ctx.shadowColor = 'rgba(231, 76, 60, 0.5)';
-            ctx.shadowBlur = 15;
+            // Draw food with glow effect
+            const gradient = ctx.createRadialGradient(
+                food.x * gridSize + gridSize/2,
+                food.y * gridSize + gridSize/2,
+                gridSize/4,
+                food.x * gridSize + gridSize/2,
+                food.y * gridSize + gridSize/2,
+                gridSize
+            );
+            gradient.addColorStop(0, '#ef4444');
+            gradient.addColorStop(1, '#dc2626');
+            ctx.fillStyle = gradient;
             ctx.beginPath();
             ctx.arc(
-                food.x * gridSize + gridSize / 2,
-                food.y * gridSize + gridSize / 2,
-                gridSize / 2 - 2,
+                food.x * gridSize + gridSize/2,
+                food.y * gridSize + gridSize/2,
+                gridSize/2 - 2,
                 0,
-                Math.PI * 2
+                2 * Math.PI
             );
             ctx.fill();
-            ctx.shadowBlur = 0;
+
+            // Draw snake with gradient
+            snake.forEach((segment, index) => {
+                const segmentGradient = ctx.createLinearGradient(
+                    segment.x * gridSize,
+                    segment.y * gridSize,
+                    segment.x * gridSize + gridSize,
+                    segment.y * gridSize + gridSize
+                );
+                
+                if (index === 0) {
+                    segmentGradient.addColorStop(0, '#667eea');
+                    segmentGradient.addColorStop(1, '#764ba2');
+                } else {
+                    segmentGradient.addColorStop(0, '#a78bfa');
+                    segmentGradient.addColorStop(1, '#c084fc');
+                }
+                
+                ctx.fillStyle = segmentGradient;
+                ctx.fillRect(
+                    segment.x * gridSize + 1,
+                    segment.y * gridSize + 1,
+                    gridSize - 2,
+                    gridSize - 2
+                );
+                
+                // Eyes for head
+                if (index === 0) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(segment.x * gridSize + 5, segment.y * gridSize + 5, 4, 4);
+                    ctx.fillRect(segment.x * gridSize + 11, segment.y * gridSize + 5, 4, 4);
+                }
+            });
         }
 
         function placeFood() {
-            food = {
-                x: Math.floor(Math.random() * tileCount),
-                y: Math.floor(Math.random() * tileCount)
-            };
-
+            food.x = Math.floor(Math.random() * tileCount);
+            food.y = Math.floor(Math.random() * tileCount);
+            
             // Make sure food doesn't spawn on snake
             for (let segment of snake) {
                 if (food.x === segment.x && food.y === segment.y) {
@@ -366,36 +584,55 @@
             }
         }
 
-        function updateScore() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('length').textContent = snake.length;
+        function gameOver() {
+            clearInterval(gameLoop);
+            clearInterval(timerInterval);
+            gameLoop = null;
+            gameEndTime = Date.now();
+            
+            playSound('gameover');
+            
+            const playTimeMinutes = elapsedSeconds / 60;
+            
+            document.getElementById('finalScore').textContent = `Score: ${score}`;
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'inline-block';
 
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('snakeHighScore', highScore);
-                document.getElementById('highScore').textContent = highScore;
+            let reward = 0;
+            let timeMessage = '';
+            
+            // Reward calculation based on time and score
+            if (playTimeMinutes < 2) {
+                timeMessage = '<div class="time-warning">⚠️ Played less than 2 minutes - No reward!</div>';
+                reward = 0;
+            } else if (score < 50) {
+                timeMessage = '<div class="time-warning">📊 Low score - Minimum reward only</div>';
+                reward = 20;
+            } else if (playTimeMinutes >= 5) {
+                // Full reward calculation for 5+ minutes
+                reward = Math.floor(score / 10) * 5 + Math.floor(snake.length / 5) * 10;
+                reward = Math.max(50, Math.min(200, reward));
+                timeMessage = '<div class="time-success">✅ Great session! Full reward earned!</div>';
+                createConfetti();
+            } else {
+                // Partial reward for 2-5 minutes
+                const timeRatio = playTimeMinutes / 5;
+                const baseReward = Math.floor(score / 10) * 3 + Math.floor(snake.length / 5) * 5;
+                reward = Math.floor(baseReward * timeRatio);
+                reward = Math.max(30, Math.min(150, reward));
+                timeMessage = `<div style="color: #f59e0b; padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; margin: 12px 0; font-weight: 600;">⏱️ Partial reward (${Math.floor(playTimeMinutes)} min). Play 5+ min for full reward!</div>`;
+            }
+
+            document.getElementById('timeMessage').innerHTML = timeMessage;
+            document.getElementById('rewardDisplay').textContent = `🪙 +${reward} Evercoins Earned!`;
+            document.getElementById('gameOverModal').style.display = 'flex';
+
+            if (reward > 0) {
+                submitScore(score, reward, elapsedSeconds);
             }
         }
 
-        function gameOver() {
-            clearInterval(gameLoop);
-            gameLoop = null;
-
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOver').style.display = 'block';
-            document.getElementById('gameOver').classList.add('appear');
-
-            // Calculate reward
-            const reward = Math.floor(score / 10) * 3 + Math.floor(snake.length / 5) * 5;
-            const clampedReward = Math.max(30, Math.min(150, reward));
-
-            document.getElementById('rewardDisplay').textContent = `🪙 +${clampedReward} Evercoins Earned!`;
-
-            // Submit score
-            submitScore(score, clampedReward);
-        }
-
-        function submitScore(score, reward) {
+        function submitScore(score, reward, playTime) {
             fetch('/chat/games/submit-score/', {
                 method: 'POST',
                 headers: {
@@ -403,9 +640,10 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    game: 'snake',
+                    game_type: 'snake',
                     score: score,
-                    reward: reward
+                    reward: reward,
+                    play_time: playTime
                 })
             })
             .then(response => response.json())
@@ -414,9 +652,7 @@
                     console.log('Score submitted successfully!');
                 }
             })
-            .catch(error => {
-                console.error('Error submitting score:', error);
-            });
+            .catch(error => console.error('Error:', error));
         }
 
         function getCookie(name) {

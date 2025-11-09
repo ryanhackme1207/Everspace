@@ -2630,7 +2630,7 @@ def game_memory(request):
 @login_required
 @require_http_methods(["POST"])
 def submit_game_score(request):
-    """Submit game score and award Evercoins"""
+    """Submit game score and award Evercoins with time validation"""
     try:
         from .models import GameSession
         import json
@@ -2638,14 +2638,29 @@ def submit_game_score(request):
         data = json.loads(request.body)
         game_type = data.get('game_type')
         score = int(data.get('score', 0))
+        play_time = int(data.get('play_time', 0))  # in seconds
+        reward = int(data.get('reward', 0))  # pre-calculated from frontend
         
         # Validate game type
         valid_games = ['2048', 'snake', 'flappy', 'memory']
         if game_type not in valid_games:
             return JsonResponse({'success': False, 'error': 'Invalid game type'}, status=400)
         
-        # Calculate reward
-        reward = GameSession.calculate_reward(game_type, score)
+        # Server-side validation of play time and reward
+        play_time_minutes = play_time / 60
+        
+        # If played less than 2 minutes, no reward
+        if play_time_minutes < 2:
+            reward = 0
+        # If score is very low, minimum reward only
+        elif score < 50 and play_time_minutes < 5:
+            reward = min(reward, 20)
+        # If played less than 5 minutes, cap the reward
+        elif play_time_minutes < 5:
+            reward = min(reward, 150)
+        # Full reward for 5+ minutes
+        else:
+            reward = min(reward, 200)
         
         # Create game session
         session = GameSession.objects.create(
@@ -2656,16 +2671,17 @@ def submit_game_score(request):
             completed=True
         )
         
-        # Award Evercoins
-        profile = request.user.profile
-        profile.evercoin += reward
-        profile.save()
+        # Award Evercoins only if reward > 0
+        if reward > 0:
+            profile = request.user.profile
+            profile.evercoin += reward
+            profile.save()
         
         return JsonResponse({
             'success': True,
             'reward': reward,
-            'total_evercoin': profile.evercoin,
-            'message': f'Congratulations! You earned {reward} Evercoins!'
+            'total_evercoin': request.user.profile.evercoin,
+            'message': f'Congratulations! You earned {reward} Evercoins!' if reward > 0 else 'Play longer to earn rewards!'
         })
         
     except Exception as e:

@@ -2143,9 +2143,18 @@
                 <div id="soundboard-modal" class="gif-picker" style="display: none;">
                     <div class="gif-picker-header">
                         <span>🔊 Soundboard - Share Sound Effects</span>
+                        <span id="sound-cooldown-indicator" style="display: none; margin-left: auto; margin-right: 1rem; padding: 0.3rem 0.8rem; background: rgba(255, 107, 107, 0.2); border: 1px solid var(--accent-coral); border-radius: 12px; font-size: 0.8rem; color: var(--accent-coral);">
+                            ⏳ Wait <span id="cooldown-seconds">0</span>s
+                        </span>
                         <button class="gif-close" id="soundboard-close">&times;</button>
                     </div>
                     <div style="padding: 1rem; max-height: 450px; overflow-y: auto;">
+                        <!-- Cooldown Notice -->
+                        <div style="margin-bottom: 1rem; padding: 0.5rem 0.8rem; background: rgba(78, 205, 196, 0.1); border-left: 3px solid var(--accent-teal); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary);">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Cooldown:</strong> 6 seconds between sounds to prevent spam
+                        </div>
+                        
                         <!-- Search Bar -->
                         <div style="margin-bottom: 1rem;">
                             <input type="text" id="sound-search" class="gif-search-input" placeholder="Search sounds..." style="width: 100%; padding: 0.6rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary);">
@@ -2748,12 +2757,27 @@
                 const displayName = data.display_name || data.username;
                 const isCurrentUser = data.username === currentUsername;
                 
-                // Play the sound for everyone
-                if (soundEnabled) {
+                // Play the sound for everyone (with better error handling)
+                if (soundEnabled && data.sound_url) {
                     try {
-                        const audio = new Audio(data.sound_url);
+                        const audio = new Audio();
+                        audio.crossOrigin = 'anonymous';
                         audio.volume = 0.7;
-                        audio.play().catch(err => console.log('Sound play error:', err));
+                        audio.src = data.sound_url;
+                        
+                        audio.play().catch(err => {
+                            console.log('Direct play failed, trying blob method:', err);
+                            // Try blob method as fallback
+                            fetch(data.sound_url, { mode: 'cors' })
+                                .then(response => response.blob())
+                                .then(blob => {
+                                    const blobUrl = URL.createObjectURL(blob);
+                                    const newAudio = new Audio(blobUrl);
+                                    newAudio.volume = 0.7;
+                                    return newAudio.play();
+                                })
+                                .catch(blobErr => console.log('Blob method also failed:', blobErr));
+                        });
                     } catch (err) {
                         console.log('Sound creation error:', err);
                     }
@@ -2810,15 +2834,50 @@
                 if (replayBtn) {
                     replayBtn.addEventListener('click', function() {
                         const soundUrl = this.dataset.soundUrl;
-                        const audio = new Audio(soundUrl);
-                        audio.volume = 0.7;
-                        audio.play().catch(err => console.log('Replay error:', err));
+                        const btnElement = this;
                         
                         // Visual feedback
-                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Playing...';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-play"></i> Replay';
-                        }, 1000);
+                        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Playing...';
+                        btnElement.disabled = true;
+                        
+                        // Try to play with fallback
+                        const audio = new Audio();
+                        audio.crossOrigin = 'anonymous';
+                        audio.volume = 0.7;
+                        audio.src = soundUrl;
+                        
+                        audio.play().then(() => {
+                            console.log('Replay successful');
+                            setTimeout(() => {
+                                btnElement.innerHTML = '<i class="fas fa-play"></i> Replay';
+                                btnElement.disabled = false;
+                            }, 1000);
+                        }).catch(err => {
+                            console.log('Replay failed, trying blob:', err);
+                            // Try blob method
+                            fetch(soundUrl, { mode: 'cors' })
+                                .then(response => response.blob())
+                                .then(blob => {
+                                    const blobUrl = URL.createObjectURL(blob);
+                                    const newAudio = new Audio(blobUrl);
+                                    newAudio.volume = 0.7;
+                                    return newAudio.play();
+                                })
+                                .then(() => {
+                                    setTimeout(() => {
+                                        btnElement.innerHTML = '<i class="fas fa-play"></i> Replay';
+                                        btnElement.disabled = false;
+                                    }, 1000);
+                                })
+                                .catch(blobErr => {
+                                    console.error('Both replay methods failed:', blobErr);
+                                    btnElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                                    setTimeout(() => {
+                                        btnElement.innerHTML = '<i class="fas fa-play"></i> Replay';
+                                        btnElement.disabled = false;
+                                    }, 2000);
+                                });
+                        });
                     });
                 }
                 
@@ -4464,7 +4523,7 @@
             const soundSearch = document.getElementById('sound-search');
             const soundCategories = document.querySelectorAll('.sound-category-btn');
 
-            // Popular sound effects with public URLs
+            // Popular sound effects with working URLs
             const sounds = [
                 // Meme Sounds
                 { name: 'Bruh', emoji: '😑', category: 'meme', url: 'https://www.myinstants.com/media/sounds/movie_1.mp3', duration: '1s' },
@@ -4501,6 +4560,41 @@
 
             let currentCategory = 'all';
             let currentlyPlaying = null;
+            let lastSoundTime = 0;
+            const SOUND_COOLDOWN = 6000; // 6 seconds in milliseconds
+            let cooldownInterval = null;
+
+            // Update cooldown indicator
+            function updateCooldownIndicator() {
+                const cooldownIndicator = document.getElementById('sound-cooldown-indicator');
+                const cooldownSeconds = document.getElementById('cooldown-seconds');
+                
+                if (!cooldownIndicator || !cooldownSeconds) return;
+                
+                const currentTime = Date.now();
+                const timeSinceLastSound = currentTime - lastSoundTime;
+                
+                if (timeSinceLastSound < SOUND_COOLDOWN) {
+                    const remainingMs = SOUND_COOLDOWN - timeSinceLastSound;
+                    const remainingSeconds = Math.ceil(remainingMs / 1000);
+                    
+                    cooldownIndicator.style.display = 'flex';
+                    cooldownSeconds.textContent = remainingSeconds;
+                } else {
+                    cooldownIndicator.style.display = 'none';
+                    if (cooldownInterval) {
+                        clearInterval(cooldownInterval);
+                        cooldownInterval = null;
+                    }
+                }
+            }
+
+            // Start cooldown timer
+            function startCooldownTimer() {
+                updateCooldownIndicator();
+                if (cooldownInterval) clearInterval(cooldownInterval);
+                cooldownInterval = setInterval(updateCooldownIndicator, 100);
+            }
 
             // Toggle soundboard modal
             soundboardBtn.addEventListener('click', (e) => {
@@ -4519,6 +4613,12 @@
                 
                 if (!isVisible) {
                     renderSounds();
+                    updateCooldownIndicator();
+                } else {
+                    if (cooldownInterval) {
+                        clearInterval(cooldownInterval);
+                        cooldownInterval = null;
+                    }
                 }
             });
 
@@ -4582,21 +4682,70 @@
 
             // Play and share sound
             function playAndShareSound(sound, btnElement) {
+                // Check cooldown (6 seconds between sounds)
+                const currentTime = Date.now();
+                const timeSinceLastSound = currentTime - lastSoundTime;
+                
+                if (timeSinceLastSound < SOUND_COOLDOWN) {
+                    const remainingSeconds = Math.ceil((SOUND_COOLDOWN - timeSinceLastSound) / 1000);
+                    showNotification(`⏳ Please wait ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''} before playing another sound`, 'warning');
+                    return;
+                }
+                
                 // Stop current sound
                 stopCurrentSound();
                 
-                // Create audio element
-                const audio = new Audio(sound.url);
-                currentlyPlaying = { audio, button: btnElement };
+                // Update last sound time
+                lastSoundTime = currentTime;
                 
+                // Start cooldown timer
+                startCooldownTimer();
+                
+                // Create audio element with error handling
+                const audio = new Audio();
+                audio.crossOrigin = 'anonymous'; // Handle CORS
+                audio.volume = 0.7;
+                
+                currentlyPlaying = { audio, button: btnElement };
                 btnElement.classList.add('playing');
                 
-                // Play sound
-                audio.play().catch(err => {
-                    console.error('Error playing sound:', err);
-                    showNotification('Error playing sound', 'error');
-                    btnElement.classList.remove('playing');
-                });
+                // Set source and load
+                audio.src = sound.url;
+                audio.load();
+                
+                // Play sound with retry logic
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log(`Playing sound: ${sound.name}`);
+                        // Share sound in chat after successful play
+                        shareSound(sound);
+                    }).catch(err => {
+                        console.error('Error playing sound:', err);
+                        btnElement.classList.remove('playing');
+                        
+                        // Try alternative: using fetch and blob
+                        fetch(sound.url, { mode: 'cors' })
+                            .then(response => response.blob())
+                            .then(blob => {
+                                const blobUrl = URL.createObjectURL(blob);
+                                const newAudio = new Audio(blobUrl);
+                                newAudio.volume = 0.7;
+                                return newAudio.play();
+                            })
+                            .then(() => {
+                                console.log(`Playing sound via blob: ${sound.name}`);
+                                shareSound(sound);
+                            })
+                            .catch(blobErr => {
+                                console.error('Blob fallback failed:', blobErr);
+                                showNotification(`⚠️ Could not play: ${sound.name}`, 'error');
+                                // Reset cooldown if sound failed
+                                lastSoundTime = 0;
+                            });
+                    });
+                }
                 
                 // Remove playing state when finished
                 audio.addEventListener('ended', () => {
@@ -4604,8 +4753,12 @@
                     currentlyPlaying = null;
                 });
                 
-                // Share sound in chat
-                shareSound(sound);
+                // Remove playing state on error
+                audio.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                    btnElement.classList.remove('playing');
+                    currentlyPlaying = null;
+                });
             }
 
             // Stop current sound
