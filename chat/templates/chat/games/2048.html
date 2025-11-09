@@ -619,6 +619,7 @@
         let gameOver = false;
         let newTilePositions = [];
         let mergedTilePositions = [];
+        let gameStartTime = Date.now(); // Track game start time
 
         // Sound effects using Web Audio API
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -689,6 +690,7 @@
             gameOver = false;
             newTilePositions = [];
             mergedTilePositions = [];
+            gameStartTime = Date.now(); // Reset game start time
             document.getElementById('score').textContent = score;
             document.getElementById('best-score').textContent = bestScore;
             addNewTile();
@@ -937,6 +939,24 @@
         async function endGame() {
             document.getElementById('final-score').textContent = score;
             
+            // Calculate play time in seconds
+            const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            
+            // Calculate reward based on score (100+ required)
+            let reward = 0;
+            if (score >= 100) {
+                // Base reward: 1 coin per 10 points
+                reward = Math.floor(score / 10);
+                
+                // Bonus for reaching milestones
+                if (score >= 2048) reward += 100; // Reached 2048 tile
+                else if (score >= 1024) reward += 50;
+                else if (score >= 512) reward += 25;
+                
+                // Cap at 200 Evercoins
+                reward = Math.min(reward, 200);
+            }
+            
             // Submit score to server
             try {
                 const response = await fetch('/games/submit-score/', {
@@ -947,7 +967,9 @@
                     },
                     body: JSON.stringify({
                         game_type: '2048',
-                        score: score
+                        score: score,
+                        play_time: playTime,
+                        reward: reward
                     })
                 });
 
@@ -955,6 +977,13 @@
                 if (data.success) {
                     document.getElementById('reward-amount').textContent = data.reward;
                     document.getElementById('evercoin').textContent = data.total_evercoin;
+                    
+                    // Show reward message
+                    if (data.reward > 0) {
+                        console.log(`🎉 Earned ${data.reward} Evercoins! Score: ${score}`);
+                    } else {
+                        console.log('⚠️ Score must be 100+ to earn rewards');
+                    }
                 } else {
                     document.getElementById('reward-amount').textContent = '0';
                 }

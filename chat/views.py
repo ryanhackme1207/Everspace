@@ -1338,6 +1338,13 @@ def unblock_friend(request):
                 'message': f'{username} is not blocked.'
             })
         
+        # Only the person who blocked (the sender) can unblock
+        if friendship.sender != request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot unblock this user. Only the person who blocked can unblock.'
+            })
+        
         # Delete the blocked friendship so they can interact again
         friendship.delete()
         
@@ -2664,18 +2671,38 @@ def submit_game_score(request):
         
         # Award Evercoins only if reward > 0
         if reward > 0:
-            profile = request.user.profile
+            # Get or create user profile
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(user=request.user)
+            
+            if created:
+                print(f'[GAME] Created profile for {request.user.username}')
+            
+            # Award coins
             profile.evercoin += reward
             profile.save()
+            
+            print(f'[GAME] {request.user.username} earned {reward} coins. Total: {profile.evercoin}')
+        
+        # Get current evercoin balance
+        try:
+            from .models import UserProfile
+            profile = UserProfile.objects.get(user=request.user)
+            total_evercoin = profile.evercoin
+        except UserProfile.DoesNotExist:
+            total_evercoin = 0
         
         return JsonResponse({
             'success': True,
             'reward': reward,
-            'total_evercoin': request.user.profile.evercoin,
-            'message': f'Congratulations! You earned {reward} Evercoins!' if reward > 0 else 'Play longer to earn rewards!'
+            'total_evercoin': total_evercoin,
+            'message': f'Congratulations! You earned {reward} Evercoins!' if reward > 0 else 'Score must be 100+ to earn rewards!'
         })
         
     except Exception as e:
+        import traceback
+        print(f'[GAME ERROR] {str(e)}')
+        print(traceback.format_exc())
         return JsonResponse({
             'success': False,
             'error': str(e)

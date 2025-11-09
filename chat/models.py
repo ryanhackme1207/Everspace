@@ -738,3 +738,22 @@ class GameSession(models.Model):
         return rewards.get(game_type, lambda s: 10)(score)
 
 
+# Signal to automatically create UserProfile when User is created
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Create UserProfile when a new User is created"""
+    if created:
+        UserProfile.objects.create(user=instance)
+        print(f'[SIGNAL] Created profile for new user: {instance.username}')
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Ensure UserProfile exists when User is saved"""
+    if not hasattr(instance, 'profile'):
+        UserProfile.objects.create(user=instance)
+        print(f'[SIGNAL] Created missing profile for user: {instance.username}')
+
+
