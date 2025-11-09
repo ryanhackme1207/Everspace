@@ -341,8 +341,8 @@
             position: absolute;
             bottom: 100%;
             left: 0;
-            width: 350px;
-            max-height: 400px;
+            width: 450px;
+            max-height: 500px;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: 16px;
@@ -352,12 +352,48 @@
             margin-bottom: 10px;
         }
 
+        .picker-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .picker-title {
+            color: var(--accent-teal);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .picker-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .picker-close:hover {
+            background: rgba(255,107,107,0.2);
+            color: var(--accent-coral);
+        }
+
         .emoji-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(10, 1fr);
             gap: 0.25rem;
             padding: 1rem;
             overflow-y: auto;
+            max-height: 420px;
         }
 
         .emoji-item {
@@ -506,6 +542,12 @@
             <div class="input-form" style="position: relative;">
                 <!-- Emoji Picker -->
                 <div class="emoji-picker" id="emojiPicker">
+                    <div class="picker-header">
+                        <span class="picker-title">😊 Choose an Emoji</span>
+                        <button class="picker-close" id="emojiClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                     <div class="emoji-grid" id="emojiGrid"></div>
                 </div>
 
@@ -639,6 +681,9 @@
             });
         }
 
+        // Store friend's display name (will be updated if nickname exists)
+        let friendDisplayName = friendUsername;
+
         function addMessage(content, isSent, timestamp) {
             const container = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
@@ -647,19 +692,22 @@
             const isGif = content.includes('[GIF]');
             let contentHtml;
             if (isGif) {
-                const gifUrl = content.replace('[GIF]', '').replace('[/GIF]', '');
+                const gifUrl = content.replace(/\[GIF\]/g, '').trim();
                 contentHtml = `<img src="${gifUrl}" alt="GIF" class="message-gif">`;
             } else {
-                contentHtml = content;
+                contentHtml = escapeHtml(content);
             }
+            
+            const displayName = isSent ? 'You' : friendDisplayName;
+            const avatarLetter = (isSent ? currentUsername : friendUsername).substring(0, 1).toUpperCase();
             
             messageDiv.innerHTML = `
                 <div class="message-avatar">
-                    ${(isSent ? currentUsername : friendUsername).substring(0, 1).toUpperCase()}
+                    ${avatarLetter}
                 </div>
                 <div class="message-content-wrapper">
                     <div class="message-sender">
-                        ${isSent ? 'You' : friendUsername}
+                        ${displayName}
                     </div>
                     <div class="message-bubble">
                         ${contentHtml}
@@ -671,6 +719,12 @@
             `;
             container.appendChild(messageDiv);
             scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Emoji Picker
@@ -694,6 +748,11 @@
             const gifPicker = document.getElementById('gifPicker');
             gifPicker.style.display = 'none';
             picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        // Close emoji picker
+        document.getElementById('emojiClose').addEventListener('click', () => {
+            document.getElementById('emojiPicker').style.display = 'none';
         });
 
         // GIF Picker
@@ -822,6 +881,7 @@
                 if (data.success && data.nickname) {
                     document.getElementById('nicknameInput').value = data.nickname;
                     document.getElementById('displayName').textContent = data.nickname;
+                    friendDisplayName = data.nickname; // Update display name for messages
                 }
             });
 
