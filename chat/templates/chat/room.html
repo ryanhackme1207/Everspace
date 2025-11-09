@@ -1500,12 +1500,12 @@
                             {{ user.first_name|default:user.username }}
                         </div>
                         {% if is_room_host %}
-                            <a href="{% url 'room_settings' room_name=room_name %}" class="action-btn settings-btn" title="Room Settings (Host Only)">
+                            <a href="{% url 'chat:room_settings' room_name=room_name %}" class="action-btn settings-btn" title="Room Settings (Host Only)">
                                 <i class="fas fa-cog me-1"></i>Settings
                             </a>
                         {% endif %}
                         {% if is_room_creator %}
-                            <a href="{% url 'delete_room' room_name=room_name %}" class="action-btn delete-room-btn" title="Delete Room (Creator Only)">
+                            <a href="{% url 'chat:delete_room' room_name=room_name %}" class="action-btn delete-room-btn" title="Delete Room (Creator Only)">
                                 <i class="fas fa-trash me-1"></i>Delete Room
                             </a>
                         {% endif %}
@@ -2297,7 +2297,7 @@
             }
             
             // Send delete request via AJAX
-            fetch('{% url "unsend_message" %}', {
+            fetch('{% url "chat:unsend_message" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -2450,7 +2450,7 @@
         function sendFriendRequest(username) {
             hideContextMenu();
             
-            fetch('{% url "send_friend_request" %}', {
+            fetch('{% url "chat:send_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -2476,7 +2476,7 @@
         function kickUser(username) {
             console.log(`Attempting to kick user: ${username}`);
             
-            fetch("{% url 'kick_member' %}", {
+            fetch("{% url 'chat:kick_member' %}", {
                 method: 'POST',
                 credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
@@ -2508,7 +2508,7 @@
             console.log(`Attempting to ban user: ${username}`);
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
 
-            fetch("{% url 'ban_member' %}", {
+            fetch("{% url 'chat:ban_member' %}", {
                 method: 'POST',
                 credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
@@ -2540,7 +2540,7 @@
         function transferOwnership(username) {
             console.log(`Attempting to transfer ownership to: ${username}`);
             
-            fetch("{% url 'transfer_ownership' %}", {
+            fetch("{% url 'chat:transfer_ownership' %}", {
                 method: 'POST',
                 credentials: 'same-origin', // Ensure cookies are sent
                 headers: {
@@ -2902,7 +2902,7 @@
             // Load gifts from server
             async function loadGifts() {
                 try {
-                    const url = '{% url "get_gifts" %}';
+                    const url = '{% url "chat:get_gifts" %}';
                     console.log('Loading gifts from URL:', url);
                     const response = await fetch(url, {
                         method: 'GET',
@@ -2958,7 +2958,7 @@
                 }
 
                 try {
-                    const response = await fetch(`{% url "search_gifts" %}?q=${encodeURIComponent(query)}`);
+                    const response = await fetch(`{% url "chat:search_gifts" %}?q=${encodeURIComponent(query)}`);
                     const data = await response.json();
                     
                     if (data.success) {

@@ -302,10 +302,10 @@
                 </div>
             </div>
             <div class="header-actions">
-                <a href="{% url 'friends_list' %}" class="btn-header">
+                <a href="{% url 'chat:friends_list' %}" class="btn-header">
                     <i class="fas fa-users me-1"></i>Friends
                 </a>
-                <a href="{% url 'chat_index' %}" class="btn-header">
+                <a href="{% url 'chat:chat_index' %}" class="btn-header">
                     <i class="fas fa-home me-1"></i>Rooms
                 </a>
             </div>
@@ -523,7 +523,7 @@
 
         // Mark all messages from this friend as read when viewing chat
         function markMessagesAsRead() {
-            fetch('{% url "mark_all_notifications_read" %}', {
+            fetch('{% url "chat:mark_all_notifications_read" %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')

@@ -403,7 +403,7 @@
                 return;
             }
 
-            fetch('{% url "respond_friend_request" %}', {
+            fetch('{% url "chat:respond_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

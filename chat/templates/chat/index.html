@@ -1531,7 +1531,7 @@
                                 <p class="friend-status">{{ request.created_at|timesince }} ago</p>
                             </div>
                             <div class="friend-actions">
-                                <a href="{% url 'view_profile' request.sender.username %}" class="btn-friend-accept" title="View Profile">
+                                <a href="{% url 'chat:view_profile' request.sender.username %}" class="btn-friend-accept" title="View Profile">
                                     <i class="fas fa-user"></i>
                                 </a>
                                 <button class="btn-friend-accept" onclick="respondToRequest({{ request.id }}, 'accepted')" title="Accept">
@@ -1574,10 +1574,10 @@
                                     </p>
                                 </div>
                                 <div class="friend-actions">
-                                    <a href="{% url 'view_profile' friend.username %}" class="btn-friend-chat" title="View Profile">
+                                    <a href="{% url 'chat:view_profile' friend.username %}" class="btn-friend-chat" title="View Profile">
                                         <i class="fas fa-user"></i>
                                     </a>
-                                    <a href="{% url 'private_chat' friend.username %}" class="btn-friend-chat" title="Send Message">
+                                    <a href="{% url 'chat:private_chat' friend.username %}" class="btn-friend-chat" title="Send Message">
                                         <i class="fas fa-comment"></i>
                                     </a>
                                     <button class="btn-friend-remove" onclick="removeFriend('{{ friend.username }}')" title="Remove Friend">
@@ -2009,7 +2009,7 @@
 
         // Friend Request Functions
         function respondToRequest(requestId, status) {
-            fetch('{% url "respond_friend_request" %}', {
+            fetch('{% url "chat:respond_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -2038,7 +2038,7 @@
                 return;
             }
 
-            fetch('{% url "send_friend_request" %}', {
+            fetch('{% url "chat:send_friend_request" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

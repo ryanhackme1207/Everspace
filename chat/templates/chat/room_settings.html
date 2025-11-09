@@ -565,7 +565,7 @@
                 return;
             }
 
-            fetch('{% url "kick_member" %}', {
+            fetch('{% url "chat:kick_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -592,7 +592,7 @@
             const reason = prompt(`Enter reason for banning ${username} (optional):`);
             if (reason === null) return; // User canceled
 
-            fetch('{% url "ban_member" %}', {
+            fetch('{% url "chat:ban_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -620,7 +620,7 @@
                 return;
             }
 
-            fetch('{% url "unban_member" %}', {
+            fetch('{% url "chat:unban_member" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
