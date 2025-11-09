@@ -1321,6 +1321,19 @@
             gap: 0.5rem;
         }
 
+        .intimacy-badge-small {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.4rem;
+            background: linear-gradient(135deg, #ec4899, #f59e0b);
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 0.3rem;
+            white-space: nowrap;
+        }
+
         /* Very Small Screen Fixes */
         @media (max-width: 576px) {
             .chat-container {
@@ -1749,6 +1762,29 @@
         // Active users management
         let activeUsers = new Map();
 
+        // Fetch and display intimacy for a user
+        async function fetchAndDisplayIntimacy(username) {
+            try {
+                const userItemDiv = document.querySelector(`.user-item[data-username="${username}"]`);
+                if (!userItemDiv) return;
+
+                const intimacyBadge = userItemDiv.querySelector('.intimacy-badge-small');
+                if (!intimacyBadge) return;
+
+                // Fetch intimacy using username
+                const response = await fetch(`{% url 'chat:get_user_intimacy' %}?username=${encodeURIComponent(username)}`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.success && data.intimacy && data.intimacy > 0) {
+                    intimacyBadge.textContent = `💖 ${data.intimacy}`;
+                    intimacyBadge.style.display = 'inline-flex';
+                }
+            } catch (error) {
+                console.error('Error fetching intimacy:', error);
+            }
+        }
+
         // Enhanced function to update the online users list
         function updateUsersList() {
             const userListDiv = document.getElementById('user-list');
@@ -1792,9 +1828,12 @@
                                         animation: pulse 2s infinite;"></div>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-weight: ${isCurrentUser ? '600' : '500'}; color: ${isCurrentUser ? 'white' : 'rgba(255,255,255,0.9)'};
-                                        font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                ${displayName}
+                            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                                <div style="font-weight: ${isCurrentUser ? '600' : '500'}; color: ${isCurrentUser ? 'white' : 'rgba(255,255,255,0.9)'};
+                                            font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${displayName}
+                                </div>
+                                ${!isCurrentUser ? '<span class="intimacy-badge-small" data-username="' + username + '" style="display: none;">💖 0</span>' : ''}
                             </div>
                             ${isCurrentUser ? '<div style="font-size: 0.7rem; color: rgba(255,255,255,0.8);">(You)</div>' : ''}
                         </div>
@@ -1804,6 +1843,15 @@
                     </div>
                 `;
             }).join('');
+            
+            // After rendering, fetch intimacy for all non-current users
+            setTimeout(() => {
+                Array.from(activeUsers.keys()).forEach(username => {
+                    if (username !== currentUsername) {
+                        fetchAndDisplayIntimacy(username);
+                    }
+                });
+            }, 100);
 
             userListDiv.innerHTML = `
                 <h5 style="color: white; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600;">
@@ -2206,7 +2254,7 @@
             senderInfo.textContent = data.sender_display;
             emojiDisplay.textContent = data.gift_emoji;
             receiverInfo.innerHTML = `sent ${data.gift_name} to<br>${data.recipient_display}`;
-            intimacyBadge.innerHTML = `💖 +${data.intimacy_gained} 亲密度 (Total: ${data.intimacy_total})`;
+            intimacyBadge.innerHTML = `💖 +${data.intimacy_gained} Intimacy (Total: ${data.intimacy_total})`;
             
             // Show overlay
             overlay.style.display = 'flex';

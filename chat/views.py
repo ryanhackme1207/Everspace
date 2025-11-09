@@ -1872,7 +1872,7 @@ def send_gift_new(request, room_name):
         
         return JsonResponse({
             'success': True,
-            'message': f'Gift sent! +{intimacy_points} 亲密度',
+            'message': f'Gift sent! +{intimacy_points} Intimacy',
             'transaction_id': transaction.id,
             'remaining_evercoin': sender_profile.evercoin,
             'animation': gift.animation,
@@ -1897,11 +1897,17 @@ def get_user_intimacy(request):
     try:
         from .models import Intimacy
         
+        # Support both user_id and username parameters
         target_user_id = request.GET.get('user_id')
-        if not target_user_id:
-            return JsonResponse({'success': False, 'error': 'Missing user_id'}, status=400)
+        target_username = request.GET.get('username')
         
-        target_user = get_object_or_404(User, id=target_user_id)
+        if target_user_id:
+            target_user = get_object_or_404(User, id=target_user_id)
+        elif target_username:
+            target_user = get_object_or_404(User, username=target_username)
+        else:
+            return JsonResponse({'success': False, 'error': 'Missing user_id or username'}, status=400)
+        
         points = Intimacy.get_intimacy(request.user, target_user)
         
         return JsonResponse({
