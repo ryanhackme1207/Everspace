@@ -474,3 +474,390 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Mark an arbitrary username offline (used by idle pruning / disconnect)."""
         if hasattr(self, 'room_name'):
             await self._set_member_status(username, 'offline')
+
+
+class Game2048Consumer(AsyncWebsocketConsumer):
+    """WebSocket consumer for multiplayer 2048 game"""
+    
+    async def connect(self):
+        if not self.scope["user"].is_authenticated:
+            await self.close()
+            return
+            
+        self.user = self.scope["user"]
+        self.game_id = self.scope['url_route']['kwargs'].get('game_id', None)
+        
+        if not self.game_id:
+            await self.close()
+            return
+        
+        self.game_group_name = f'game2048_{self.game_id}'
+        
+        # Join game group
+        await self.channel_layer.group_add(
+            self.game_group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+        
+        # Get game state and send to player
+        game_state = await self.get_game_state()
+        if game_state:
+            await self.send(text_data=json.dumps({
+                'type': 'game_state',
+                'game': game_state
+            }))
+    
+    async def disconnect(self, close_code):
+        if hasattr(self, 'game_group_name'):
+            await self.channel_layer.group_discard(
+                self.game_group_name,
+                self.channel_name
+            )
+    
+    async def receive(self, text_data):
+        """Handle incoming messages"""
+        try:
+            data = json.loads(text_data)
+            message_type = data.get('type')
+            
+            if message_type == 'find_match':
+                await self.handle_find_match(data)
+            elif message_type == 'move':
+                await self.handle_move(data)
+            elif message_type == 'game_over':
+                await self.handle_game_over(data)
+                
+        except Exception as e:
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': str(e)
+            }))
+    
+    async def handle_find_match(self, data):
+        """Find an opponent or create bot game"""
+        # Try to find waiting game
+        game = await self.find_waiting_game()
+        
+        if game:
+            # Join existing game
+            await self.join_game(game['id'])
+        else:
+            # Check if user wants to wait or play with bot
+            wait_for_player = data.get('wait_for_player', False)
+            
+            if wait_for_player:
+                # Create new waiting game
+                game = await self.create_game(is_bot=False)
+                await self.send(text_data=json.dumps({
+                    'type': 'waiting',
+                    'game_id': game['id'],
+                    'message': 'Waiting for opponent...'
+                }))
+            else:
+                # Create bot game
+                game = await self.create_game(is_bot=True)
+                await self.start_game(game['id'])
+    
+    async def handle_move(self, data):
+        """Handle player move and calculate attacks/heals"""
+        merged_tiles = data.get('merged_tiles', [])
+        score = data.get('score', 0)
+        board = data.get('board', [])
+        
+        # Update game state
+        await self.update_player_state(score, board)
+        
+        # Calculate damage and healing
+        total_damage = 0
+        total_heal = 0
+        
+        for tile_value in merged_tiles:
+            damage = await self.calculate_damage(tile_value)
+            heal = await self.calculate_heal(tile_value)
+            total_damage += damage
+            total_heal += heal
+        
+        # Apply damage to opponent and heal to self
+        health_updates = await self.apply_health_changes(total_damage, total_heal)
+        
+        # Broadcast move to opponent
+        await self.channel_layer.group_send(
+            self.game_group_name,
+            {
+                'type': 'game_move',
+                'player': self.user.username,
+                'score': score,
+                'board': board,
+                'damage': total_damage,
+                'heal': total_heal,
+                'health_updates': health_updates,
+                'merged_tiles': merged_tiles
+            }
+        )
+        
+        # Check win condition
+        if health_updates['opponent_health'] <= 0:
+            await self.handle_victory()
+    
+    async def handle_game_over(self, data):
+        """Handle game over (someone reached 2048 or health depleted)"""
+        winner = data.get('winner')
+        reason = data.get('reason', 'health')  # 'health' or '2048'
+        
+        await self.finish_game(winner, reason)
+    
+    async def handle_victory(self):
+        """Handle victory and calculate rewards"""
+        game_state = await self.get_game_state()
+        
+        if not game_state or game_state['status'] != 'active':
+            return
+        
+        # Finish game
+        await self.finish_game(self.user.username, 'health')
+        
+        # Calculate rewards
+        rewards = await self.calculate_rewards(game_state)
+        
+        # Broadcast victory
+        await self.channel_layer.group_send(
+            self.game_group_name,
+            {
+                'type': 'game_victory',
+                'winner': self.user.username,
+                'reason': 'health',
+                'rewards': rewards
+            }
+        )
+    
+    # WebSocket message handlers
+    async def game_move(self, event):
+        """Send move update to client"""
+        await self.send(text_data=json.dumps(event))
+    
+    async def game_start(self, event):
+        """Send game start notification"""
+        await self.send(text_data=json.dumps(event))
+    
+    async def game_victory(self, event):
+        """Send victory notification"""
+        await self.send(text_data=json.dumps(event))
+    
+    # Database operations
+    @database_sync_to_async
+    def get_game_state(self):
+        """Get current game state"""
+        from .models import MultiplayerGame2048
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=self.game_id)
+            return {
+                'id': game.game_id,
+                'status': game.status,
+                'player1': game.player1.username,
+                'player2': game.player2.username if game.player2 else 'BOT',
+                'is_bot': game.is_bot_game,
+                'player1_health': game.player1_health,
+                'player2_health': game.player2_health,
+                'player1_score': game.player1_score,
+                'player2_score': game.player2_score,
+            }
+        except MultiplayerGame2048.DoesNotExist:
+            return None
+    
+    @database_sync_to_async
+    def find_waiting_game(self):
+        """Find a waiting game to join"""
+        from .models import MultiplayerGame2048
+        game = MultiplayerGame2048.objects.filter(
+            status='waiting',
+            is_bot_game=False
+        ).exclude(player1=self.user).first()
+        
+        if game:
+            return {'id': game.game_id}
+        return None
+    
+    @database_sync_to_async
+    def create_game(self, is_bot=False):
+        """Create a new game"""
+        from .models import MultiplayerGame2048
+        import uuid
+        
+        game_id = f"game_{uuid.uuid4().hex[:12]}"
+        game = MultiplayerGame2048.objects.create(
+            game_id=game_id,
+            player1=self.user,
+            is_bot_game=is_bot,
+            status='waiting' if not is_bot else 'active'
+        )
+        
+        if is_bot:
+            # Create a bot user if not exists
+            bot_user, _ = User.objects.get_or_create(
+                username='2048_BOT',
+                defaults={'first_name': 'Bot', 'last_name': 'AI'}
+            )
+            game.player2 = bot_user
+            game.started_at = timezone.now()
+            game.save()
+        
+        return {'id': game.game_id}
+    
+    @database_sync_to_async
+    def join_game(self, game_id):
+        """Join an existing game"""
+        from .models import MultiplayerGame2048
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=game_id)
+            if not game.player2:
+                game.player2 = self.user
+                game.status = 'active'
+                game.started_at = timezone.now()
+                game.save()
+                return True
+        except MultiplayerGame2048.DoesNotExist:
+            pass
+        return False
+    
+    @database_sync_to_async
+    def start_game(self, game_id):
+        """Start the game"""
+        from .models import MultiplayerGame2048
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=game_id)
+            game.start_game()
+            
+            # Notify both players
+            asyncio.create_task(
+                self.channel_layer.group_send(
+                    self.game_group_name,
+                    {
+                        'type': 'game_start',
+                        'game_id': game_id,
+                        'player1': game.player1.username,
+                        'player2': game.player2.username if game.player2 else 'BOT',
+                        'is_bot': game.is_bot_game
+                    }
+                )
+            )
+        except MultiplayerGame2048.DoesNotExist:
+            pass
+    
+    @database_sync_to_async
+    def update_player_state(self, score, board):
+        """Update player's score and board"""
+        from .models import MultiplayerGame2048
+        import json as json_lib
+        
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=self.game_id)
+            if game.player1 == self.user:
+                game.player1_score = score
+                game.player1_board = json_lib.dumps(board)
+            elif game.player2 == self.user:
+                game.player2_score = score
+                game.player2_board = json_lib.dumps(board)
+            game.save()
+        except MultiplayerGame2048.DoesNotExist:
+            pass
+    
+    @database_sync_to_async
+    def calculate_damage(self, tile_value):
+        """Calculate damage from tile merge"""
+        from .models import MultiplayerGame2048
+        game = MultiplayerGame2048.objects.filter(game_id=self.game_id).first()
+        if game:
+            return game.calculate_damage(tile_value)
+        return 0
+    
+    @database_sync_to_async
+    def calculate_heal(self, tile_value):
+        """Calculate heal from tile merge"""
+        from .models import MultiplayerGame2048
+        game = MultiplayerGame2048.objects.filter(game_id=self.game_id).first()
+        if game:
+            return game.calculate_heal(tile_value)
+        return 0
+    
+    @database_sync_to_async
+    def apply_health_changes(self, damage, heal):
+        """Apply damage to opponent and heal to self"""
+        from .models import MultiplayerGame2048
+        
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=self.game_id)
+            
+            # Determine player positions
+            is_player1 = game.player1 == self.user
+            
+            if is_player1:
+                # Player 1 attacks player 2 and heals self
+                game.player2_health = max(0, game.player2_health - damage)
+                game.player1_health = min(100, game.player1_health + heal)
+                
+                result = {
+                    'your_health': game.player1_health,
+                    'opponent_health': game.player2_health
+                }
+            else:
+                # Player 2 attacks player 1 and heals self
+                game.player1_health = max(0, game.player1_health - damage)
+                game.player2_health = min(100, game.player2_health + heal)
+                
+                result = {
+                    'your_health': game.player2_health,
+                    'opponent_health': game.player1_health
+                }
+            
+            game.save()
+            return result
+            
+        except MultiplayerGame2048.DoesNotExist:
+            return {'your_health': 100, 'opponent_health': 100}
+    
+    @database_sync_to_async
+    def finish_game(self, winner_username, reason):
+        """Finish the game"""
+        from .models import MultiplayerGame2048
+        
+        try:
+            game = MultiplayerGame2048.objects.get(game_id=self.game_id)
+            winner = User.objects.get(username=winner_username)
+            game.finish_game(winner)
+        except (MultiplayerGame2048.DoesNotExist, User.DoesNotExist):
+            pass
+    
+    @database_sync_to_async
+    def calculate_rewards(self, game_state):
+        """Calculate Evercoin rewards for winner"""
+        from .models import UserProfile
+        
+        # Base reward from score
+        winner_score = game_state['player1_score'] if game_state['player1'] == self.user.username else game_state['player2_score']
+        base_reward = min(200, max(50, winner_score // 50))
+        
+        # Bonus for winning
+        win_bonus = 100
+        
+        # Health bonus (remaining health)
+        winner_health = game_state['player1_health'] if game_state['player1'] == self.user.username else game_state['player2_health']
+        health_bonus = winner_health // 2  # 0-50 bonus
+        
+        total_reward = base_reward + win_bonus + health_bonus
+        
+        # Credit to winner
+        try:
+            profile, _ = UserProfile.objects.get_or_create(user=self.user)
+            profile.evercoin += total_reward
+            profile.save()
+        except:
+            pass
+        
+        return {
+            'base': base_reward,
+            'win_bonus': win_bonus,
+            'health_bonus': health_bonus,
+            'total': total_reward
+        }

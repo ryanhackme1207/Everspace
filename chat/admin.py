@@ -263,3 +263,31 @@ def grant_evercoin_bulk(modeladmin, request, queryset):
     )
 
 UserProfileAdmin.actions = [grant_evercoin_bulk]
+
+
+# Register MultiplayerGame2048 model
+from .models import MultiplayerGame2048
+
+@admin.register(MultiplayerGame2048)
+class MultiplayerGame2048Admin(admin.ModelAdmin):
+    list_display = ['game_id', 'player1', 'player2', 'status', 'player1_health', 'player2_health', 'winner', 'is_bot_game', 'created_at']
+    list_filter = ['status', 'is_bot_game', 'created_at']
+    search_fields = ['game_id', 'player1__username', 'player2__username']
+    readonly_fields = ['game_id', 'created_at', 'started_at', 'finished_at']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Game Information', {
+            'fields': ('game_id', 'status', 'is_bot_game')
+        }),
+        ('Players', {
+            'fields': ('player1', 'player2', 'winner')
+        }),
+        ('Health & Score', {
+            'fields': ('player1_health', 'player2_health', 'player1_score', 'player2_score')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'started_at', 'finished_at'),
+            'classes': ('collapse',)
+        }),
+    )

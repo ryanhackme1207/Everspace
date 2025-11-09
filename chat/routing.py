@@ -9,4 +9,5 @@ websocket_urlpatterns = [
     re_path(r'ws/notifications/$', NotificationConsumer.as_asgi()),
     re_path(r'ws/private-chat/(?P<friend_username>\w+)/$', PrivateChatConsumer.as_asgi()),
     re_path(r'ws/room-list/$', RoomListConsumer.as_asgi()),
+    re_path(r'ws/game2048/(?P<game_id>[\w-]+)/$', consumers.Game2048Consumer.as_asgi()),
 ]

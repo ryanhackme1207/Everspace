@@ -1,0 +1,1291 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Multiplayer Battle - Everspace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        /* Mode Selection Screen */
+        .mode-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            gap: 30px;
+        }
+
+        .mode-title {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 280px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .mode-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .mode-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .mode-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        /* Battle Arena */
+        .battle-arena {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .arena-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .arena-title {
+            font-size: 42px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .matchmaking-status {
+            font-size: 18px;
+            color: #f093fb;
+            margin-top: 10px;
+        }
+
+        /* Battle Grid */
+        .battle-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Player Panel */
+        .player-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .player-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 15px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .player-score {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Health Bar */
+        .health-container {
+            margin: 20px 0;
+        }
+
+        .health-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            transition: width 0.5s ease, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .health-fill.low {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+
+        .health-fill.critical {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            animation: healthPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes healthPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Mini Board Preview */
+        .mini-board {
+            margin-top: 20px;
+        }
+
+        .mini-board-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .mini-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        /* Main Game Board */
+        .game-board-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .game-board {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 0 auto;
+            display: block;
+            width: fit-content;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cell[data-value="2"] { background: #eee4da; color: #776e65; }
+        .cell[data-value="4"] { background: #ede0c8; color: #776e65; }
+        .cell[data-value="8"] { background: #f2b179; color: white; }
+        .cell[data-value="16"] { background: #f59563; color: white; }
+        .cell[data-value="32"] { background: #f67c5f; color: white; }
+        .cell[data-value="64"] { background: #f65e3b; color: white; }
+        .cell[data-value="128"] { background: #edcf72; color: white; font-size: 28px; }
+        .cell[data-value="256"] { background: #edcc61; color: white; font-size: 28px; }
+        .cell[data-value="512"] { background: #edc850; color: white; font-size: 28px; }
+        .cell[data-value="1024"] { background: #edc53f; color: white; font-size: 24px; }
+        .cell[data-value="2048"] { background: #edc22e; color: white; font-size: 24px; }
+
+        /* Attack Animation */
+        @keyframes attack {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .cell.attacking {
+            animation: attack 0.4s ease;
+        }
+
+        /* Bomb Effect */
+        .bomb-effect {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff6b6b, transparent);
+            pointer-events: none;
+            animation: bombExplosion 0.6s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes bombExplosion {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* Heal Effect */
+        .heal-effect {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #4ade80, transparent);
+            pointer-events: none;
+            animation: healPulse 0.6s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes healPulse {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Damage Indicator */
+        .damage-indicator {
+            position: fixed;
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff6b6b;
+            pointer-events: none;
+            animation: damageFloat 1s ease-out forwards;
+            z-index: 1001;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+        }
+
+        @keyframes damageFloat {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Heal Indicator */
+        .heal-indicator {
+            position: fixed;
+            font-size: 36px;
+            font-weight: bold;
+            color: #4ade80;
+            pointer-events: none;
+            animation: healFloat 1s ease-out forwards;
+            z-index: 1001;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+        }
+
+        @keyframes healFloat {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-80px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Game Over Modal */
+        .game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+        }
+
+        .modal-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .modal-title.victory {
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.6);
+        }
+
+        .modal-title.defeat {
+            color: #ff6b6b;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .modal-stats {
+            margin: 30px 0;
+            font-size: 18px;
+            line-height: 2;
+        }
+
+        .modal-rewards {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .reward-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reward-item:last-child {
+            border-bottom: none;
+            font-size: 24px;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            padding: 15px 35px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .battle-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .player-panel:last-child .mini-board {
+                display: none;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mode Selection Screen -->
+    <div class="mode-selection" id="modeSelection">
+        <div>
+            <h1 class="mode-title">🎮 2048 Game Mode</h1>
+            <p style="text-align: center; opacity: 0.8;">Choose your battle style</p>
+        </div>
+        
+        <div class="mode-buttons">
+            <div class="mode-card" onclick="startStandardMode()">
+                <div class="mode-icon">🎯</div>
+                <div class="mode-name">Standard</div>
+                <div class="mode-description">
+                    Classic 2048 puzzle game. Merge tiles to reach 2048 and earn Evercoins based on your score.
+                </div>
+            </div>
+            
+            <div class="mode-card" onclick="startMultiplayerMode()">
+                <div class="mode-icon">⚔️</div>
+                <div class="mode-name">Multiplayer PvP</div>
+                <div class="mode-description">
+                    Battle against real players or AI! Merge tiles to attack opponents and be the last one standing.
+                </div>
+            </div>
+        </div>
+        
+        <a href="/games/" style="color: white; text-decoration: none; opacity: 0.7; margin-top: 20px;">
+            ← Back to Games
+        </a>
+    </div>
+
+    <!-- Battle Arena (Multiplayer) -->
+    <div class="battle-arena" id="battleArena">
+        <div class="arena-header">
+            <h1 class="arena-title">⚔️ 2048 BATTLE ARENA ⚔️</h1>
+            <div class="matchmaking-status" id="matchmakingStatus">Finding opponent...</div>
+        </div>
+
+        <div class="battle-grid">
+            <!-- Player 1 (You) -->
+            <div class="player-panel">
+                <div class="player-info">
+                    <div class="player-avatar">👤</div>
+                    <div class="player-name" id="player1Name">{{ user.username }}</div>
+                    <div class="player-score">Score: <span id="player1Score">0</span></div>
+                </div>
+                
+                <div class="health-container">
+                    <div class="health-label">
+                        <span>❤️ Health</span>
+                        <span id="player1HealthText">100%</span>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill" id="player1HealthBar" style="width: 100%">100%</div>
+                    </div>
+                </div>
+                
+                <div class="mini-board">
+                    <div class="mini-board-title">Your Board</div>
+                    <div class="mini-grid" id="player1MiniBoard">
+                        <!-- Mini tiles will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Game Board -->
+            <div class="game-board-container">
+                <div class="game-controls">
+                    <button class="control-btn" onclick="forfeitGame()">Forfeit</button>
+                    <div style="text-align: center;">
+                        <div style="font-size: 32px; font-weight: bold; color: #f59e0b;">
+                            <span id="yourScore">0</span>
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.7;">Your Score</div>
+                    </div>
+                    <button class="control-btn" onclick="newGame()">New Game</button>
+                </div>
+
+                <div class="game-board">
+                    <div class="grid" id="gameGrid">
+                        <!-- Grid cells will be generated here -->
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; color: rgba(255,255,255,0.6);">
+                    Use arrow keys to play • Merge tiles to attack!
+                </div>
+            </div>
+
+            <!-- Player 2 (Opponent) -->
+            <div class="player-panel">
+                <div class="player-info">
+                    <div class="player-avatar">🤖</div>
+                    <div class="player-name" id="player2Name">Waiting...</div>
+                    <div class="player-score">Score: <span id="player2Score">0</span></div>
+                </div>
+                
+                <div class="health-container">
+                    <div class="health-label">
+                        <span>❤️ Health</span>
+                        <span id="player2HealthText">100%</span>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill" id="player2HealthBar" style="width: 100%">100%</div>
+                    </div>
+                </div>
+                
+                <div class="mini-board">
+                    <div class="mini-board-title">Opponent's Board</div>
+                    <div class="mini-grid" id="player2MiniBoard">
+                        <!-- Mini tiles will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Victory!</div>
+            <div class="modal-stats" id="modalStats"></div>
+            <div class="modal-rewards" id="modalRewards"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-primary" onclick="playAgain()">Play Again</button>
+                <button class="modal-btn btn-secondary" onclick="backToMenu()">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global game state
+        let gameMode = null; // 'standard' or 'multiplayer'
+        let gameSocket = null;
+        let currentGameId = null;
+        let grid = [];
+        let score = 0;
+        let isBot = false;
+        let player1Health = 100;
+        let player2Health = 100;
+        let gameStartTime = Date.now();
+
+        // Initialize game
+        function init() {
+            grid = [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ];
+            score = 0;
+            player1Health = 100;
+            player2Health = 100;
+            gameStartTime = Date.now();
+            
+            addRandomTile();
+            addRandomTile();
+            updateDisplay();
+        }
+
+        // Mode selection
+        function startStandardMode() {
+            window.location.href = '/games/2048/';
+        }
+
+        function startMultiplayerMode() {
+            gameMode = 'multiplayer';
+            document.getElementById('modeSelection').classList.add('hidden');
+            document.getElementById('battleArena').style.display = 'block';
+            
+            init();
+            initializeMultiplayer();
+        }
+
+        // Multiplayer WebSocket setup
+        function initializeMultiplayer() {
+            // Generate a temporary game ID
+            currentGameId = 'temp_' + Date.now();
+            
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/game2048/${currentGameId}/`;
+            
+            gameSocket = new WebSocket(wsUrl);
+            
+            gameSocket.onopen = function(e) {
+                console.log('Connected to game server');
+                // Try to find match or create bot game
+                gameSocket.send(JSON.stringify({
+                    type: 'find_match',
+                    wait_for_player: false // Set true to wait for real player
+                }));
+            };
+            
+            gameSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                handleWebSocketMessage(data);
+            };
+            
+            gameSocket.onclose = function(e) {
+                console.log('Disconnected from game server');
+            };
+            
+            gameSocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'waiting':
+                    document.getElementById('matchmakingStatus').textContent = data.message;
+                    break;
+                    
+                case 'game_start':
+                    currentGameId = data.game_id;
+                    isBot = data.is_bot;
+                    document.getElementById('player2Name').textContent = data.player2;
+                    document.getElementById('matchmakingStatus').textContent = `Battle started against ${data.player2}!`;
+                    setTimeout(() => {
+                        document.getElementById('matchmakingStatus').style.display = 'none';
+                    }, 3000);
+                    break;
+                    
+                case 'game_move':
+                    handleOpponentMove(data);
+                    break;
+                    
+                case 'game_victory':
+                    handleGameEnd(data);
+                    break;
+                    
+                case 'error':
+                    console.error('Game error:', data.message);
+                    break;
+            }
+        }
+
+        function handleOpponentMove(data) {
+            // Update opponent's score
+            document.getElementById('player2Score').textContent = data.score;
+            
+            // Update mini board
+            updateMiniBoard('player2MiniBoard', data.board);
+            
+            // Handle damage received
+            if (data.player !== '{{ user.username }}' && data.damage > 0) {
+                player1Health = data.health_updates.opponent_health;
+                updateHealthBar('player1', player1Health);
+                showBombEffect(document.querySelector('#player1HealthBar'));
+                showDamageIndicator(`-${data.damage}%`, document.querySelector('.player-panel'));
+                
+                // Check if we lost
+                if (player1Health <= 0) {
+                    endGame(false);
+                }
+            }
+            
+            // Handle opponent healing
+            if (data.player !== '{{ user.username }}' && data.heal > 0) {
+                player2Health = data.health_updates.your_health;
+                updateHealthBar('player2', player2Health);
+                showHealEffect(document.querySelectorAll('.player-panel')[1]);
+                showHealIndicator(`+${data.heal}%`, document.querySelectorAll('.player-panel')[1]);
+            }
+        }
+
+        function handleGameEnd(data) {
+            const isWinner = data.winner === '{{ user.username }}';
+            showGameOverModal(isWinner, data.rewards);
+        }
+
+        // Game logic
+        function addRandomTile() {
+            const emptyCells = [];
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) {
+                        emptyCells.push({x: i, y: j});
+                    }
+                }
+            }
+            
+            if (emptyCells.length > 0) {
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                grid[randomCell.x][randomCell.y] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function updateDisplay() {
+            const gridElement = document.getElementById('gameGrid');
+            gridElement.innerHTML = '';
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    const value = grid[i][j];
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        cell.setAttribute('data-value', value);
+                    }
+                    gridElement.appendChild(cell);
+                }
+            }
+            
+            document.getElementById('yourScore').textContent = score;
+            document.getElementById('player1Score').textContent = score;
+            updateMiniBoard('player1MiniBoard', grid);
+        }
+
+        function updateMiniBoard(elementId, board) {
+            const miniBoard = document.getElementById(elementId);
+            miniBoard.innerHTML = '';
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'mini-cell';
+                    const value = board[i][j];
+                    if (value !== 0) {
+                        cell.textContent = value >= 1000 ? `${Math.floor(value/1000)}k` : value;
+                        cell.setAttribute('data-value', value);
+                    }
+                    miniBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function move(direction) {
+            let moved = false;
+            const mergedTiles = [];
+            const oldGrid = JSON.parse(JSON.stringify(grid));
+            
+            // Movement logic for all directions
+            if (direction === 'left') {
+                for (let i = 0; i < 4; i++) {
+                    const row = grid[i].filter(val => val !== 0);
+                    for (let j = 0; j < row.length - 1; j++) {
+                        if (row[j] === row[j + 1]) {
+                            row[j] *= 2;
+                            score += row[j];
+                            mergedTiles.push(row[j]);
+                            row.splice(j + 1, 1);
+                        }
+                    }
+                    while (row.length < 4) row.push(0);
+                    grid[i] = row;
+                }
+            } else if (direction === 'right') {
+                for (let i = 0; i < 4; i++) {
+                    const row = grid[i].filter(val => val !== 0);
+                    for (let j = row.length - 1; j > 0; j--) {
+                        if (row[j] === row[j - 1]) {
+                            row[j] *= 2;
+                            score += row[j];
+                            mergedTiles.push(row[j]);
+                            row.splice(j - 1, 1);
+                            j--;
+                        }
+                    }
+                    while (row.length < 4) row.unshift(0);
+                    grid[i] = row;
+                }
+            } else if (direction === 'up') {
+                for (let j = 0; j < 4; j++) {
+                    const col = [];
+                    for (let i = 0; i < 4; i++) {
+                        if (grid[i][j] !== 0) col.push(grid[i][j]);
+                    }
+                    for (let i = 0; i < col.length - 1; i++) {
+                        if (col[i] === col[i + 1]) {
+                            col[i] *= 2;
+                            score += col[i];
+                            mergedTiles.push(col[i]);
+                            col.splice(i + 1, 1);
+                        }
+                    }
+                    while (col.length < 4) col.push(0);
+                    for (let i = 0; i < 4; i++) {
+                        grid[i][j] = col[i];
+                    }
+                }
+            } else if (direction === 'down') {
+                for (let j = 0; j < 4; j++) {
+                    const col = [];
+                    for (let i = 0; i < 4; i++) {
+                        if (grid[i][j] !== 0) col.push(grid[i][j]);
+                    }
+                    for (let i = col.length - 1; i > 0; i--) {
+                        if (col[i] === col[i - 1]) {
+                            col[i] *= 2;
+                            score += col[i];
+                            mergedTiles.push(col[i]);
+                            col.splice(i - 1, 1);
+                            i--;
+                        }
+                    }
+                    while (col.length < 4) col.unshift(0);
+                    for (let i = 0; i < 4; i++) {
+                        grid[i][j] = col[i];
+                    }
+                }
+            }
+            
+            // Check if grid changed
+            moved = JSON.stringify(oldGrid) !== JSON.stringify(grid);
+            
+            if (moved) {
+                addRandomTile();
+                updateDisplay();
+                
+                // In multiplayer, handle attacks/heals
+                if (gameMode === 'multiplayer' && mergedTiles.length > 0) {
+                    handleMerge(mergedTiles);
+                }
+                
+                // Check for 2048 win
+                if (hasWon()) {
+                    setTimeout(() => {
+                        if (gameMode === 'multiplayer') {
+                            endGame(true, '2048');
+                        } else {
+                            submitStandardScore();
+                        }
+                    }, 500);
+                }
+                
+                // Check for game over
+                if (isGameOver()) {
+                    setTimeout(() => {
+                        if (gameMode === 'multiplayer') {
+                            endGame(false);
+                        } else {
+                            submitStandardScore();
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        function handleMerge(mergedTiles) {
+            let totalDamage = 0;
+            let totalHeal = 0;
+            
+            // Calculate damage and heal based on merged tiles
+            mergedTiles.forEach(tile => {
+                totalDamage += calculateDamage(tile);
+                totalHeal += calculateHeal(tile);
+            });
+            
+            // Apply heal to self
+            player1Health = Math.min(100, player1Health + totalHeal);
+            updateHealthBar('player1', player1Health);
+            
+            if (totalHeal > 0) {
+                showHealEffect(document.querySelector('.player-panel'));
+                showHealIndicator(`+${totalHeal}%`, document.querySelector('.player-panel'));
+            }
+            
+            // Apply damage to opponent
+            player2Health = Math.max(0, player2Health - totalDamage);
+            updateHealthBar('player2', player2Health);
+            
+            if (totalDamage > 0) {
+                showBombEffect(document.querySelectorAll('.player-panel')[1]);
+                showDamageIndicator(`-${totalDamage}%`, document.querySelectorAll('.player-panel')[1]);
+            }
+            
+            // Send move to server
+            if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+                gameSocket.send(JSON.stringify({
+                    type: 'move',
+                    merged_tiles: mergedTiles,
+                    score: score,
+                    board: grid
+                }));
+            }
+            
+            // Check if opponent is defeated
+            if (player2Health <= 0) {
+                setTimeout(() => endGame(true), 1000);
+            }
+        }
+
+        function calculateDamage(tileValue) {
+            const damageMap = {
+                4: 2, 8: 3, 16: 5, 32: 7, 64: 8,
+                128: 10, 256: 15, 512: 20, 1024: 30, 2048: 40
+            };
+            return damageMap[tileValue] || 1;
+        }
+
+        function calculateHeal(tileValue) {
+            const healMap = {
+                4: 2, 8: 3, 16: 4, 32: 5, 64: 7,
+                128: 8, 256: 10, 512: 12, 1024: 15, 2048: 20
+            };
+            return healMap[tileValue] || 1;
+        }
+
+        function updateHealthBar(player, health) {
+            const healthBar = document.getElementById(`${player}HealthBar`);
+            const healthText = document.getElementById(`${player}HealthText`);
+            
+            healthBar.style.width = health + '%';
+            healthBar.textContent = health + '%';
+            healthText.textContent = health + '%';
+            
+            // Change color based on health
+            healthBar.classList.remove('low', 'critical');
+            if (health <= 30) {
+                healthBar.classList.add('critical');
+            } else if (health <= 50) {
+                healthBar.classList.add('low');
+            }
+        }
+
+        // Visual effects
+        function showBombEffect(element) {
+            const rect = element.getBoundingClientRect();
+            const effect = document.createElement('div');
+            effect.className = 'bomb-effect';
+            effect.style.left = rect.left + rect.width / 2 - 50 + 'px';
+            effect.style.top = rect.top + rect.height / 2 - 50 + 'px';
+            document.body.appendChild(effect);
+            
+            // Play sound
+            playSound('bomb');
+            
+            setTimeout(() => effect.remove(), 600);
+        }
+
+        function showHealEffect(element) {
+            const rect = element.getBoundingClientRect();
+            const effect = document.createElement('div');
+            effect.className = 'heal-effect';
+            effect.style.left = rect.left + rect.width / 2 - 40 + 'px';
+            effect.style.top = rect.top + rect.height / 2 - 40 + 'px';
+            document.body.appendChild(effect);
+            
+            // Play sound
+            playSound('heal');
+            
+            setTimeout(() => effect.remove(), 600);
+        }
+
+        function showDamageIndicator(text, element) {
+            const rect = element.getBoundingClientRect();
+            const indicator = document.createElement('div');
+            indicator.className = 'damage-indicator';
+            indicator.textContent = text;
+            indicator.style.left = rect.left + rect.width / 2 - 30 + 'px';
+            indicator.style.top = rect.top + 20 + 'px';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => indicator.remove(), 1000);
+        }
+
+        function showHealIndicator(text, element) {
+            const rect = element.getBoundingClientRect();
+            const indicator = document.createElement('div');
+            indicator.className = 'heal-indicator';
+            indicator.textContent = text;
+            indicator.style.left = rect.left + rect.width / 2 - 30 + 'px';
+            indicator.style.top = rect.top + 20 + 'px';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => indicator.remove(), 1000);
+        }
+
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'bomb') {
+                oscillator.frequency.value = 100;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } else if (type === 'heal') {
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.4);
+            }
+        }
+
+        // Game end
+        function hasWon() {
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 2048) return true;
+                }
+            }
+            return false;
+        }
+
+        function isGameOver() {
+            // Check for empty cells
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) return false;
+                }
+            }
+            
+            // Check for possible merges
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (j < 3 && grid[i][j] === grid[i][j + 1]) return false;
+                    if (i < 3 && grid[i][j] === grid[i + 1][j]) return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function endGame(isWinner, reason = 'health') {
+            if (gameSocket && gameSocket.readyState === WebSocket.OPEN) {
+                gameSocket.send(JSON.stringify({
+                    type: 'game_over',
+                    winner: isWinner ? '{{ user.username }}' : (isBot ? '2048_BOT' : 'opponent'),
+                    reason: reason
+                }));
+            }
+            
+            // Calculate rewards
+            const rewards = {
+                base: Math.min(200, Math.max(50, score / 50)),
+                win_bonus: isWinner ? 100 : 0,
+                health_bonus: isWinner ? Math.floor(player1Health / 2) : 0,
+                total: 0
+            };
+            rewards.total = rewards.base + rewards.win_bonus + rewards.health_bonus;
+            
+            showGameOverModal(isWinner, rewards);
+        }
+
+        function showGameOverModal(isWinner, rewards) {
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('modalTitle');
+            const stats = document.getElementById('modalStats');
+            const rewardsDiv = document.getElementById('modalRewards');
+            
+            title.textContent = isWinner ? '🏆 VICTORY!' : '💀 DEFEAT!';
+            title.className = isWinner ? 'modal-title victory' : 'modal-title defeat';
+            
+            stats.innerHTML = `
+                <div>Final Score: ${score}</div>
+                <div>Your Health: ${player1Health}%</div>
+                <div>Opponent Health: ${player2Health}%</div>
+            `;
+            
+            if (isWinner && rewards) {
+                rewardsDiv.innerHTML = `
+                    <div class="reward-item">
+                        <span>Base Reward</span>
+                        <span>${rewards.base} 💰</span>
+                    </div>
+                    <div class="reward-item">
+                        <span>Victory Bonus</span>
+                        <span>${rewards.win_bonus} 💰</span>
+                    </div>
+                    <div class="reward-item">
+                        <span>Health Bonus</span>
+                        <span>${rewards.health_bonus} 💰</span>
+                    </div>
+                    <div class="reward-item">
+                        <span>Total Earned</span>
+                        <span>${rewards.total} 💰</span>
+                    </div>
+                `;
+            } else {
+                rewardsDiv.innerHTML = '<div style="text-align: center; padding: 20px;">Better luck next time!</div>';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function forfeitGame() {
+            if (confirm('Are you sure you want to forfeit? You will lose the match.')) {
+                endGame(false);
+            }
+        }
+
+        function newGame() {
+            if (gameMode === 'multiplayer') {
+                if (confirm('Start a new multiplayer match?')) {
+                    location.reload();
+                }
+            }
+        }
+
+        function playAgain() {
+            location.reload();
+        }
+
+        function backToMenu() {
+            window.location.href = '/games/';
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+                const direction = e.key.replace('Arrow', '').toLowerCase();
+                move(direction);
+            }
+        });
+
+        // Touch controls for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > 50) move('right');
+                else if (dx < -50) move('left');
+            } else {
+                if (dy > 50) move('down');
+                else if (dy < -50) move('up');
+            }
+        });
+
+        // Initialize mini boards on load
+        document.addEventListener('DOMContentLoaded', () => {
+            for (let i = 0; i < 16; i++) {
+                const cell1 = document.createElement('div');
+                cell1.className = 'mini-cell';
+                document.getElementById('player1MiniBoard').appendChild(cell1);
+                
+                const cell2 = document.createElement('div');
+                cell2.className = 'mini-cell';
+                document.getElementById('player2MiniBoard').appendChild(cell2);
+            }
+            
+            // Initialize game grid
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                document.getElementById('gameGrid').appendChild(cell);
+            }
+        });
+    </script>
+</body>
+</html>

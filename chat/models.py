@@ -738,6 +738,94 @@ class GameSession(models.Model):
         return rewards.get(game_type, lambda s: 10)(score)
 
 
+class MultiplayerGame2048(models.Model):
+    """Track multiplayer 2048 PvP battles"""
+    STATUS_CHOICES = [
+        ('waiting', 'Waiting for opponent'),
+        ('active', 'Game in progress'),
+        ('finished', 'Game finished'),
+    ]
+    
+    game_id = models.CharField(max_length=100, unique=True, help_text='Unique game identifier')
+    player1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game2048_as_player1')
+    player2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game2048_as_player2', null=True, blank=True)
+    is_bot_game = models.BooleanField(default=False, help_text='Is player2 a bot?')
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
+    
+    # Health system (0-100%)
+    player1_health = models.IntegerField(default=100)
+    player2_health = models.IntegerField(default=100)
+    
+    # Score tracking
+    player1_score = models.IntegerField(default=0)
+    player2_score = models.IntegerField(default=0)
+    
+    # Game state (JSON stored as text)
+    player1_board = models.TextField(default='{}', help_text='JSON of player1 board state')
+    player2_board = models.TextField(default='{}', help_text='JSON of player2 board state')
+    
+    # Winner
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='game2048_wins', null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        p2_name = 'BOT' if self.is_bot_game else (self.player2.username if self.player2 else 'Waiting')
+        return f'{self.player1.username} vs {p2_name} ({self.status})'
+    
+    def start_game(self):
+        """Start the game"""
+        self.status = 'active'
+        self.started_at = timezone.now()
+        self.save()
+    
+    def finish_game(self, winner_user):
+        """Finish the game and set winner"""
+        self.status = 'finished'
+        self.winner = winner_user
+        self.finished_at = timezone.now()
+        self.save()
+    
+    def calculate_damage(self, tile_value):
+        """Calculate damage based on merged tile value"""
+        damage_map = {
+            4: 2,
+            8: 3,
+            16: 5,
+            32: 7,
+            64: 8,
+            128: 10,
+            256: 15,
+            512: 20,
+            1024: 30,
+            2048: 40,
+        }
+        return damage_map.get(tile_value, 1)
+    
+    def calculate_heal(self, tile_value):
+        """Calculate heal amount based on merged tile value"""
+        heal_map = {
+            4: 2,
+            8: 3,
+            16: 4,
+            32: 5,
+            64: 7,
+            128: 8,
+            256: 10,
+            512: 12,
+            1024: 15,
+            2048: 20,
+        }
+        return heal_map.get(tile_value, 1)
+
+
 # Signal to automatically create UserProfile when User is created
 from django.db.models.signals import post_save
 from django.dispatch import receiver

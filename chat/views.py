@@ -2617,6 +2617,12 @@ def game_2048(request):
 
 
 @login_required
+def game_2048_multiplayer(request):
+    """Render 2048 multiplayer battle game"""
+    return render(request, 'chat/games/2048_multiplayer.html')
+
+
+@login_required
 def game_snake(request):
     """Render Snake game"""
     return render(request, 'chat/games/snake.html')
