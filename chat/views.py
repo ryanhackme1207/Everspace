@@ -1028,7 +1028,7 @@ def friends_list(request):
         receiver=request.user, status='pending'
     )
     
-    return render(request, 'chat/friends.html', {
+    return render(request, 'chat/friends_list.html', {
         'friends': friends,
         'pending_requests': pending_requests,
     })
