@@ -712,7 +712,7 @@
             bottom: 100%;
             left: 1rem;
             width: 450px;
-            max-height: 550px;
+            max-height: 600px;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
@@ -809,7 +809,27 @@
             gap: 0.75rem;
             padding: 0.75rem;
             overflow-y: auto;
+            overflow-x: hidden;
             flex: 1;
+            max-height: 320px;
+        }
+
+        .gift-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .gift-grid::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .gift-grid::-webkit-scrollbar-thumb {
+            background: var(--accent-teal);
+            border-radius: 4px;
+        }
+
+        .gift-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-coral);
         }
 
         .gift-item {

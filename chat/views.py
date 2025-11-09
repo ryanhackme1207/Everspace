@@ -1757,13 +1757,26 @@ def get_room_users(request, room_name):
     """Get online users in a room (for gift recipient selection)"""
     try:
         room = get_object_or_404(Room, name=room_name)
-        members = room.members.all().exclude(username=request.user.username).values(
-            'id', 'username', 'first_name'
-        )
+        
+        # Get only online members, excluding the current user
+        online_members = room.members.filter(status='online').exclude(user=request.user)
+        
+        # Build user list with proper display names
+        users = []
+        for member in online_members:
+            display_name = f"{member.user.first_name} {member.user.last_name}".strip()
+            if not display_name:
+                display_name = member.user.username
+            
+            users.append({
+                'id': member.user.id,
+                'username': member.user.username,
+                'first_name': display_name
+            })
         
         return JsonResponse({
             'success': True,
-            'users': list(members)
+            'users': users
         })
     except Exception as e:
         return JsonResponse({
