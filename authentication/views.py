@@ -23,7 +23,7 @@ from .models import BackupCode, MFARecoveryRequest
 @ratelimit(key='ip', rate='5/m', method='POST')
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     if request.method == 'POST':
         form = SecureUserCreationForm(request.POST)
@@ -57,10 +57,10 @@ class SecureLoginView(LoginView):
             messages.success(self.request, f'Welcome back, {user.first_name}!')
             
             # Just redirect to chat (let user choose when to set up MFA)
-            return redirect('chat_index')
+            return redirect('chat:chat_index')
 
     def get_success_url(self):
-        return reverse_lazy('chat_index')
+        return reverse_lazy('chat:chat_index')
 
 
 @ratelimit(key='ip', rate='10/m', method='POST')
@@ -94,7 +94,7 @@ def mfa_verify_view(request):
                     if remaining_codes <= 2:
                         messages.warning(request, f'You only have {remaining_codes} backup codes remaining. Consider generating new ones.')
                     
-                    return redirect('chat_index')
+                    return redirect('chat:chat_index')
                 else:
                     messages.error(request, 'Invalid or already used recovery code.')
         else:
@@ -109,7 +109,7 @@ def mfa_verify_view(request):
                         login(request, user)
                         del request.session['pre_2fa_user_pk']
                         messages.success(request, f'Welcome back, {user.first_name}!')
-                        return redirect('chat_index')
+                        return redirect('chat:chat_index')
                 
                 # Token is invalid
                 messages.error(request, 'Invalid authentication code. Please try again.')
@@ -134,7 +134,7 @@ def mfa_setup_view(request):
     # Check if user already has MFA enabled
     if user_has_device(user):
         messages.info(request, 'Multi-Factor Authentication is already enabled.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     # Show helpful message when user manually chooses to set up MFA
     if request.method == 'GET':
@@ -208,7 +208,7 @@ def mfa_disable_view(request):
         # Delete all TOTP devices for the user
         request.user.totpdevice_set.all().delete()
         messages.success(request, 'Multi-Factor Authentication has been disabled.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     return render(request, 'authentication/mfa_disable.html')
 
@@ -232,7 +232,7 @@ def backup_codes_view(request):
         if 'new_backup_codes' in request.session:
             del request.session['new_backup_codes']
         messages.success(request, 'Backup codes saved! You can now use them if you lose your device.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     return render(request, 'authentication/backup_codes.html', {
         'backup_codes': backup_codes

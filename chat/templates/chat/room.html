@@ -1515,7 +1515,7 @@
                                 <i class="fas fa-sign-out-alt me-1"></i>Logout
                             </button>
                         </form>
-                        <a href="{% url 'chat_index' %}" class="action-btn primary-btn">
+                        <a href="{% url 'chat:chat_index' %}" class="action-btn primary-btn">
                             <i class="fas fa-arrow-left me-1"></i>Back to Rooms
                         </a>
                     </div>
@@ -2080,7 +2080,7 @@
                 
                 // Redirect to rooms list after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '{% url "chat_index" %}';
+                    window.location.href = '{% url "chat:chat_index" %}';
                 }, 3000);
             } else if (data.type === 'user_kicked') {
                 // Handle user being kicked
@@ -2120,7 +2120,7 @@
                 
                 // Redirect to rooms list after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '{% url "chat_index" %}';
+                    window.location.href = '{% url "chat:chat_index" %}';
                 }, 3000);
             } else if (data.type === 'user_banned') {
                 // Handle user being banned
@@ -2160,7 +2160,7 @@
                 
                 // Redirect to rooms list after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '{% url "chat_index" %}';
+                    window.location.href = '{% url "chat:chat_index" %}';
                 }, 3000);
             } else if (data.type === 'delete_message') {
                 // Handle message deletion

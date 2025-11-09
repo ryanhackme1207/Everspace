@@ -60,7 +60,7 @@ def ajax_login_required(view_func):
 def landing_page(request):
     """Modern landing page with animations and introduction"""
     if request.user.is_authenticated:
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     return render(request, 'chat/landing.html')
 
 def test_endpoint(request):
@@ -134,7 +134,7 @@ def room(request, room_name):
         room_obj = Room.objects.get(name=room_name)
     except Room.DoesNotExist:
         messages.error(request, f'Room "{room_name}" does not exist or has been deleted.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     # Check if user is banned from this room. Avoid spamming the same message across redirects.
     if room_obj.is_user_banned(request.user):
@@ -143,7 +143,7 @@ def room(request, room_name):
             # Use extra_tags so templates can suppress room-ban messages outside chat contexts
             messages.error(request, f'You are banned from room "{room_name}". Contact the room host if you believe this is an error.', extra_tags='room-ban')
             request.session[ban_flag_key] = True
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     # Handle private room password checking
     if room_obj.is_private():
@@ -413,7 +413,7 @@ def delete_room(request, room_name):
         
         room_obj.delete()
         messages.success(request, f'Room "{room_name}" has been deleted successfully.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     # If GET request, show confirmation page
     return render(request, 'chat/delete_room.html', {
@@ -498,7 +498,7 @@ def kick_member(request):
         if is_ajax_req:
             return JsonResponse({'success': False,'message': 'Room name and username are required.'})
         messages.error(request, 'Room name and username are required.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     
     try:
         room_obj = Room.objects.get(name=room_name)
@@ -567,17 +567,17 @@ def kick_member(request):
         if is_ajax_req:
             return JsonResponse({'success': False,'message': 'Room not found.'})
         messages.error(request, 'Room not found.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     except User.DoesNotExist:
         if is_ajax_req:
             return JsonResponse({'success': False,'message': 'User not found.'})
         messages.error(request, 'User not found.')
-        return redirect('chat_room', room_name=room_name or 'chat_index')
+        return redirect('chat:chat_room', room_name=room_name or 'chat_index')
     except Exception as e:
         if is_ajax_req:
             return JsonResponse({'success': False,'message': f'An error occurred while kicking the member: {str(e)}'})
         messages.error(request, 'An error occurred while kicking the member.')
-        return redirect('chat_room', room_name=room_name or 'chat_index')
+        return redirect('chat:chat_room', room_name=room_name or 'chat_index')
 
 
 @ajax_login_required
@@ -684,17 +684,17 @@ def ban_member(request):
         if is_ajax_req:
             return JsonResponse({'success': False,'message': 'Room not found.'})
         messages.error(request, 'Room not found.')
-        return redirect('chat_index')
+        return redirect('chat:chat_index')
     except User.DoesNotExist:
         if is_ajax_req:
             return JsonResponse({'success': False,'message': 'User not found.'})
         messages.error(request, 'User not found.')
-        return redirect('chat_room', room_name=room_name or 'chat_index')
+        return redirect('chat:chat_room', room_name=room_name or 'chat_index')
     except Exception as e:
         if is_ajax_req:
             return JsonResponse({'success': False,'message': f'An error occurred while banning the member: {str(e)}'})
         messages.error(request, 'An error occurred while banning the member.')
-        return redirect('chat_room', room_name=room_name or 'chat_index')
+        return redirect('chat:chat_room', room_name=room_name or 'chat_index')
 
 
 @login_required
