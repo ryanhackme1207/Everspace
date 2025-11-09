@@ -78,7 +78,13 @@ def index(request):
     # Check if user has MFA enabled (but don't show automatic message)
     user_has_mfa = user_has_device(request.user)
     
-    rooms = Room.objects.all()
+    # Only show finalized rooms to users (creators can see their own unfinalized rooms)
+    if request.user.is_authenticated:
+        rooms = Room.objects.filter(
+            models.Q(is_finalized=True) | models.Q(creator=request.user)
+        )
+    else:
+        rooms = Room.objects.filter(is_finalized=True)
     
     # Get friends data if user is authenticated
     friends = []
@@ -134,6 +140,11 @@ def room(request, room_name):
         room_obj = Room.objects.get(name=room_name)
     except Room.DoesNotExist:
         messages.error(request, f'Room "{room_name}" does not exist or has been deleted.')
+        return redirect('chat:chat_index')
+    
+    # Check if room setup is finalized (except for creator)
+    if not room_obj.is_finalized and room_obj.creator != request.user:
+        messages.error(request, f'Room "{room_name}" is still being set up by the creator. Please try again later.')
         return redirect('chat:chat_index')
     
     # Check if user is banned from this room. Avoid spamming the same message across redirects.
@@ -304,6 +315,7 @@ def finalize_room(request):
         room.description = description
         room.visibility = visibility
         room.password = password if visibility == 'private' else ''
+        room.is_finalized = True  # Mark room as ready for use
         room.save()
         
         return JsonResponse({

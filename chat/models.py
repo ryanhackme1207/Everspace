@@ -96,6 +96,7 @@ class Room(models.Model):
     description = models.TextField(blank=True)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
     password = models.CharField(max_length=128, blank=True)  # For private rooms
+    is_finalized = models.BooleanField(default=False)  # Track if room setup is complete
     created_at = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_rooms', null=True, blank=True)
     
