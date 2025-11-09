@@ -1,0 +1,122 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:chat_userprofile_changelist' %}">User profiles</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post" style="max-width: 600px;">
+        {% csrf_token %}
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin-top: 0; color: #333;">
+                {% if action_type == 'Add' %}
+                    ➕ Add Evercoin
+                {% else %}
+                    ➖ Deduct Evercoin
+                {% endif %}
+            </h2>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>User:</strong> {{ profile.user.username }}
+                {% if profile.user.first_name or profile.user.last_name %}
+                    ({{ profile.user.first_name }} {{ profile.user.last_name }})
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Current Balance:</strong> 
+                <span style="font-size: 1.2em; color: #f59e0b; font-weight: bold;">
+                    💰 {{ profile.evercoin|floatformat:0 }}
+                </span>
+            </div>
+        </div>
+
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <div>
+                    <label for="id_amount" class="required">Amount:</label>
+                    <input 
+                        type="number" 
+                        name="amount" 
+                        id="id_amount" 
+                        required 
+                        min="1" 
+                        max="1000000"
+                        step="1"
+                        style="width: 200px; padding: 8px; font-size: 14px;"
+                        placeholder="Enter amount"
+                    >
+                    <p class="help">
+                        {% if action_type == 'Add' %}
+                            Enter the amount of Evercoin to add (max: 1,000,000)
+                        {% else %}
+                            Enter the amount of Evercoin to deduct (max: {{ profile.evercoin|floatformat:0 }})
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label for="id_reason">Reason:</label>
+                    <textarea 
+                        name="reason" 
+                        id="id_reason" 
+                        rows="3" 
+                        cols="40"
+                        style="width: 100%; max-width: 400px; padding: 8px; font-size: 14px;"
+                        placeholder="Optional: Reason for this transaction"
+                    ></textarea>
+                    <p class="help">Optional: Provide a reason for this evercoin adjustment</p>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="submit-row">
+            <input 
+                type="submit" 
+                value="{% if action_type == 'Add' %}Add Evercoin{% else %}Deduct Evercoin{% endif %}" 
+                class="default" 
+                style="{% if action_type == 'Add' %}background: #10b981;{% else %}background: #ef4444;{% endif %} border-color: transparent; font-weight: bold;"
+            >
+            <a 
+                href="{% url 'admin:chat_userprofile_changelist' %}" 
+                class="button cancel-link"
+                style="margin-left: 10px;"
+            >Cancel</a>
+        </div>
+    </form>
+
+    <script>
+        // Preview the new balance
+        document.getElementById('id_amount').addEventListener('input', function() {
+            const amount = parseInt(this.value) || 0;
+            const currentBalance = {{ profile.evercoin }};
+            const actionType = "{{ action_type }}";
+            
+            if (amount > 0) {
+                let newBalance;
+                if (actionType === 'Add') {
+                    newBalance = currentBalance + amount;
+                } else {
+                    newBalance = currentBalance - amount;
+                    if (newBalance < 0) {
+                        this.setCustomValidity('Amount exceeds current balance');
+                        return;
+                    }
+                }
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+</div>
+{% endblock %}
