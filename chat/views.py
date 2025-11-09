@@ -391,7 +391,7 @@ def delete_room(request, room_name):
     
     if not room_obj.can_delete(request.user):
         messages.error(request, 'Only the room creator can delete this room.')
-        return redirect('chat_room', room_name=room_name)
+        return redirect('chat:chat_room', room_name=room_name)
     
     if request.method == 'POST':
         # Notify all connected users before deleting the room
@@ -430,7 +430,7 @@ def room_settings(request, room_name):
     # Only room host can access settings
     if not room_obj.is_host(request.user):
         messages.error(request, 'Only the room host can access room settings.')
-        return redirect('chat_room', room_name=room_name)
+        return redirect('chat:chat_room', room_name=room_name)
     
     # Presence: derive online from cache active_users to avoid stale DB status
     from django.core.cache import cache
@@ -448,7 +448,7 @@ def room_settings(request, room_name):
         new_description = request.POST.get('description', '').strip()
         room_obj.update_description(new_description)
         messages.success(request, 'Room description updated successfully!')
-        return redirect('room_settings', room_name=room_name)
+        return redirect('chat:room_settings', room_name=room_name)
     
     return render(request, 'chat/room_settings.html', {
         'room_obj': room_obj,
@@ -511,21 +511,21 @@ def kick_member(request):
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': 'Only the room host can kick members.'})
             messages.error(request, 'Only the room host can kick members.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Cannot kick the host
         if user_to_kick == request.user:
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': 'You cannot kick yourself.'})
             messages.error(request, 'You cannot kick yourself.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Check if user is actually a member
         if not room_obj.members.filter(user=user_to_kick).exists():
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': f'{username} is not a member of this room.'})
             messages.error(request, f'{username} is not a member of this room.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Kick the user
         room_obj.kick_user(user_to_kick)
@@ -561,7 +561,7 @@ def kick_member(request):
         if is_ajax_req:
             return JsonResponse({'success': True,'message': f'{username} has been kicked from the room.'})
         messages.success(request, f'{username} has been kicked from the room.')
-        return redirect('chat_room', room_name=room_name)
+        return redirect('chat:chat_room', room_name=room_name)
         
     except Room.DoesNotExist:
         if is_ajax_req:
@@ -628,21 +628,21 @@ def ban_member(request):
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': 'Only the room host can ban members.'})
             messages.error(request, 'Only the room host can ban members.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Cannot ban the host
         if user_to_ban == request.user:
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': 'You cannot ban yourself.'})
             messages.error(request, 'You cannot ban yourself.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Check if user is already banned
         if room_obj.is_user_banned(user_to_ban):
             if is_ajax_req:
                 return JsonResponse({'success': False,'message': f'{username} is already banned from this room.'})
             messages.error(request, f'{username} is already banned from this room.')
-            return redirect('chat_room', room_name=room_name)
+            return redirect('chat:chat_room', room_name=room_name)
         
         # Ban the user
         room_obj.ban_user(user_to_ban, request.user, reason)
@@ -678,7 +678,7 @@ def ban_member(request):
         if is_ajax_req:
             return JsonResponse({'success': True,'message': f'{username} has been banned from the room.'})
         messages.success(request, f'{username} has been banned from the room.')
-        return redirect('chat_room', room_name=room_name)
+        return redirect('chat:chat_room', room_name=room_name)
         
     except Room.DoesNotExist:
         if is_ajax_req:
@@ -1030,7 +1030,7 @@ def private_chat(request, username):
     # Check if users are friends
     if not Friendship.are_friends(request.user, friend):
         messages.error(request, f'You are not friends with {username}.')
-        return redirect('friends_list')
+        return redirect('chat:friends_list')
     
     # Get conversation messages
     messages_list = PrivateMessage.objects.filter(
@@ -1270,21 +1270,21 @@ def edit_profile(request):
             if new_username != request.user.username:
                 if not profile.can_change_username():
                     messages.error(request, 'You have reached the maximum number of username changes for this year (3).')
-                    return redirect('edit_profile')
+                    return redirect('chat:edit_profile')
                 
                 # Check if username is available
                 if User.objects.filter(username=new_username).exclude(id=request.user.id).exists():
                     messages.error(request, 'Username is already taken.')
-                    return redirect('edit_profile')
+                    return redirect('chat:edit_profile')
                 
                 # Validate username format
                 if len(new_username) < 3 or len(new_username) > 30:
                     messages.error(request, 'Username must be between 3 and 30 characters.')
-                    return redirect('edit_profile')
+                    return redirect('chat:edit_profile')
                 
                 if not new_username.replace('_', '').replace('-', '').isalnum():
                     messages.error(request, 'Username can only contain letters, numbers, underscores, and hyphens.')
-                    return redirect('edit_profile')
+                    return redirect('chat:edit_profile')
                 
                 # Update username and record change
                 request.user.username = new_username
@@ -1333,7 +1333,7 @@ def edit_profile(request):
             else:
                 messages.error(request, 'Invalid cover choice.')
         
-        return redirect('edit_profile')
+        return redirect('chat:edit_profile')
     
     # Filter out room-ban tagged messages (server-side) so they never display here
     storage = messages.get_messages(request)
