@@ -1197,6 +1197,133 @@
             display: inline-block;
         }
 
+        /* Soundboard Styles */
+        .sound-category-btn {
+            padding: 0.4rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .sound-category-btn:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--accent-teal);
+            color: var(--accent-teal);
+        }
+
+        .sound-category-btn.active {
+            background: var(--accent-teal);
+            border-color: var(--accent-teal);
+            color: white;
+        }
+
+        .sound-btn {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .sound-btn:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--accent-teal);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .sound-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .sound-btn.playing {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: var(--accent-teal);
+            animation: soundPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes soundPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(78, 205, 196, 0); }
+        }
+
+        .sound-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .sound-name {
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .sound-duration {
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+        }
+
+        .sound-btn .share-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--accent-coral);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .sound-btn:hover .share-indicator {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Replay Sound Button */
+        .replay-sound-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent-teal);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .replay-sound-btn:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .replay-sound-btn:active {
+            transform: translateY(0);
+        }
+
         /* Message with Gift */
         .message-gift {
             background: rgba(78, 205, 196, 0.1);
@@ -1895,6 +2022,9 @@
                     <button type="button" class="toolbar-btn" id="gif-btn" title="Send GIF">
                         <i class="fas fa-film"></i>
                     </button>
+                    <button type="button" class="toolbar-btn" id="soundboard-btn" title="Soundboard">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
                 </div>
                 <div class="input-form">
                     <input type="text" id="message-input" class="message-input" placeholder="Type your message..." required>
@@ -2005,6 +2135,34 @@
                             <button class="btn btn-sm" id="view-stats-btn" style="background: rgba(78, 205, 196, 0.2); color: var(--accent-teal); border: 1px solid var(--accent-teal); padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer;">
                                 📊 View Stats
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soundboard Modal -->
+                <div id="soundboard-modal" class="gif-picker" style="display: none;">
+                    <div class="gif-picker-header">
+                        <span>🔊 Soundboard - Share Sound Effects</span>
+                        <button class="gif-close" id="soundboard-close">&times;</button>
+                    </div>
+                    <div style="padding: 1rem; max-height: 450px; overflow-y: auto;">
+                        <!-- Search Bar -->
+                        <div style="margin-bottom: 1rem;">
+                            <input type="text" id="sound-search" class="gif-search-input" placeholder="Search sounds..." style="width: 100%; padding: 0.6rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary);">
+                        </div>
+                        
+                        <!-- Sound Categories -->
+                        <div id="sound-categories" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <button class="sound-category-btn active" data-category="all">All</button>
+                            <button class="sound-category-btn" data-category="meme">Meme</button>
+                            <button class="sound-category-btn" data-category="effects">Effects</button>
+                            <button class="sound-category-btn" data-category="funny">Funny</button>
+                            <button class="sound-category-btn" data-category="gaming">Gaming</button>
+                        </div>
+                        
+                        <!-- Sound Grid -->
+                        <div id="sound-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem;">
+                            <!-- Sounds will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -2585,6 +2743,85 @@
                 `;
                 messagesContainer.appendChild(leaveElement);
                 scrollToBottom();
+            } else if (data.type === 'sound') {
+                // Handle sound sharing
+                const displayName = data.display_name || data.username;
+                const isCurrentUser = data.username === currentUsername;
+                
+                // Play the sound for everyone
+                if (soundEnabled) {
+                    try {
+                        const audio = new Audio(data.sound_url);
+                        audio.volume = 0.7;
+                        audio.play().catch(err => console.log('Sound play error:', err));
+                    } catch (err) {
+                        console.log('Sound creation error:', err);
+                    }
+                }
+                
+                // Show sound message
+                const soundElement = document.createElement('div');
+                soundElement.className = 'message message-enter';
+                soundElement.style.cssText = `
+                    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(69, 183, 209, 0.1));
+                    border-left: 3px solid var(--accent-teal);
+                `;
+                
+                const avatarLetter = (data.username || 'U').substring(0, 1).toUpperCase();
+                
+                soundElement.innerHTML = `
+                    <div class="message-header">
+                        <span class="username">
+                            <span class="user-avatar-small" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); color: white; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem;">${avatarLetter}</span>
+                            ${displayName}
+                            ${isCurrentUser ? '<span style="color: var(--accent-coral); font-size: 0.7rem; margin-left: 0.5rem;">(You)</span>' : ''}
+                        </span>
+                        <span class="timestamp">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-1">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            ${data.timestamp}
+                        </span>
+                    </div>
+                    <div class="message-content" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(78, 205, 196, 0.05); border-radius: 8px;">
+                        <span style="font-size: 2.5rem;">${data.sound_emoji}</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--accent-teal); margin-bottom: 0.25rem;">
+                                <i class="fas fa-volume-up me-1"></i>
+                                Sound Effect
+                            </div>
+                            <div style="color: var(--text-primary); font-size: 1.1rem;">
+                                ${data.sound_name}
+                            </div>
+                        </div>
+                        <button class="replay-sound-btn" data-sound-url="${data.sound_url}" style="padding: 0.5rem 1rem; background: var(--accent-teal); border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-play"></i>
+                            Replay
+                        </button>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(soundElement);
+                scrollToBottom();
+                
+                // Add replay button listener
+                const replayBtn = soundElement.querySelector('.replay-sound-btn');
+                if (replayBtn) {
+                    replayBtn.addEventListener('click', function() {
+                        const soundUrl = this.dataset.soundUrl;
+                        const audio = new Audio(soundUrl);
+                        audio.volume = 0.7;
+                        audio.play().catch(err => console.log('Replay error:', err));
+                        
+                        // Visual feedback
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Playing...';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-play"></i> Replay';
+                        }, 1000);
+                    });
+                }
+                
             } else if (data.type === 'room_deleted') {
                 // Handle room deletion - notify user and redirect
                 const deleteElement = document.createElement('div');
@@ -4219,11 +4456,206 @@
                 }
             });
 
+            // ========== SOUNDBOARD SYSTEM ==========
+            const soundboardBtn = document.getElementById('soundboard-btn');
+            const soundboardModal = document.getElementById('soundboard-modal');
+            const soundboardClose = document.getElementById('soundboard-close');
+            const soundGrid = document.getElementById('sound-grid');
+            const soundSearch = document.getElementById('sound-search');
+            const soundCategories = document.querySelectorAll('.sound-category-btn');
+
+            // Popular sound effects with public URLs
+            const sounds = [
+                // Meme Sounds
+                { name: 'Bruh', emoji: '😑', category: 'meme', url: 'https://www.myinstants.com/media/sounds/movie_1.mp3', duration: '1s' },
+                { name: 'OOF', emoji: '😵', category: 'meme', url: 'https://www.myinstants.com/media/sounds/roblox-death-sound_1.mp3', duration: '0.5s' },
+                { name: 'Wow', emoji: '😲', category: 'meme', url: 'https://www.myinstants.com/media/sounds/eddy-wally-wow.mp3', duration: '1s' },
+                { name: 'Windows XP', emoji: '🪟', category: 'meme', url: 'https://www.myinstants.com/media/sounds/microsoft-windows-xp-startup.mp3', duration: '4s' },
+                { name: 'Nope', emoji: '🙅', category: 'meme', url: 'https://www.myinstants.com/media/sounds/engineer_no01.mp3', duration: '1s' },
+                { name: 'Yeet', emoji: '🎯', category: 'meme', url: 'https://www.myinstants.com/media/sounds/yeet_qkpJL9w.mp3', duration: '1s' },
+                
+                // Sound Effects
+                { name: 'Tada', emoji: '🎉', category: 'effects', url: 'https://www.myinstants.com/media/sounds/tada-fanfare-a-6313.mp3', duration: '2s' },
+                { name: 'Applause', emoji: '👏', category: 'effects', url: 'https://www.myinstants.com/media/sounds/small-crowd-applause-and-cheers.mp3', duration: '3s' },
+                { name: 'Dramatic', emoji: '😱', category: 'effects', url: 'https://www.myinstants.com/media/sounds/dramatic-effect.mp3', duration: '6s' },
+                { name: 'Air Horn', emoji: '📯', category: 'effects', url: 'https://www.myinstants.com/media/sounds/mlg-airhorn.mp3', duration: '2s' },
+                { name: 'Record Scratch', emoji: '📀', category: 'effects', url: 'https://www.myinstants.com/media/sounds/record_scratch.mp3', duration: '2s' },
+                { name: 'Drum Roll', emoji: '🥁', category: 'effects', url: 'https://www.myinstants.com/media/sounds/drum-roll.mp3', duration: '3s' },
+                
+                // Funny Sounds
+                { name: 'Laugh', emoji: '😂', category: 'funny', url: 'https://www.myinstants.com/media/sounds/cartoon-laugh.mp3', duration: '2s' },
+                { name: 'Evil Laugh', emoji: '😈', category: 'funny', url: 'https://www.myinstants.com/media/sounds/evil-laugh.mp3', duration: '2s' },
+                { name: 'Trombone', emoji: '🎺', category: 'funny', url: 'https://www.myinstants.com/media/sounds/sad-trombone.mp3', duration: '2s' },
+                { name: 'Boing', emoji: '🏀', category: 'funny', url: 'https://www.myinstants.com/media/sounds/boing.mp3', duration: '1s' },
+                { name: 'Fart', emoji: '💨', category: 'funny', url: 'https://www.myinstants.com/media/sounds/wet-fart.mp3', duration: '1s' },
+                { name: 'Fail', emoji: '❌', category: 'funny', url: 'https://www.myinstants.com/media/sounds/fail-trombone-03.mp3', duration: '3s' },
+                
+                // Gaming Sounds
+                { name: 'Victory', emoji: '🏆', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/final-fantasy-vii-victory-fanfare.mp3', duration: '5s' },
+                { name: 'Level Up', emoji: '⬆️', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/level-up.mp3', duration: '2s' },
+                { name: 'Game Over', emoji: '💀', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/game-over.mp3', duration: '2s' },
+                { name: 'Coin', emoji: '🪙', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/smw_coin.mp3', duration: '0.5s' },
+                { name: 'Power Up', emoji: '⚡', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/power-up.mp3', duration: '2s' },
+                { name: 'Hit Marker', emoji: '🎯', category: 'gaming', url: 'https://www.myinstants.com/media/sounds/hitmarker.mp3', duration: '1s' },
+            ];
+
+            let currentCategory = 'all';
+            let currentlyPlaying = null;
+
+            // Toggle soundboard modal
+            soundboardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = soundboardModal.style.display === 'block';
+                soundboardModal.style.display = isVisible ? 'none' : 'block';
+                emojiPicker.style.display = 'none';
+                giftPicker.style.display = 'none';
+                gifPicker.style.display = 'none';
+                gamesModal.style.display = 'none';
+                soundboardBtn.classList.toggle('active');
+                emojiBtn.classList.remove('active');
+                giftBtn.classList.remove('active');
+                gifBtn.classList.remove('active');
+                gamesBtn.classList.remove('active');
+                
+                if (!isVisible) {
+                    renderSounds();
+                }
+            });
+
+            // Close soundboard modal
+            soundboardClose.addEventListener('click', () => {
+                soundboardModal.style.display = 'none';
+                soundboardBtn.classList.remove('active');
+                stopCurrentSound();
+            });
+
+            // Category filtering
+            soundCategories.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    soundCategories.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderSounds();
+                });
+            });
+
+            // Search functionality
+            soundSearch.addEventListener('input', (e) => {
+                renderSounds(e.target.value.toLowerCase());
+            });
+
+            // Render sounds
+            function renderSounds(searchTerm = '') {
+                soundGrid.innerHTML = '';
+                
+                const filteredSounds = sounds.filter(sound => {
+                    const matchesCategory = currentCategory === 'all' || sound.category === currentCategory;
+                    const matchesSearch = !searchTerm || sound.name.toLowerCase().includes(searchTerm);
+                    return matchesCategory && matchesSearch;
+                });
+
+                if (filteredSounds.length === 0) {
+                    soundGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 2rem;">No sounds found</p>';
+                    return;
+                }
+
+                filteredSounds.forEach(sound => {
+                    const soundBtn = document.createElement('div');
+                    soundBtn.className = 'sound-btn';
+                    soundBtn.innerHTML = `
+                        <span class="sound-icon">${sound.emoji}</span>
+                        <span class="sound-name">${sound.name}</span>
+                        <span class="sound-duration">${sound.duration}</span>
+                        <span class="share-indicator">
+                            <i class="fas fa-share"></i>
+                        </span>
+                    `;
+                    
+                    soundBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        playAndShareSound(sound, soundBtn);
+                    });
+                    
+                    soundGrid.appendChild(soundBtn);
+                });
+            }
+
+            // Play and share sound
+            function playAndShareSound(sound, btnElement) {
+                // Stop current sound
+                stopCurrentSound();
+                
+                // Create audio element
+                const audio = new Audio(sound.url);
+                currentlyPlaying = { audio, button: btnElement };
+                
+                btnElement.classList.add('playing');
+                
+                // Play sound
+                audio.play().catch(err => {
+                    console.error('Error playing sound:', err);
+                    showNotification('Error playing sound', 'error');
+                    btnElement.classList.remove('playing');
+                });
+                
+                // Remove playing state when finished
+                audio.addEventListener('ended', () => {
+                    btnElement.classList.remove('playing');
+                    currentlyPlaying = null;
+                });
+                
+                // Share sound in chat
+                shareSound(sound);
+            }
+
+            // Stop current sound
+            function stopCurrentSound() {
+                if (currentlyPlaying) {
+                    currentlyPlaying.audio.pause();
+                    currentlyPlaying.audio.currentTime = 0;
+                    currentlyPlaying.button.classList.remove('playing');
+                    currentlyPlaying = null;
+                }
+            }
+
+            // Share sound in chat via WebSocket
+            function shareSound(sound) {
+                try {
+                    const soundMessage = {
+                        type: 'sound',
+                        sound_name: sound.name,
+                        sound_emoji: sound.emoji,
+                        sound_url: sound.url,
+                        username: currentUsername,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    chatSocket.send(JSON.stringify(soundMessage));
+                    
+                    // Show notification
+                    showNotification(`🔊 Shared sound: ${sound.name}`, 'success');
+                    
+                    // Close modal after sharing
+                    setTimeout(() => {
+                        soundboardModal.style.display = 'none';
+                        soundboardBtn.classList.remove('active');
+                    }, 500);
+                } catch (err) {
+                    console.error('Error sharing sound:', err);
+                    showNotification('Error sharing sound', 'error');
+                }
+            }
+
             // Close pickers when clicking outside
             document.addEventListener('click', (e) => {
                 if (!gifPicker.contains(e.target) && e.target !== gifBtn && !gifBtn.contains(e.target)) {
                     gifPicker.style.display = 'none';
                     gifBtn.classList.remove('active');
+                }
+                if (!soundboardModal.contains(e.target) && e.target !== soundboardBtn && !soundboardBtn.contains(e.target)) {
+                    soundboardModal.style.display = 'none';
+                    soundboardBtn.classList.remove('active');
+                    stopCurrentSound();
                 }
                 if (!gamesModal.contains(e.target) && e.target !== gamesBtn && !gamesBtn.contains(e.target)) {
                     gamesModal.style.display = 'none';

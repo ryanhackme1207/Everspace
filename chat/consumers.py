@@ -196,7 +196,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
         try:
             text_data_json = json.loads(text_data)
-            message = text_data_json['message'].strip()
+            message_type = text_data_json.get('type', 'message')
+            
+            # Handle sound sharing
+            if message_type == 'sound':
+                username = self.user.username
+                display_name = f"{self.user.first_name} {self.user.last_name}".strip() or username
+                
+                # Broadcast sound to room group
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'sound_message',
+                        'sound_name': text_data_json.get('sound_name', 'Sound'),
+                        'sound_emoji': text_data_json.get('sound_emoji', '🔊'),
+                        'sound_url': text_data_json.get('sound_url', ''),
+                        'username': username,
+                        'display_name': display_name,
+                        'timestamp': self.get_timestamp(),
+                    }
+                )
+                return
+            
+            # Handle regular chat messages
+            message = text_data_json.get('message', '').strip()
             
             # Basic message validation
             if not message or len(message) > 1000:
@@ -274,6 +297,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'user_leave',
             'username': username,
             'display_name': display_name,
+        }))
+
+    # Handle sound message event
+    async def sound_message(self, event):
+        username = event['username']
+        display_name = event.get('display_name', username)
+        sound_name = event.get('sound_name', 'Sound')
+        sound_emoji = event.get('sound_emoji', '🔊')
+        sound_url = event.get('sound_url', '')
+        timestamp = event.get('timestamp', '')
+
+        # Send sound to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'sound',
+            'sound_name': sound_name,
+            'sound_emoji': sound_emoji,
+            'sound_url': sound_url,
+            'username': username,
+            'display_name': display_name,
+            'timestamp': timestamp,
         }))
 
 
