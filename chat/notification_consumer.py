@@ -103,3 +103,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'link': event.get('link', ''),
             'timestamp': event['timestamp']
         }))
+    
+    async def intimacy_update(self, event):
+        """Send intimacy update notification"""
+        await self.send(text_data=json.dumps({
+            'type': 'intimacy_update',
+            'notification_type': 'intimacy_update',
+            'username': event['username'],
+            'intimacy': event['intimacy'],
+            'timestamp': event.get('timestamp', '')
+        }))

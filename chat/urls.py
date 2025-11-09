@@ -50,6 +50,10 @@ urlpatterns = [
     path('chat/gifs/send/', views.send_gif, name='send_gif'),
     path('chat/gifs/trending/', views.get_trending_gifs, name='get_trending_gifs'),
     path('chat/gifs/stats/', views.get_gif_stats, name='get_gif_stats'),
+    # Mini Games URLs
+    path('games/2048/', views.game_2048, name='game_2048'),
+    path('games/submit-score/', views.submit_game_score, name='submit_game_score'),
+    path('games/stats/', views.get_game_stats, name='get_game_stats'),
     # Debug endpoints
     path('debug/gifts-status/', views.debug_gifts_status, name='debug_gifts_status'),
 ]

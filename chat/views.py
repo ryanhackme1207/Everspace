@@ -1867,6 +1867,32 @@ def send_gift_new(request, room_name):
                     'intimacy_total': total_intimacy
                 }
             )
+            
+            # Send intimacy updates to both sender and recipient via their notification channels
+            from django.utils import timezone
+            timestamp = timezone.now().isoformat()
+            
+            # Update sender's intimacy display for this recipient
+            async_to_sync(channel_layer.group_send)(
+                f'notifications_{sender.username}',
+                {
+                    'type': 'intimacy_update',
+                    'username': recipient.username,
+                    'intimacy': total_intimacy,
+                    'timestamp': timestamp
+                }
+            )
+            
+            # Update recipient's intimacy display for the sender
+            async_to_sync(channel_layer.group_send)(
+                f'notifications_{recipient.username}',
+                {
+                    'type': 'intimacy_update',
+                    'username': sender.username,
+                    'intimacy': total_intimacy,
+                    'timestamp': timestamp
+                }
+            )
         except Exception as e:
             print(f"[GIFT BROADCAST ERROR] {str(e)}")
         
@@ -2278,6 +2304,111 @@ def get_gif_stats(request):
                 'total_views': total_views
             }
         })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+# ============== MINI GAMES SYSTEM ==============
+
+@login_required
+def game_2048(request):
+    """Render 2048 game"""
+    return render(request, 'chat/games/2048.html')
+
+
+@login_required
+@require_http_methods(["POST"])
+def submit_game_score(request):
+    """Submit game score and award Evercoins"""
+    try:
+        from .models import GameSession
+        import json
+        
+        data = json.loads(request.body)
+        game_type = data.get('game_type')
+        score = int(data.get('score', 0))
+        
+        # Validate game type
+        valid_games = ['2048', 'snake', 'flappy', 'memory']
+        if game_type not in valid_games:
+            return JsonResponse({'success': False, 'error': 'Invalid game type'}, status=400)
+        
+        # Calculate reward
+        reward = GameSession.calculate_reward(game_type, score)
+        
+        # Create game session
+        session = GameSession.objects.create(
+            user=request.user,
+            game_type=game_type,
+            score=score,
+            evercoin_earned=reward,
+            completed=True
+        )
+        
+        # Award Evercoins
+        profile = request.user.profile
+        profile.evercoin += reward
+        profile.save()
+        
+        return JsonResponse({
+            'success': True,
+            'reward': reward,
+            'total_evercoin': profile.evercoin,
+            'message': f'Congratulations! You earned {reward} Evercoins!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_game_stats(request):
+    """Get user's game statistics"""
+    try:
+        from .models import GameSession
+        from django.db.models import Sum, Count, Avg, Max
+        
+        stats = GameSession.objects.filter(user=request.user).aggregate(
+            total_games=Count('id'),
+            total_earned=Sum('evercoin_earned'),
+            avg_score=Avg('score')
+        )
+        
+        # Get stats per game type
+        game_stats = {}
+        for game_type, game_name in GameSession.GAME_CHOICES:
+            game_data = GameSession.objects.filter(
+                user=request.user,
+                game_type=game_type
+            ).aggregate(
+                plays=Count('id'),
+                total_earned=Sum('evercoin_earned'),
+                best_score=Max('score')
+            )
+            game_stats[game_type] = {
+                'name': game_name,
+                'plays': game_data['plays'] or 0,
+                'total_earned': game_data['total_earned'] or 0,
+                'best_score': game_data['best_score'] or 0
+            }
+        
+        return JsonResponse({
+            'success': True,
+            'overall': {
+                'total_games': stats['total_games'] or 0,
+                'total_earned': stats['total_earned'] or 0,
+                'avg_score': int(stats['avg_score'] or 0)
+            },
+            'games': game_stats
+        })
+        
     except Exception as e:
         return JsonResponse({
             'success': False,

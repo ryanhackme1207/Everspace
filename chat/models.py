@@ -683,3 +683,41 @@ class GifUsageLog(models.Model):
         return f"{self.user.username} sent {self.gif.title} in {self.room.name}"
 
 
+class GameSession(models.Model):
+    """Track user game sessions and rewards"""
+    GAME_CHOICES = [
+        ('2048', '2048 Puzzle'),
+        ('snake', 'Snake Game'),
+        ('flappy', 'Flappy Bird'),
+        ('memory', 'Memory Cards'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_sessions')
+    game_type = models.CharField(max_length=20, choices=GAME_CHOICES)
+    score = models.IntegerField(default=0)
+    evercoin_earned = models.IntegerField(default=0)
+    completed = models.BooleanField(default=False)
+    played_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-played_at']
+        indexes = [
+            models.Index(fields=['user', '-played_at']),
+            models.Index(fields=['game_type', '-played_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_game_type_display()} - {self.score}"
+    
+    @staticmethod
+    def calculate_reward(game_type, score):
+        """Calculate Evercoin reward based on game type and score"""
+        rewards = {
+            '2048': lambda s: min(200, max(50, s // 100)),  # 50-200 based on score
+            'snake': lambda s: min(150, max(30, s * 10)),    # 30-150 based on length
+            'flappy': lambda s: min(180, max(40, s * 15)),   # 40-180 based on pipes
+            'memory': lambda s: min(100, max(20, 500 // max(s, 10))),  # 20-100 based on moves (less is better)
+        }
+        return rewards.get(game_type, lambda s: 10)(score)
+
+

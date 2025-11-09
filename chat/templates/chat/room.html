@@ -1117,6 +1117,59 @@
             max-height: 300px;
         }
 
+        /* Game Cards */
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--accent-teal);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .game-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .game-card h4 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .game-card p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+
+        .game-reward {
+            color: var(--accent-yellow);
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(254, 202, 87, 0.1);
+            border-radius: 12px;
+            display: inline-block;
+        }
+
         /* Message with Gift */
         .message-gift {
             background: rgba(78, 205, 196, 0.1);
@@ -1599,6 +1652,9 @@
                     <button type="button" class="toolbar-btn" id="gift-btn" title="Send Gift">
                         <i class="fas fa-gift"></i>
                     </button>
+                    <button type="button" class="toolbar-btn" id="games-btn" title="Play Mini Games">
+                        <i class="fas fa-gamepad"></i>
+                    </button>
                     <button type="button" class="toolbar-btn" id="gif-btn" title="Send GIF">
                         <i class="fas fa-film"></i>
                     </button>
@@ -1671,6 +1727,50 @@
                         <div class="gif-loading">Loading GIFs... ⏳</div>
                     </div>
                 </div>
+
+                <!-- Games Modal -->
+                <div id="games-modal" class="gif-picker" style="display: none;">
+                    <div class="gif-picker-header">
+                        <span>🎮 Mini Games - Earn Evercoins!</span>
+                        <button class="gif-close" id="games-close">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                            <div class="game-card" data-game="2048">
+                                <div class="game-icon">🎯</div>
+                                <h4>2048 Puzzle</h4>
+                                <p>Merge tiles to reach 2048!</p>
+                                <div class="game-reward">💰 50-200 Coins</div>
+                            </div>
+                            <div class="game-card" data-game="snake">
+                                <div class="game-icon">🐍</div>
+                                <h4>Snake Game</h4>
+                                <p>Classic snake, eat and grow!</p>
+                                <div class="game-reward">💰 30-150 Coins</div>
+                            </div>
+                            <div class="game-card" data-game="flappy">
+                                <div class="game-icon">🐦</div>
+                                <h4>Flappy Bird</h4>
+                                <p>Fly through pipes!</p>
+                                <div class="game-reward">💰 40-180 Coins</div>
+                            </div>
+                            <div class="game-card" data-game="memory">
+                                <div class="game-icon">🎴</div>
+                                <h4>Memory Cards</h4>
+                                <p>Match the pairs!</p>
+                                <div class="game-reward">💰 20-100 Coins</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                Your Balance: <span style="color: var(--accent-yellow); font-weight: bold;">🪙 {{ user.profile.evercoin|default:0 }}</span>
+                            </p>
+                            <button class="btn btn-sm" id="view-stats-btn" style="background: rgba(78, 205, 196, 0.2); color: var(--accent-teal); border: 1px solid var(--accent-teal); padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer;">
+                                📊 View Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1735,10 +1835,44 @@
             return cookieValue;
         }
         
+        // Show notification toast
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                z-index: 10000;
+                min-width: 300px;
+                max-width: 400px;
+                padding: 1rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+        
         const roomName = "{{ room_name }}";
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const chatSocket = new WebSocket(
             wsProtocol + '//' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+        
+        // Connect to notification WebSocket for real-time updates
+        const notificationSocket = new WebSocket(
+            wsProtocol + '//' + window.location.host + '/ws/notifications/'
         );
 
         const messagesContainer = document.getElementById('chat-messages');
@@ -2204,6 +2338,53 @@
             statusDiv.innerHTML = '<i class="fas fa-times-circle me-2"></i>Failed to connect to chat server. Please refresh the page.';
             messagesContainer.appendChild(statusDiv);
         };
+
+        // Notification WebSocket handlers
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log('Notification received:', data);
+            
+            if (data.type === 'intimacy_update') {
+                // Update intimacy display for the specific user in the user list
+                updateIntimacyDisplay(data.username, data.intimacy);
+            } else if (data.type === 'friend_request') {
+                // Show friend request notification
+                showNotification('Friend Request', data.message, 'info');
+                // Optionally reload page or update UI
+            } else if (data.type === 'friend_accepted') {
+                // Show friend accepted notification
+                showNotification('Friend Request Accepted', data.message, 'success');
+                // Update friends list if visible
+            }
+        };
+
+        notificationSocket.onopen = function(e) {
+            console.log('Notification socket connected');
+        };
+
+        notificationSocket.onerror = function(e) {
+            console.error('Notification socket error:', e);
+        };
+
+        notificationSocket.onclose = function(e) {
+            console.log('Notification socket closed');
+        };
+
+        // Function to update intimacy display in user list
+        function updateIntimacyDisplay(username, intimacy) {
+            const userItem = document.querySelector(`.user-item[data-username="${username}"]`);
+            if (userItem) {
+                const intimacyBadge = userItem.querySelector('.intimacy-badge-small');
+                if (intimacyBadge) {
+                    if (intimacy > 0) {
+                        intimacyBadge.textContent = `💖 ${intimacy}`;
+                        intimacyBadge.style.display = 'inline-flex';
+                    } else {
+                        intimacyBadge.style.display = 'none';
+                    }
+                }
+            }
+        }
 
         // Send message function
         function sendMessage() {
@@ -3340,17 +3521,116 @@
                 }
             }
 
+            // ========== GAMES SYSTEM ==========
+            const gamesBtn = document.getElementById('games-btn');
+            const gamesModal = document.getElementById('games-modal');
+            const gamesClose = document.getElementById('games-close');
+            const gameCards = document.querySelectorAll('.game-card');
+
+            // Toggle games modal
+            gamesBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = gamesModal.style.display === 'block';
+                gamesModal.style.display = isVisible ? 'none' : 'block';
+                emojiPicker.style.display = 'none';
+                giftPicker.style.display = 'none';
+                gifPicker.style.display = 'none';
+                gamesBtn.classList.toggle('active');
+                emojiBtn.classList.remove('active');
+                giftBtn.classList.remove('active');
+                gifBtn.classList.remove('active');
+            });
+
+            // Close games modal
+            gamesClose.addEventListener('click', () => {
+                gamesModal.style.display = 'none';
+                gamesBtn.classList.remove('active');
+            });
+
+            // Handle game card clicks
+            gameCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const gameType = card.dataset.game;
+                    let gameUrl = '';
+                    
+                    switch(gameType) {
+                        case '2048':
+                            gameUrl = '/games/2048/';
+                            break;
+                        case 'snake':
+                            alert('Snake game coming soon! 🐍');
+                            return;
+                        case 'flappy':
+                            alert('Flappy Bird coming soon! 🐦');
+                            return;
+                        case 'memory':
+                            alert('Memory Cards coming soon! 🎴');
+                            return;
+                    }
+                    
+                    if (gameUrl) {
+                        // Open game in new window
+                        const gameWindow = window.open(gameUrl, 'EverSpace Game', 'width=600,height=800,scrollbars=no,resizable=no');
+                        if (gameWindow) {
+                            gamesModal.style.display = 'none';
+                            gamesBtn.classList.remove('active');
+                        } else {
+                            alert('Please allow popups to play games');
+                        }
+                    }
+                });
+            });
+
+            // View stats button
+            document.getElementById('view-stats-btn').addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/games/stats/');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        let statsHtml = '<div style="padding: 1rem;">';
+                        statsHtml += `<h3 style="margin-bottom: 1rem;">📊 Your Game Stats</h3>`;
+                        statsHtml += `<div style="background: rgba(78, 205, 196, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">`;
+                        statsHtml += `<p><strong>Total Games:</strong> ${data.overall.total_games}</p>`;
+                        statsHtml += `<p><strong>Total Earned:</strong> 🪙 ${data.overall.total_earned}</p>`;
+                        statsHtml += `<p><strong>Average Score:</strong> ${data.overall.avg_score}</p>`;
+                        statsHtml += `</div>`;
+                        
+                        for (const [gameType, stats] of Object.entries(data.games)) {
+                            if (stats.plays > 0) {
+                                statsHtml += `<div style="margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px;">`;
+                                statsHtml += `<strong>${stats.name}:</strong> ${stats.plays} plays, 🪙 ${stats.total_earned} earned, Best: ${stats.best_score}`;
+                                statsHtml += `</div>`;
+                            }
+                        }
+                        statsHtml += '</div>';
+                        
+                        const tempModal = document.createElement('div');
+                        tempModal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+                        tempModal.innerHTML = `<div style="background: var(--dark-card); max-width: 500px; border-radius: 16px; color: white;">${statsHtml}<button onclick="this.parentElement.parentElement.remove()" style="width: 100%; padding: 0.75rem; background: var(--accent-teal); border: none; color: var(--darker-card); font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 1rem;">Close</button></div>`;
+                        document.body.appendChild(tempModal);
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                    alert('Error loading stats');
+                }
+            });
+
             // Close pickers when clicking outside
             document.addEventListener('click', (e) => {
                 if (!gifPicker.contains(e.target) && e.target !== gifBtn && !gifBtn.contains(e.target)) {
                     gifPicker.style.display = 'none';
                     gifBtn.classList.remove('active');
                 }
+                if (!gamesModal.contains(e.target) && e.target !== gamesBtn && !gamesBtn.contains(e.target)) {
+                    gamesModal.style.display = 'none';
+                    gamesBtn.classList.remove('active');
+                }
             });
 
         } // End initializeEmojiAndGiftPickers
 
-        // ========== END EMOJI & GIFT & GIF SYSTEM ==========
+        // ========== END EMOJI & GIFT & GIF & GAMES SYSTEM ==========
 
     </script>
 </body>

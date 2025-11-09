@@ -2162,10 +2162,14 @@
                 case 'friend_request':
                     title = 'Friend Request';
                     body = data.sender + ' sent you a friend request';
+                    // Reload the page to show new friend request
+                    setTimeout(() => window.location.reload(), 1000);
                     break;
                 case 'friend_accepted':
                     title = 'Friend Request Accepted';
                     body = data.sender + ' accepted your friend request';
+                    // Reload the page to update friends list
+                    setTimeout(() => window.location.reload(), 1000);
                     break;
                 case 'kicked':
                     title = 'Kicked from Room';
