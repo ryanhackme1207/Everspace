@@ -764,11 +764,12 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isSent ? 'sent' : ''}`;
             
-            const isGif = content.includes('[GIF]');
+            // Check if message is a GIF
             let contentHtml;
-            if (isGif) {
-                const gifUrl = content.replace(/\[GIF\]/g, '').trim();
-                contentHtml = `<img src="${gifUrl}" alt="GIF" class="message-gif">`;
+            const gifMatch = content.match(/\[GIF\](.*?)\[\/GIF\]/);
+            if (gifMatch) {
+                const gifUrl = gifMatch[1];
+                contentHtml = `<img src="${gifUrl}" alt="GIF" class="message-gif" loading="lazy">`;
             } else {
                 contentHtml = escapeHtml(content);
             }
