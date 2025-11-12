@@ -255,12 +255,25 @@
             <p style="font-size: 18px; margin: 10px 0;">You matched all pairs in <strong id="finalMoves">0</strong> moves!</p>
             <div class="reward-display" id="rewardDisplay"></div>
             <button class="btn" onclick="restartGame()">Play Again</button>
-            <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #f5576c, #f093fb);">Close</button>
+            <button class="btn" onclick="closeGameWindow()" style="background: linear-gradient(135deg, #f5576c, #f093fb);">Close</button>
         </div>
 
         <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
-        <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #f5576c, #f093fb);">Exit</button>
+        <button class="btn" onclick="closeGameWindow()" style="background: linear-gradient(135deg, #f5576c, #f093fb);">Exit</button>
     </div>
+
+    <script>
+        function closeGameWindow() {
+            // If window was opened by another window, close it
+            if (window.opener && !window.opener.closed) {
+                window.opener.focus();
+                window.close();
+            } else {
+                // Otherwise redirect
+                window.location.href = '/chat/';
+            }
+        }
+    </script>
 
     <script>
         const emojis = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎬', '🎸', '🎹', '🎺', '🎻', '🎲', '🎰', '🏀', '⚽', '🏈', '⚾', '🎾', '🏐', '🏓', '🏸'];

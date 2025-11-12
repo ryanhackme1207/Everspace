@@ -202,12 +202,25 @@
             <p style="font-size: 20px; margin: 10px 0;">Score: <strong id="finalScore">0</strong></p>
             <div class="reward-display" id="rewardDisplay"></div>
             <button class="btn" onclick="restartGame()">Play Again</button>
-            <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Close</button>
+            <button class="btn" onclick="closeGameWindow()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Close</button>
         </div>
 
         <button class="btn" id="startBtn" onclick="startGame()">Start Game</button>
-        <button class="btn" onclick="window.close()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Exit</button>
+        <button class="btn" onclick="closeGameWindow()" style="background: linear-gradient(135deg, #667eea, #764ba2);">Exit</button>
     </div>
+
+    <script>
+        function closeGameWindow() {
+            // If window was opened by another window, close it
+            if (window.opener && !window.opener.closed) {
+                window.opener.focus();
+                window.close();
+            } else {
+                // Otherwise redirect
+                window.location.href = '/chat/';
+            }
+        }
+    </script>
 
     <script>
         const canvas = document.getElementById('gameCanvas');

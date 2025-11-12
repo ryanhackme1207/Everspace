@@ -304,35 +304,42 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
+            gap: 20px;
             width: 100%;
-            max-width: 550px;
+            max-width: 650px;
         }
 
         .cell {
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 42px;
-            font-weight: bold;
-            transition: all 0.2s ease;
+            font-size: 56px;
+            font-weight: 900;
+            transition: all 0.15s ease;
             position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .cell[data-value="2"] { background: #eee4da; color: #776e65; }
-        .cell[data-value="4"] { background: #ede0c8; color: #776e65; }
-        .cell[data-value="8"] { background: #f2b179; color: white; }
-        .cell[data-value="16"] { background: #f59563; color: white; }
-        .cell[data-value="32"] { background: #f67c5f; color: white; }
-        .cell[data-value="64"] { background: #f65e3b; color: white; }
-        .cell[data-value="128"] { background: #edcf72; color: white; font-size: 36px; }
-        .cell[data-value="256"] { background: #edcc61; color: white; font-size: 36px; }
-        .cell[data-value="512"] { background: #edc850; color: white; font-size: 36px; }
-        .cell[data-value="1024"] { background: #edc53f; color: white; font-size: 32px; }
-        .cell[data-value="2048"] { background: #edc22e; color: white; font-size: 32px; }
+        .cell[data-value="2"] { background: #eee4da; color: #776e65; box-shadow: 0 4px 12px rgba(238, 228, 218, 0.5); }
+        .cell[data-value="4"] { background: #ede0c8; color: #776e65; box-shadow: 0 4px 12px rgba(237, 224, 200, 0.5); }
+        .cell[data-value="8"] { background: #f2b179; color: white; box-shadow: 0 4px 12px rgba(242, 177, 121, 0.5); }
+        .cell[data-value="16"] { background: #f59563; color: white; box-shadow: 0 4px 12px rgba(245, 149, 99, 0.5); }
+        .cell[data-value="32"] { background: #f67c5f; color: white; box-shadow: 0 4px 12px rgba(246, 124, 95, 0.5); }
+        .cell[data-value="64"] { background: #f65e3b; color: white; box-shadow: 0 4px 12px rgba(246, 94, 59, 0.5); }
+        .cell[data-value="128"] { background: #edcf72; color: white; font-size: 48px; box-shadow: 0 6px 16px rgba(237, 207, 114, 0.6); }
+        .cell[data-value="256"] { background: #edcc61; color: white; font-size: 48px; box-shadow: 0 6px 16px rgba(237, 204, 97, 0.6); }
+        .cell[data-value="512"] { background: #edc850; color: white; font-size: 48px; box-shadow: 0 6px 16px rgba(237, 200, 80, 0.6); }
+        .cell[data-value="1024"] { background: #edc53f; color: white; font-size: 42px; box-shadow: 0 8px 20px rgba(237, 197, 63, 0.7); }
+        .cell[data-value="2048"] { background: #edc22e; color: white; font-size: 42px; box-shadow: 0 8px 20px rgba(237, 194, 46, 0.7); animation: glow 1.5s ease-in-out infinite; }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(237, 194, 46, 0.7); }
+            50% { box-shadow: 0 8px 30px rgba(237, 194, 46, 1), 0 0 40px rgba(237, 194, 46, 0.5); }
+        }
 
         /* Attack Animation */
         @keyframes attack {
@@ -343,6 +350,38 @@
 
         .cell.attacking {
             animation: attack 0.4s ease;
+        }
+
+        /* Merge Animation */
+        @keyframes merge-animation {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.2); filter: brightness(1.5); box-shadow: 0 0 30px currentColor; }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .cell.merged {
+            animation: merge-animation 0.3s ease;
+        }
+
+        /* Pop-in Animation for new tiles */
+        @keyframes pop-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cell.new-tile {
+            animation: pop-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Slide Animation */
+        @keyframes slide {
+            0% { opacity: 0.7; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .cell.sliding {
+            animation: slide 0.15s ease;
         }
 
         /* Bomb Effect */
@@ -606,7 +645,7 @@
             </div>
         </div>
         
-        <a href="/chat/" style="color: white; text-decoration: none; opacity: 0.7; margin-top: 20px;">
+        <a href="#" onclick="closeGameWindow(); return false;" style="color: white; text-decoration: none; opacity: 0.7; margin-top: 20px;">
             ← Back to Chat
         </a>
     </div>
@@ -740,6 +779,49 @@
     </div>
 
     <script>
+        // Sound Effects using Web Audio API
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+
+        function playSound(frequency, duration, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playMoveSound() {
+            playSound(200, 0.1, 'square');
+        }
+
+        function playMergeSound(value) {
+            // Higher value = higher pitch
+            const frequency = 300 + (Math.log2(value) * 50);
+            playSound(frequency, 0.15, 'sine');
+        }
+
+        function playVictorySound() {
+            playSound(523.25, 0.2, 'sine'); // C5
+            setTimeout(() => playSound(659.25, 0.2, 'sine'), 200); // E5
+            setTimeout(() => playSound(783.99, 0.3, 'sine'), 400); // G5
+        }
+
+        function playDefeatSound() {
+            playSound(200, 0.3, 'sawtooth');
+            setTimeout(() => playSound(150, 0.3, 'sawtooth'), 150);
+            setTimeout(() => playSound(100, 0.4, 'sawtooth'), 300);
+        }
+
         // Global game state
         let gameMode = null; // 'standard' or 'multiplayer'
         let gameSocket = null;
@@ -1013,6 +1095,8 @@
         }
 
         // Game logic
+        let newTilePosition = null;
+
         function addRandomTile() {
             const emptyCells = [];
             for (let i = 0; i < 4; i++) {
@@ -1026,6 +1110,7 @@
             if (emptyCells.length > 0) {
                 const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
                 grid[randomCell.x][randomCell.y] = Math.random() < 0.9 ? 2 : 4;
+                newTilePosition = randomCell;
             }
         }
 
@@ -1033,6 +1118,7 @@
             const gridElement = document.getElementById('gameGrid');
             gridElement.innerHTML = '';
             
+            let cellIndex = 0;
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
                     const cell = document.createElement('div');
@@ -1041,8 +1127,18 @@
                     if (value !== 0) {
                         cell.textContent = value;
                         cell.setAttribute('data-value', value);
+                        
+                        // Add pop-in animation to new tiles
+                        if (newTilePosition && newTilePosition.x === i && newTilePosition.y === j) {
+                            cell.classList.add('new-tile');
+                            setTimeout(() => {
+                                cell.classList.remove('new-tile');
+                                newTilePosition = null;
+                            }, 300);
+                        }
                     }
                     gridElement.appendChild(cell);
+                    cellIndex++;
                 }
             }
             
@@ -1174,8 +1270,24 @@
             moved = JSON.stringify(oldGrid) !== JSON.stringify(grid);
             
             if (moved) {
+                // Play move sound
+                playMoveSound();
+                
+                // Play merge sounds and add animations
+                if (mergedTiles.length > 0) {
+                    mergedTiles.forEach((value, index) => {
+                        setTimeout(() => playMergeSound(value), index * 50);
+                    });
+                }
+                
                 addRandomTile();
                 updateDisplay();
+                
+                // Add sliding animation to all cells
+                document.querySelectorAll('.cell[data-value]').forEach(cell => {
+                    cell.classList.add('sliding');
+                    setTimeout(() => cell.classList.remove('sliding'), 150);
+                });
                 
                 // In multiplayer, handle attacks/heals
                 if (gameMode === 'multiplayer' && mergedTiles.length > 0) {
@@ -1416,6 +1528,13 @@
             const stats = document.getElementById('modalStats');
             const rewardsDiv = document.getElementById('modalRewards');
             
+            // Play victory or defeat sound
+            if (isWinner) {
+                playVictorySound();
+            } else {
+                playDefeatSound();
+            }
+            
             title.textContent = isWinner ? '🏆 VICTORY!' : '💀 DEFEAT!';
             title.className = isWinner ? 'modal-title victory' : 'modal-title defeat';
             
@@ -1527,7 +1646,18 @@
         }
 
         function backToMenu() {
-            window.location.href = '/chat/';
+            closeGameWindow();
+        }
+
+        function closeGameWindow() {
+            // If window was opened by another window, close it
+            if (window.opener && !window.opener.closed) {
+                window.opener.focus();
+                window.close();
+            } else {
+                // Otherwise redirect
+                window.location.href = '/chat/';
+            }
         }
 
         // Keyboard controls
