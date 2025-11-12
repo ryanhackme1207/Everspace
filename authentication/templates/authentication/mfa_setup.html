@@ -1,112 +1,487 @@
-{% extends 'authentication/base.html' %}
-
-{% block title %}MFA Setup - Discord Chat{% endblock %}
-
-{% block header %}Multi-Factor Authentication{% endblock %}
-{% block subheader %}Secure your account with 2FA{% endblock %}
-
-{% block content %}
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <strong>Enhanced Security!</strong> Set up Multi-Factor Authentication to protect your account.
-</div>
-
-<div class="text-center mb-4">
-    <h5><i class="fas fa-mobile-alt text-primary"></i> Step 1: Install Authenticator App</h5>
-    <p class="text-muted">Download Google Authenticator, Authy, or similar app on your phone.</p>
-</div>
-
-<div class="qr-code-container">
-    <h6><i class="fas fa-qrcode text-primary"></i> Step 2: Scan QR Code</h6>
-    {% if qr_code_data %}
-        <img src="data:image/png;base64,{{ qr_code_data }}" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
-    {% endif %}
-    
-    <div class="alert alert-secondary">
-        <small><strong>Manual Entry:</strong></small><br>
-        <code>{{ manual_key }}</code>
-    </div>
-</div>
-
-<div class="text-center mb-4">
-    <h5><i class="fas fa-key text-primary"></i> Step 3: Enter Verification Code</h5>
-    <p class="text-muted">Enter the 6-digit code from your authenticator app.</p>
-</div>
-
-<form method="post" novalidate>
-    {% csrf_token %}
-    
-    <div class="mb-4">
-        <div class="form-floating">
-            {{ form.otp_token }}
-            <label for="{{ form.otp_token.id_for_label }}">Authentication Code</label>
-        </div>
-        {% if form.otp_token.errors %}
-            <div class="text-danger small mt-1">
-                {% for error in form.otp_token.errors %}
-                    <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <div class="form-text">{{ form.otp_token.help_text }}</div>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100 mb-3">
-        <i class="fas fa-shield-alt"></i> Enable MFA
-    </button>
-</form>
-
-<div class="auth-links">
-    <p><a href="{% url 'chat_index' %}" style="color: #667eea;">Skip for now (Not recommended)</a></p>
-</div>
-
-<div class="alert alert-info mt-4">
-    <h6><i class="fas fa-key text-primary"></i> What's Next?</h6>
-    <small style="color: #333;">
-        After enabling MFA, you'll receive backup recovery codes. 
-        These codes are essential if you lose access to your authenticator app.
-        <strong>Save them securely!</strong>
-    </small>
-</div>
-{% endblock %}
-
-{% block extra_content %}
-<div class="security-features">
-    <h6><i class="fas fa-shield-alt text-success"></i> MFA Benefits</h6>
-    <div class="security-feature">
-        <i class="fas fa-lock"></i>
-        <span>Prevents unauthorized access even if password is compromised</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-mobile-alt"></i>
-        <span>Works with popular authenticator apps</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-key"></i>
-        <span>Time-based codes that change every 30 seconds</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-user-shield"></i>
-        <span>Industry-standard security practice</span>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Auto-focus on OTP input
-    document.addEventListener('DOMContentLoaded', function() {
-        const otpInput = document.getElementById('{{ form.otp_token.id_for_label }}');
-        if (otpInput) {
-            otpInput.focus();
-            
-            // Auto-submit when 6 digits are entered
-            otpInput.addEventListener('input', function() {
-                if (this.value.length === 6 && /^\d{6}$/.test(this.value)) {
-                    this.form.submit();
-                }
-            });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup MFA - EverSpace</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
         }
-    });
-</script>
-{% endblock %}
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--darker);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top, rgba(102, 126, 234, 0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(118, 75, 162, 0.15), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .auth-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shield-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(16, 185, 129, 0.2));
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+            }
+        }
+
+        .shield-icon i {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            display: inline-block;
+            margin: 1rem auto;
+            display: block;
+            width: fit-content;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .qr-container img {
+            display: block;
+            max-width: 220px;
+            border-radius: 8px;
+        }
+
+        .manual-key {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .manual-key code {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            padding: 1.25rem 1rem;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 0.3em;
+            font-weight: 600;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-floating label {
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.125rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .benefit-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .benefit-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(16, 185, 129, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-icon i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .benefit-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            color: #ef4444;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="shield-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+
+            <h1>Secure Your Account</h1>
+            <p class="subtitle">Enable Multi-Factor Authentication for enhanced security</p>
+
+            <!-- Step 1: Install App -->
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Install Authenticator App</h3>
+                </div>
+                <p class="step-description">
+                    Download and install an authenticator app on your smartphone:
+                </p>
+                <div class="benefits-grid" style="margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: 12px;">
+                        <i class="fab fa-google" style="font-size: 1.5rem; color: var(--primary);"></i>
+                        <span>Google Authenticator</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: 12px;">
+                        <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                        <span>Authy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Scan QR Code -->
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Scan QR Code</h3>
+                </div>
+                <p class="step-description">
+                    Open your authenticator app and scan this QR code:
+                </p>
+                {% if qr_code_data %}
+                <div class="qr-container">
+                    <img src="data:image/png;base64,{{ qr_code_data }}" alt="QR Code for MFA">
+                </div>
+                {% endif %}
+                
+                <div class="manual-key">
+                    <small style="color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                        <i class="fas fa-keyboard"></i> Or enter manually:
+                    </small>
+                    <code>{{ manual_key }}</code>
+                </div>
+            </div>
+
+            <!-- Step 3: Verify -->
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Enter Verification Code</h3>
+                </div>
+                <p class="step-description">
+                    Enter the 6-digit code from your authenticator app:
+                </p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.otp_token.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.otp_token.errors.0 }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-floating">
+                        {{ form.otp_token }}
+                        <label for="{{ form.otp_token.id_for_label }}">
+                            <i class="fas fa-key"></i> Authentication Code
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Enable MFA</span>
+                    </button>
+                </form>
+
+                <a href="{% url 'chat:chat_index' %}" class="btn btn-secondary">
+                    <i class="fas fa-clock"></i>
+                    <span>Skip for now (Not recommended)</span>
+                </a>
+            </div>
+
+            <!-- Benefits -->
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                <h4 style="text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem;">
+                    <i class="fas fa-star" style="color: #f59e0b;"></i>
+                    Why Enable MFA?
+                </h4>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <p class="benefit-text">Prevents unauthorized access even if your password is compromised</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <p class="benefit-text">Industry-standard security practice used by major platforms</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <p class="benefit-text">Time-based codes that change every 30 seconds</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <p class="benefit-text">Complete control over your account security</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-focus and format OTP input
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('{{ form.otp_token.id_for_label }}');
+            if (otpInput) {
+                otpInput.focus();
+                
+                // Only allow numbers
+                otpInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length > 6) {
+                        this.value = this.value.slice(0, 6);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,123 +1,400 @@
-{% extends 'authentication/base.html' %}
-
-{% block title %}MFA Verification - Discord Chat{% endblock %}
-
-{% block header %}Two-Factor Authentication{% endblock %}
-{% block subheader %}Enter your authentication code{% endblock %}
-
-{% block content %}
-{% if use_recovery %}
-<div class="alert alert-warning">
-    <i class="fas fa-key"></i>
-    <strong>Recovery Mode!</strong> Enter one of your backup recovery codes.
-</div>
-{% else %}
-<div class="alert alert-primary">
-    <i class="fas fa-mobile-alt"></i>
-    <strong>Security Check!</strong> Please enter the 6-digit code from your authenticator app.
-</div>
-{% endif %}
-
-<div class="text-center mb-4">
-    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
-        <i class="fas fa-user fa-2x"></i>
-    </div>
-    <h5 class="mt-2" style="color: #333;">Welcome back, {{ user.first_name }}!</h5>
-    <p class="text-muted">We need to verify your identity</p>
-</div>
-
-<form method="post" novalidate>
-    {% csrf_token %}
-    
-    {% if use_recovery %}
-        <input type="hidden" name="use_recovery" value="true">
-        <div class="mb-4">
-            <div class="form-floating">
-                {{ form.recovery_code }}
-                <label for="{{ form.recovery_code.id_for_label }}" style="color: #666;">Recovery Code</label>
-            </div>
-            {% if form.recovery_code.errors %}
-                <div class="text-danger small mt-1">
-                    {% for error in form.recovery_code.errors %}
-                        <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="form-text" style="color: #666;">{{ form.recovery_code.help_text }}</div>
-        </div>
-    {% else %}
-        <div class="mb-4">
-            <div class="form-floating">
-                {{ form.otp_token }}
-                <label for="{{ form.otp_token.id_for_label }}" style="color: #666;">Authentication Code</label>
-            </div>
-            {% if form.otp_token.errors %}
-                <div class="text-danger small mt-1">
-                    {% for error in form.otp_token.errors %}
-                        <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="form-text" style="color: #666;">{{ form.otp_token.help_text }}</div>
-        </div>
-    {% endif %}
-
-    <button type="submit" class="btn btn-primary w-100 mb-3">
-        <i class="fas fa-check-circle"></i> Verify & Continue
-    </button>
-</form>
-
-<div class="auth-links">
-    {% if use_recovery %}
-        <p><a href="{% url 'auth_mfa_verify' %}" style="color: #667eea;">← Use Authenticator App Instead</a></p>
-    {% elif has_backup_codes %}
-        <p><a href="{% url 'auth_mfa_verify' %}?recovery=true" style="color: #667eea;">Lost your device? Use backup code</a></p>
-    {% endif %}
-    <p><a href="{% url 'auth_login' %}" style="color: #667eea;">← Back to Login</a></p>
-    {% if not has_backup_codes %}
-        <p><a href="{% url 'auth_mfa_recovery' %}" style="color: #f5576c;">Request MFA Recovery Help</a></p>
-    {% endif %}
-</div>
-{% endblock %}
-
-{% block extra_content %}
-<div class="alert alert-warning">
-    <h6><i class="fas fa-exclamation-triangle"></i> Trouble accessing your authenticator?</h6>
-    <small>If you've lost access to your authenticator app, please contact an administrator.</small>
-</div>
-
-<div class="security-features">
-    <h6><i class="fas fa-info-circle text-primary"></i> Security Information</h6>
-    <div class="security-feature">
-        <i class="fas fa-clock"></i>
-        <span>Codes refresh every 30 seconds</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-shield-alt"></i>
-        <span>Your session is secure and encrypted</span>
-    </div>
-    <div class="security-feature">
-        <i class="fas fa-eye-slash"></i>
-        <span>Codes are never stored or logged</span>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Auto-focus on OTP input
-    document.addEventListener('DOMContentLoaded', function() {
-        const otpInput = document.getElementById('{{ form.otp_token.id_for_label }}');
-        if (otpInput) {
-            otpInput.focus();
-            
-            // Auto-submit when 6 digits are entered
-            otpInput.addEventListener('input', function() {
-                if (this.value.length === 6 && /^\d{6}$/.test(this.value)) {
-                    this.form.submit();
-                }
-            });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication - EverSpace</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
         }
-    });
-</script>
-{% endblock %}
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--darker);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top, rgba(102, 126, 234, 0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom, rgba(16, 185, 129, 0.15), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .auth-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .lock-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(16, 185, 129, 0.2));
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+            }
+        }
+
+        .lock-icon i {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-text {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .alert-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-box.recovery {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .alert-box i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .alert-box.recovery i {
+            color: var(--warning);
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            padding: 1.5rem 1rem;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-weight: 600;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-floating label {
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.125rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .help-links {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .help-link {
+            display: block;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .help-link i {
+            margin-right: 0.5rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            color: #ef4444;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .lock-icon {
+                width: 80px;
+                height: 80px;
+            }
+
+            .lock-icon i {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="lock-icon">
+                <i class="fas {% if use_recovery %}fa-key{% else %}fa-shield-alt{% endif %}"></i>
+            </div>
+
+            <h1>{% if use_recovery %}Recovery Mode{% else %}Security Verification{% endif %}</h1>
+            <p class="welcome-text">
+                Welcome back{% if user.first_name %}, {{ user.first_name }}{% endif %}! 👋
+            </p>
+
+            {% if use_recovery %}
+            <div class="alert-box recovery">
+                <i class="fas fa-key"></i>
+                <div>
+                    <strong>Using Recovery Code</strong>
+                    <div style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.8;">
+                        Enter one of your backup recovery codes
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert-box">
+                <i class="fas fa-mobile-alt"></i>
+                <div>
+                    <strong>Two-Factor Authentication</strong>
+                    <div style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.8;">
+                        Enter the 6-digit code from your authenticator app
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if use_recovery %}
+                    <input type="hidden" name="use_recovery" value="true">
+                    
+                    {% if form.recovery_code.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.recovery_code.errors.0 }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-floating">
+                        {{ form.recovery_code }}
+                        <label for="{{ form.recovery_code.id_for_label }}">
+                            <i class="fas fa-key"></i> Recovery Code
+                        </label>
+                    </div>
+                {% else %}
+                    {% if form.otp_token.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.otp_token.errors.0 }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-floating">
+                        {{ form.otp_token }}
+                        <label for="{{ form.otp_token.id_for_label }}">
+                            <i class="fas fa-key"></i> Authentication Code
+                        </label>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Verify & Continue</span>
+                </button>
+            </form>
+
+            <div class="help-links">
+                {% if use_recovery %}
+                    <a href="{% url 'auth_mfa_verify' %}" class="help-link">
+                        <i class="fas fa-mobile-alt"></i>
+                        Use Authenticator App Instead
+                    </a>
+                {% elif has_backup_codes %}
+                    <a href="{% url 'auth_mfa_verify' %}?recovery=true" class="help-link">
+                        <i class="fas fa-life-ring"></i>
+                        Lost your device? Use backup code
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'auth_login' %}" class="help-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Login
+                </a>
+                
+                {% if not has_backup_codes %}
+                    <a href="{% url 'auth_mfa_recovery' %}" class="help-link" style="color: var(--warning);">
+                        <i class="fas fa-question-circle"></i>
+                        Request MFA Recovery Help
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('{{ form.otp_token.id_for_label }}');
+            const recoveryInput = document.getElementById('{{ form.recovery_code.id_for_label }}');
+            const input = otpInput || recoveryInput;
+            
+            if (input) {
+                input.focus();
+                
+                if (otpInput) {
+                    // Only allow numbers for OTP
+                    otpInput.addEventListener('input', function(e) {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                        if (this.value.length > 6) {
+                            this.value = this.value.slice(0, 6);
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

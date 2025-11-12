@@ -1,0 +1,123 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}MFA Verification - Discord Chat{% endblock %}
+
+{% block header %}Two-Factor Authentication{% endblock %}
+{% block subheader %}Enter your authentication code{% endblock %}
+
+{% block content %}
+{% if use_recovery %}
+<div class="alert alert-warning">
+    <i class="fas fa-key"></i>
+    <strong>Recovery Mode!</strong> Enter one of your backup recovery codes.
+</div>
+{% else %}
+<div class="alert alert-primary">
+    <i class="fas fa-mobile-alt"></i>
+    <strong>Security Check!</strong> Please enter the 6-digit code from your authenticator app.
+</div>
+{% endif %}
+
+<div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-user fa-2x"></i>
+    </div>
+    <h5 class="mt-2" style="color: #333;">Welcome back, {{ user.first_name }}!</h5>
+    <p class="text-muted">We need to verify your identity</p>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    {% if use_recovery %}
+        <input type="hidden" name="use_recovery" value="true">
+        <div class="mb-4">
+            <div class="form-floating">
+                {{ form.recovery_code }}
+                <label for="{{ form.recovery_code.id_for_label }}" style="color: #666;">Recovery Code</label>
+            </div>
+            {% if form.recovery_code.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.recovery_code.errors %}
+                        <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="form-text" style="color: #666;">{{ form.recovery_code.help_text }}</div>
+        </div>
+    {% else %}
+        <div class="mb-4">
+            <div class="form-floating">
+                {{ form.otp_token }}
+                <label for="{{ form.otp_token.id_for_label }}" style="color: #666;">Authentication Code</label>
+            </div>
+            {% if form.otp_token.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.otp_token.errors %}
+                        <div><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="form-text" style="color: #666;">{{ form.otp_token.help_text }}</div>
+        </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+        <i class="fas fa-check-circle"></i> Verify & Continue
+    </button>
+</form>
+
+<div class="auth-links">
+    {% if use_recovery %}
+        <p><a href="{% url 'auth_mfa_verify' %}" style="color: #667eea;">← Use Authenticator App Instead</a></p>
+    {% elif has_backup_codes %}
+        <p><a href="{% url 'auth_mfa_verify' %}?recovery=true" style="color: #667eea;">Lost your device? Use backup code</a></p>
+    {% endif %}
+    <p><a href="{% url 'auth_login' %}" style="color: #667eea;">← Back to Login</a></p>
+    {% if not has_backup_codes %}
+        <p><a href="{% url 'auth_mfa_recovery' %}" style="color: #f5576c;">Request MFA Recovery Help</a></p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="alert alert-warning">
+    <h6><i class="fas fa-exclamation-triangle"></i> Trouble accessing your authenticator?</h6>
+    <small>If you've lost access to your authenticator app, please contact an administrator.</small>
+</div>
+
+<div class="security-features">
+    <h6><i class="fas fa-info-circle text-primary"></i> Security Information</h6>
+    <div class="security-feature">
+        <i class="fas fa-clock"></i>
+        <span>Codes refresh every 30 seconds</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-shield-alt"></i>
+        <span>Your session is secure and encrypted</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-eye-slash"></i>
+        <span>Codes are never stored or logged</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-focus on OTP input
+    document.addEventListener('DOMContentLoaded', function() {
+        const otpInput = document.getElementById('{{ form.otp_token.id_for_label }}');
+        if (otpInput) {
+            otpInput.focus();
+            
+            // Auto-submit when 6 digits are entered
+            otpInput.addEventListener('input', function() {
+                if (this.value.length === 6 && /^\d{6}$/.test(this.value)) {
+                    this.form.submit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

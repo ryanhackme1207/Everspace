@@ -1,0 +1,59 @@
+{% extends 'authentication/base.html' %}
+
+{% block title %}Disable MFA - Discord Chat{% endblock %}
+
+{% block header %}Disable MFA{% endblock %}
+{% block subheader %}Remove multi-factor authentication{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Warning!</strong> Disabling MFA will make your account less secure.
+</div>
+
+<div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-shield-alt fa-2x"></i>
+    </div>
+    <h5 class="mt-2">Disable Multi-Factor Authentication</h5>
+    <p class="text-muted">This action will remove the extra security layer from your account</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="alert alert-danger">
+        <h6><i class="fas fa-exclamation-circle"></i> Are you sure?</h6>
+        <p class="mb-0">By disabling MFA, your account will only be protected by your password. This is not recommended for security reasons.</p>
+    </div>
+    
+    <button type="submit" class="btn btn-danger w-100 mb-3">
+        <i class="fas fa-times-circle"></i> Yes, Disable MFA
+    </button>
+</form>
+
+<div class="auth-links">
+    <p><a href="{% url 'chat_index' %}">← Cancel & Keep MFA Enabled</a></p>
+</div>
+{% endblock %}
+
+{% block extra_content %}
+<div class="security-features">
+    <h6><i class="fas fa-shield-alt text-danger"></i> Security Risks</h6>
+    <div class="security-feature">
+        <i class="fas fa-exclamation-triangle text-danger"></i>
+        <span>Account vulnerable if password is compromised</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-user-times text-danger"></i>
+        <span>Reduced protection against unauthorized access</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-unlock text-danger"></i>
+        <span>Single factor authentication only</span>
+    </div>
+    <div class="security-feature">
+        <i class="fas fa-redo text-success"></i>
+        <span>You can re-enable MFA anytime</span>
+    </div>
+</div>
+{% endblock %}
