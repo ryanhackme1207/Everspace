@@ -970,7 +970,7 @@ class Game2048Consumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def calculate_rewards(self, game_state):
         """Calculate Evercoin rewards for winner"""
-        from .models import UserProfile
+        from .models import UserProfile, GameSession
         
         # Base reward from score
         winner_score = game_state['player1_score'] if game_state['player1'] == self.user.username else game_state['player2_score']
@@ -990,7 +990,17 @@ class Game2048Consumer(AsyncWebsocketConsumer):
             profile, _ = UserProfile.objects.get_or_create(user=self.user)
             profile.evercoin += total_reward
             profile.save()
-        except:
+            
+            # Save game session for stats tracking
+            GameSession.objects.create(
+                user=self.user,
+                game_type='2048',
+                score=winner_score,
+                evercoin_earned=total_reward,
+                completed=True
+            )
+        except Exception as e:
+            print(f"Error saving game session: {e}")
             pass
         
         return {

@@ -207,15 +207,29 @@
         /* Mini Board Preview */
         .mini-board {
             margin-top: 20px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .mini-board-title {
-            font-size: 14px;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             gap: 8px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .activity-indicator {
@@ -240,22 +254,55 @@
         .mini-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 3px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 8px;
-            border-radius: 8px;
+            gap: 4px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            padding: 10px;
+            border-radius: 10px;
             transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mini-grid:hover {
+            transform: scale(1.02);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .mini-cell {
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 900;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .mini-cell:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Mini cell colors matching main tiles */
+        .mini-cell[data-value="2"] { background: #eee4da; color: #776e65; }
+        .mini-cell[data-value="4"] { background: #ede0c8; color: #776e65; }
+        .mini-cell[data-value="8"] { background: #f2b179; color: white; }
+        .mini-cell[data-value="16"] { background: #f59563; color: white; }
+        .mini-cell[data-value="32"] { background: #f67c5f; color: white; }
+        .mini-cell[data-value="64"] { background: #f65e3b; color: white; }
+        .mini-cell[data-value="128"] { background: #edcf72; color: white; font-size: 14px; }
+        .mini-cell[data-value="256"] { background: #edcc61; color: white; font-size: 14px; }
+        .mini-cell[data-value="512"] { background: #edc850; color: white; font-size: 14px; }
+        .mini-cell[data-value="1024"] { background: #edc53f; color: white; font-size: 12px; }
+        .mini-cell[data-value="2048"] { background: #edc22e; color: white; font-size: 12px; animation: mini-glow 2s ease-in-out infinite; }
+
+        @keyframes mini-glow {
+            0%, 100% { box-shadow: 0 2px 4px rgba(237, 194, 46, 0.5); }
+            50% { box-shadow: 0 2px 8px rgba(237, 194, 46, 1), 0 0 12px rgba(237, 194, 46, 0.5); }
         }
 
         /* Main Game Board */

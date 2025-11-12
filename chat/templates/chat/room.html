@@ -2842,6 +2842,11 @@
                     `;
                     messagesContainer.appendChild(joinElement);
                     scrollToBottom();
+                    
+                    // Update gift recipients list if gift modal is open
+                    if (selectedGift) {
+                        loadGiftRecipients();
+                    }
                 }
                 
             } else if (data.type === 'user_leave') {
@@ -2894,6 +2899,12 @@
                 `;
                 messagesContainer.appendChild(leaveElement);
                 scrollToBottom();
+                
+                // Update gift recipients list if gift modal is open
+                if (selectedGift) {
+                    loadGiftRecipients();
+                }
+                
             } else if (data.type === 'sound') {
                 // Handle sound sharing
                 const displayName = data.display_name || data.username;
@@ -4278,6 +4289,10 @@
                 const isVisible = giftPicker.style.display === 'block';
                 if (!isVisible) {
                     loadGifts();
+                    // Preload gift recipients when opening gift picker
+                    if (selectedGift) {
+                        loadGiftRecipients();
+                    }
                 }
                 giftPicker.style.display = isVisible ? 'none' : 'block';
                 emojiPicker.style.display = 'none';
