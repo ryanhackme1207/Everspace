@@ -86,6 +86,11 @@
             opacity: 0.3;
         }
 
+        /* Full opacity for animated covers */
+        .profile-cover[class*="-animated"] {
+            opacity: 1 !important;
+        }
+
         .profile-content {
             padding: 2rem;
             margin-top: -6rem;
@@ -277,6 +282,11 @@
 
         <div class="profile-card">
             <div class="profile-header">
+                {# DEBUG INFO #}
+                <!-- DEBUG: profile.cover_choice = '{{ profile.cover_choice }}' -->
+                <!-- DEBUG: cover_css_class = '{{ cover_css_class }}' -->
+                <!-- DEBUG: cover_image_url = '{{ cover_image_url }}' -->
+                
                 {# Unified cover logic: animated CSS class if chosen, else background image URL fallback #}
                 <div class="profile-cover {% if cover_css_class %}{{ cover_css_class }}{% endif %}" {% if not cover_css_class and cover_image_url %}style="background-image: url('{{ cover_image_url }}');"{% endif %}></div>
             </div>

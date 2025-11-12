@@ -1832,11 +1832,20 @@ def view_profile(request, username=None):
         {'id': 'fire', 'css_class': 'cover-fire-animated'},
         {'id': 'crystal', 'css_class': 'cover-crystal-animated'},
     ]
+    
+    # Debug: Print the cover_choice value
+    print(f"DEBUG view_profile: user={user.username}, cover_choice='{profile.cover_choice}'")
+    
     if profile.cover_choice:
         for c in cover_choices:
             if c['id'] == profile.cover_choice:
                 cover_css_class = c['css_class']
+                print(f"DEBUG: Matched cover_choice '{profile.cover_choice}' to CSS class '{cover_css_class}'")
                 break
+        if not cover_css_class:
+            print(f"DEBUG: No match found for cover_choice '{profile.cover_choice}'")
+    else:
+        print(f"DEBUG: cover_choice is empty or None")
     
     context = {
         'profile_user': user,
