@@ -667,15 +667,18 @@
             position: absolute;
             bottom: 100%;
             left: 1rem;
-            width: 420px; /* widened */
-            max-height: 560px; /* taller so bottom rows visible */
+            width: 450px;
+            height: 600px;
+            max-height: 80vh;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
             box-shadow: var(--shadow-elevated);
-            overflow: hidden; /* hide scrollbars outside */
+            overflow: hidden;
             z-index: 2000;
             animation: slideUp 0.25s ease;
+            display: flex;
+            flex-direction: column;
         }
         /* When there isn't enough space above, show below */
         .emoji-picker[data-position="below"] {
@@ -692,6 +695,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-primary);
             font-weight: 600;
+            flex-shrink: 0;
         }
 
         .emoji-close, .gif-close {
@@ -711,12 +715,13 @@
 
         .emoji-grid {
             display: grid;
-            grid-template-columns: repeat(10, 1fr); /* more columns */
+            grid-template-columns: repeat(10, 1fr);
             gap: 0.35rem;
-            padding: 0.6rem 0.6rem 0.8rem;
-            max-height: 460px; /* taller scroll area */
+            padding: 0.6rem;
             overflow-y: auto;
             scrollbar-width: thin;
+            flex: 1;
+            min-height: 0;
         }
 
         .emoji-item {
@@ -738,8 +743,9 @@
             position: absolute;
             bottom: 100%;
             left: 1rem;
-            width: 450px;
-            max-height: 600px;
+            width: 500px;
+            height: 650px;
+            max-height: 85vh;
             background: var(--dark-card);
             border: 1px solid var(--accent-teal);
             border-radius: var(--border-radius-md);
@@ -759,7 +765,7 @@
             padding: 0.75rem 1rem;
             background: var(--darker-card);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .gift-search-input {
@@ -805,6 +811,7 @@
             padding: 0.5rem 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             overflow-x: auto;
+            flex-shrink: 0;
         }
 
         .gift-tab {
@@ -838,7 +845,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             flex: 1;
-            max-height: 320px;
+            min-height: 0;
         }
 
         .gift-grid::-webkit-scrollbar {

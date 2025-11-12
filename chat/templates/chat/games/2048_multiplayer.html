@@ -1013,16 +1013,9 @@
                     currentGameId = data.game_id;
                     isBot = data.is_bot;
                     document.getElementById('player2Name').textContent = data.player2;
-                    document.getElementById('matchmakingStatus').textContent = `Battle started against ${data.player2}!`;
-                    setTimeout(() => {
-                        document.getElementById('matchmakingStatus').style.display = 'none';
-                    }, 3000);
                     
-                    // If playing against bot, start bot AI
-                    if (isBot) {
-                        console.log('🤖 Bot game started - Bot will make random moves');
-                        startBotAI();
-                    }
+                    // Show countdown before game starts
+                    startGameCountdown(data.is_bot);
                     break;
                     
                 case 'game_move':
@@ -1761,26 +1754,77 @@
             }
         });
 
+        // Game start countdown
+        function startGameCountdown(isBotGame) {
+            const statusElement = document.getElementById('matchmakingStatus');
+            statusElement.style.display = 'block';
+            statusElement.style.fontSize = '48px';
+            statusElement.style.fontWeight = '900';
+            statusElement.style.color = '#4ECDC4';
+            
+            let countdown = 3;
+            statusElement.textContent = countdown;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    statusElement.textContent = countdown;
+                    playSound(600, 0.1, 'sine');
+                } else {
+                    clearInterval(countdownInterval);
+                    statusElement.textContent = 'GO! 🚀';
+                    statusElement.style.color = '#10b981';
+                    playSound(800, 0.2, 'sine');
+                    
+                    setTimeout(() => {
+                        statusElement.style.display = 'none';
+                        statusElement.style.fontSize = '';
+                        statusElement.style.fontWeight = '';
+                        statusElement.style.color = '';
+                        
+                        // Start bot AI after countdown if playing against bot
+                        if (isBotGame) {
+                            console.log('🤖 Starting bot AI after countdown');
+                            startBotAI();
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
         // Bot AI - Simulates opponent moves
         let botInterval = null;
         let botGrid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
         let botScore = 0;
+        let botHealth = 100;
 
         function startBotAI() {
             // Initialize bot's board
             botGrid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
             botScore = 0;
-            addRandomBotTile();
-            addRandomBotTile();
             
-            // Bot makes moves every 2-4 seconds
+            // Make sure player2Health is initialized to 100
+            player2Health = 100;
+            updateHealthBar('player2', player2Health);
+            
+            addRandomBotTile();
+            addRandomBotTile();
+            updateMiniBoard('player2MiniBoard', botGrid);
+            
+            console.log('🤖 Bot initialized with health:', player2Health);
+            
+            // Bot makes moves every 2.5-4 seconds (more reasonable timing)
             botInterval = setInterval(() => {
                 if (player2Health > 0 && player1Health > 0) {
                     makeBotMove();
                 } else {
                     clearInterval(botInterval);
+                    if (player2Health <= 0) {
+                        console.log('🤖 Bot defeated!');
+                        setTimeout(() => endGame(true, '2048'), 500);
+                    }
                 }
-            }, 2000 + Math.random() * 2000);
+            }, 2500 + Math.random() * 1500);
         }
 
         function addRandomBotTile() {
@@ -1814,8 +1858,8 @@
                 console.log('🤖 Bot has no valid moves - Bot loses!');
                 player2Health = 0;
                 updateHealthBar('player2', 0);
-                setTimeout(() => endGame(true), 1000);
                 clearInterval(botInterval);
+                setTimeout(() => endGame(true, 'health'), 1000);
                 return;
             }
             

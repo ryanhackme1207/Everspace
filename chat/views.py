@@ -2070,23 +2070,33 @@ def send_gift(request):
 def get_room_users(request, room_name):
     """Get online users in a room (for gift recipient selection)"""
     try:
+        from django.core.cache import cache
+        from django.contrib.auth.models import User
+        
         room = get_object_or_404(Room, name=room_name)
         
-        # Get only online members, excluding the current user
-        online_members = room.members.filter(status='online').exclude(user=request.user)
+        # Get active users from cache (real-time tracking)
+        cache_key = f"active_users_{room_name}"
+        active_users = cache.get(cache_key, {})
         
-        # Build user list with proper display names
+        # Build user list with proper display names, excluding current user
         users = []
-        for member in online_members:
-            display_name = f"{member.user.first_name} {member.user.last_name}".strip()
-            if not display_name:
-                display_name = member.user.username
-            
-            users.append({
-                'id': member.user.id,
-                'username': member.user.username,
-                'first_name': display_name
-            })
+        for username, display_name in active_users.items():
+            if username != request.user.username:
+                try:
+                    user = User.objects.get(username=username)
+                    # Use proper display name
+                    full_name = f"{user.first_name} {user.last_name}".strip()
+                    if not full_name:
+                        full_name = user.username
+                    
+                    users.append({
+                        'id': user.id,
+                        'username': user.username,
+                        'first_name': full_name
+                    })
+                except User.DoesNotExist:
+                    continue
         
         return JsonResponse({
             'success': True,
