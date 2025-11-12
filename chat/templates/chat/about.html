@@ -1,0 +1,455 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About EverSpace - Meet Our Founder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #c9d1d9;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #4ecdc4;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8rem 2rem 4rem;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #8b949e;
+            line-height: 1.6;
+        }
+
+        /* Content Section */
+        .content {
+            padding: 4rem 2rem;
+            background: linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+        }
+
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Founder Section */
+        .founder-section {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .founder-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .founder-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .founder-info h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .founder-title {
+            font-size: 1.2rem;
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+
+        .founder-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #c9d1d9;
+        }
+
+        .founder-description p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .mission-section h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .mission-card {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .mission-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .mission-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .mission-card p {
+            color: #8b949e;
+            line-height: 1.6;
+        }
+
+        /* Free Badge */
+        .free-badge {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: inline-block;
+            margin: 2rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 2rem;
+            background: #0d1117;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #8b949e;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #4ecdc4;
+        }
+
+        .copyright {
+            color: #8b949e;
+            margin-top: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .founder-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .founder-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .founder-section,
+            .mission-section {
+                padding: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="{% url 'chat:landing' %}" class="logo">🚀 EverSpace</a>
+            <div class="nav-links">
+                <a href="{% url 'chat:landing' %}">Home</a>
+                <a href="{% url 'chat:about' %}">About</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'chat:index' %}" class="btn btn-primary">Go to Chat</a>
+                {% else %}
+                    <a href="{% url 'authentication:login' %}" class="btn btn-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1><span class="gradient-text">About EverSpace</span></h1>
+            <p class="subtitle">
+                Building the future of secure, real-time communication - completely free for everyone.
+            </p>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="content">
+        <div class="content-container">
+            <!-- Founder Section -->
+            <div class="founder-section">
+                <div class="founder-header">
+                    <div class="founder-avatar">RL</div>
+                    <div class="founder-info">
+                        <h2>Ryan Lai</h2>
+                        <p class="founder-title">Founder & Creator of EverSpace</p>
+                    </div>
+                </div>
+                <div class="founder-description">
+                    <p>
+                        Ryan Lai is the visionary founder behind EverSpace, a next-generation communication platform designed to revolutionize how people connect online. With a passion for creating secure, fast, and beautiful digital experiences, Ryan set out to build a platform that prioritizes user privacy, real-time performance, and modern design.
+                    </p>
+                    <p>
+                        Drawing inspiration from the best aspects of modern communication tools while addressing their shortcomings, Ryan built EverSpace from the ground up using cutting-edge web technologies. The platform combines military-grade security with lightning-fast WebSocket technology, wrapped in a stunning user interface that makes chatting a delightful experience.
+                    </p>
+                    <p>
+                        Ryan's commitment to accessibility and community-driven development led to a fundamental decision: <strong>EverSpace is completely free to use, with no hidden costs or premium tiers.</strong> Everyone deserves access to secure, high-quality communication tools.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Free Platform Badge -->
+            <div style="text-align: center;">
+                <div class="free-badge">
+                    🎉 100% FREE PLATFORM 🎉
+                </div>
+                <p style="font-size: 1.2rem; color: #8b949e; margin-top: 1rem;">
+                    No subscriptions. No hidden fees. Forever free.
+                </p>
+            </div>
+
+            <!-- Mission Section -->
+            <div class="mission-section">
+                <h2>Our Mission</h2>
+                <p style="text-align: center; font-size: 1.1rem; color: #8b949e; margin-bottom: 2rem;">
+                    EverSpace is built on three core principles that guide every decision we make.
+                </p>
+                <div class="mission-grid">
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3>Privacy First</h3>
+                        <p>Your conversations are yours. We implement military-grade encryption and multi-factor authentication to keep your data secure.</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Free Forever</h3>
+                        <p>Quality communication shouldn't cost money. EverSpace is free for everyone, with no ads, no subscriptions, no catch.</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3>Innovation</h3>
+                        <p>We use the latest web technologies to deliver the fastest, most reliable real-time messaging experience possible.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="{% url 'chat:landing' %}">Home</a>
+                <a href="{% url 'chat:about' %}">About</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'chat:index' %}">Chat</a>
+                {% else %}
+                    <a href="{% url 'authentication:login' %}">Login</a>
+                    <a href="{% url 'authentication:register' %}">Register</a>
+                {% endif %}
+            </div>
+            <p class="copyright">© 2025 EverSpace. Created by Ryan Lai. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

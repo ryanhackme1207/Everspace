@@ -64,6 +64,10 @@ def landing_page(request):
         return redirect('chat:chat_index')
     return render(request, 'chat/landing.html')
 
+def about_page(request):
+    """About page introducing the founder and platform"""
+    return render(request, 'chat/about.html')
+
 def test_endpoint(request):
     """Test endpoint to verify AJAX connectivity"""
     return JsonResponse({
