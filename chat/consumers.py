@@ -713,7 +713,30 @@ class Game2048Consumer(AsyncWebsocketConsumer):
         winner = data.get('winner')
         reason = data.get('reason', 'health')  # 'health' or '2048'
         
+        # Get game state before finishing
+        game_state = await self.get_game_state()
+        
+        if not game_state or game_state['status'] != 'active':
+            return
+        
+        # Finish game
         await self.finish_game(winner, reason)
+        
+        # Calculate rewards for winner
+        rewards = {'base': 0, 'win_bonus': 0, 'health_bonus': 0, 'total': 0}
+        if winner == self.user.username:
+            rewards = await self.calculate_rewards(game_state)
+        
+        # Broadcast game over to both players
+        await self.channel_layer.group_send(
+            self.game_group_name,
+            {
+                'type': 'game_victory',
+                'winner': winner,
+                'reason': reason,
+                'rewards': rewards
+            }
+        )
     
     async def handle_victory(self):
         """Handle victory and calculate rewards"""

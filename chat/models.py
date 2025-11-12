@@ -796,34 +796,34 @@ class MultiplayerGame2048(models.Model):
     def calculate_damage(self, tile_value):
         """Calculate damage based on merged tile value"""
         damage_map = {
-            4: 2,
-            8: 3,
-            16: 5,
-            32: 7,
-            64: 8,
-            128: 10,
-            256: 15,
-            512: 20,
-            1024: 30,
-            2048: 40,
+            4: 1,
+            8: 1,
+            16: 2,
+            32: 3,
+            64: 4,
+            128: 5,
+            256: 8,
+            512: 10,
+            1024: 15,
+            2048: 25,
         }
-        return damage_map.get(tile_value, 1)
+        return damage_map.get(tile_value, 0)
     
     def calculate_heal(self, tile_value):
         """Calculate heal amount based on merged tile value"""
         heal_map = {
-            4: 2,
-            8: 3,
-            16: 4,
-            32: 5,
-            64: 7,
-            128: 8,
-            256: 10,
-            512: 12,
-            1024: 15,
-            2048: 20,
+            4: 1,
+            8: 1,
+            16: 2,
+            32: 2,
+            64: 3,
+            128: 4,
+            256: 5,
+            512: 6,
+            1024: 8,
+            2048: 12,
         }
-        return heal_map.get(tile_value, 1)
+        return heal_map.get(tile_value, 0)
 
 
 # Signal to automatically create UserProfile when User is created

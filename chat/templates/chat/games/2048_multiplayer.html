@@ -86,8 +86,9 @@
         /* Battle Arena */
         .battle-arena {
             display: none;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         .arena-header {
@@ -303,19 +304,19 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 18px;
             width: 100%;
-            max-width: 450px;
+            max-width: 550px;
         }
 
         .cell {
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 42px;
             font-weight: bold;
             transition: all 0.2s ease;
             position: relative;
@@ -327,11 +328,11 @@
         .cell[data-value="16"] { background: #f59563; color: white; }
         .cell[data-value="32"] { background: #f67c5f; color: white; }
         .cell[data-value="64"] { background: #f65e3b; color: white; }
-        .cell[data-value="128"] { background: #edcf72; color: white; font-size: 28px; }
-        .cell[data-value="256"] { background: #edcc61; color: white; font-size: 28px; }
-        .cell[data-value="512"] { background: #edc850; color: white; font-size: 28px; }
-        .cell[data-value="1024"] { background: #edc53f; color: white; font-size: 24px; }
-        .cell[data-value="2048"] { background: #edc22e; color: white; font-size: 24px; }
+        .cell[data-value="128"] { background: #edcf72; color: white; font-size: 36px; }
+        .cell[data-value="256"] { background: #edcc61; color: white; font-size: 36px; }
+        .cell[data-value="512"] { background: #edc850; color: white; font-size: 36px; }
+        .cell[data-value="1024"] { background: #edc53f; color: white; font-size: 32px; }
+        .cell[data-value="2048"] { background: #edc22e; color: white; font-size: 32px; }
 
         /* Attack Animation */
         @keyframes attack {
@@ -774,7 +775,16 @@
 
         // Mode selection
         function startStandardMode() {
-            window.location.href = '/games/2048/';
+            // Hide mode selection and show battle arena for solo play
+            gameMode = 'standard';
+            document.getElementById('modeSelection').classList.add('hidden');
+            document.getElementById('battleArena').style.display = 'block';
+            
+            // Hide opponent panel for standard mode
+            document.querySelectorAll('.player-panel')[1].style.display = 'none';
+            document.getElementById('matchmakingStatus').style.display = 'none';
+            
+            init();
         }
 
         function startMultiplayerMode() {
@@ -1242,18 +1252,18 @@
 
         function calculateDamage(tileValue) {
             const damageMap = {
-                4: 2, 8: 3, 16: 5, 32: 7, 64: 8,
-                128: 10, 256: 15, 512: 20, 1024: 30, 2048: 40
+                4: 1, 8: 1, 16: 2, 32: 3, 64: 4,
+                128: 5, 256: 8, 512: 10, 1024: 15, 2048: 25
             };
-            return damageMap[tileValue] || 1;
+            return damageMap[tileValue] || 0;
         }
 
         function calculateHeal(tileValue) {
             const healMap = {
-                4: 2, 8: 3, 16: 4, 32: 5, 64: 7,
-                128: 8, 256: 10, 512: 12, 1024: 15, 2048: 20
+                4: 1, 8: 1, 16: 2, 32: 2, 64: 3,
+                128: 4, 256: 5, 512: 6, 1024: 8, 2048: 12
             };
-            return healMap[tileValue] || 1;
+            return healMap[tileValue] || 0;
         }
 
         function updateHealthBar(player, health) {
@@ -1439,6 +1449,63 @@
             }
             
             modal.style.display = 'flex';
+        }
+
+        function submitStandardScore() {
+            // Submit score for standard mode
+            const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            const baseReward = Math.min(200, score / 10);
+            
+            // Milestone bonuses
+            let milestoneBonus = 0;
+            const highestTile = Math.max(...grid.flat());
+            if (highestTile >= 512) milestoneBonus += 25;
+            if (highestTile >= 1024) milestoneBonus += 50;
+            if (highestTile >= 2048) milestoneBonus += 100;
+            
+            const totalReward = Math.floor(Math.min(200, baseReward + milestoneBonus));
+            
+            fetch('/games/submit-score/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    game_type: '2048',
+                    score: score,
+                    play_time: playTime,
+                    reward: totalReward
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Game Over!\n\nFinal Score: ${score}\nEvercoins Earned: ${totalReward} 💰\n\nYour Total: ${data.new_balance} 💰`);
+                    location.reload();
+                } else {
+                    alert('Error submitting score: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting score:', error);
+                alert('Error submitting score. Please try again.');
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
 
         function forfeitGame() {

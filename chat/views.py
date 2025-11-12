@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -1811,6 +1812,12 @@ def view_profile(request, username=None):
     
     profile, created = UserProfile.objects.get_or_create(user=user)
 
+    # Get friend count
+    from .models import Friendship
+    friend_count = Friendship.objects.filter(
+        Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')
+    ).count()
+
     # Determine animated cover CSS class (reuse logic from edit_profile)
     cover_css_class = ''
     cover_choices = [
@@ -1838,6 +1845,7 @@ def view_profile(request, username=None):
         'cover_css_class': cover_css_class,
         'avatar_url': profile.get_profile_picture_url(),
         'cover_image_url': profile.get_cover_image_url(),
+        'friend_count': friend_count,
     }
     
     return render(request, 'chat/view_profile.html', context)
@@ -2618,8 +2626,8 @@ def games_menu(request):
 
 @login_required
 def game_2048(request):
-    """Render 2048 game"""
-    return render(request, 'chat/games/2048.html')
+    """Render 2048 game - redirect to mode selection"""
+    return redirect('/games/2048/multiplayer/')
 
 
 @login_required

@@ -333,7 +333,7 @@
                 <div class="profile-stats">
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
-                        <div class="stat-value">{{ friend_count|default:0 }}</div>
+                        <div class="stat-value">{% if profile_user.friends %}{{ profile_user.friends.count }}{% else %}0{% endif %}</div>
                         <div class="stat-label">Friends</div>
                     </div>
                     <div class="stat-card">
