@@ -1,1125 +1,564 @@
-{% load static %}{% load static %}{% load static %}<!DOCTYPE html>
+{% load static %}{% load static %}<!DOCTYPE html>
 
 <!DOCTYPE html>
 
-<html lang="en"><!DOCTYPE html>
+<html lang="en"><!DOCTYPE html><html lang="en">
 
 <head>
 
-    <meta charset="UTF-8"><html lang="en"><!DOCTYPE html><html lang="en">
+    <meta charset="UTF-8"><html lang="en"><head>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>EverSpace - Where Conversations Come Alive</title><head>
+    <title>EverSpace - Where Conversations Come Alive</title><head>    <meta charset="UTF-8">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    <meta charset="UTF-8"><html lang="en"><head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
 
-        * {    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        * {    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>EverSpace - Next Generation Chat Experience</title>
 
             margin: 0;
 
-            padding: 0;    <title>EverSpace - Where Conversations Come Alive</title><head>    <meta charset="UTF-8">
+            padding: 0;    <title>EverSpace - Where Conversations Come Alive</title>    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
             box-sizing: border-box;
 
-        }    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        }    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 
 
-        body {    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        body {    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    <style>
 
             font-family: 'Inter', sans-serif;
 
-            background: #0d1117;    <style>
+            background: #0d1117;    <style>        * {
 
             color: #c9d1d9;
 
-            overflow-x: hidden;        * {    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>EverSpace - Next Generation Chat Experience</title>
+            overflow-x: hidden;        * {            margin: 0;
 
         }
 
-            margin: 0;
+            margin: 0;            padding: 0;
 
-        nav {
+        /* Navigation */
 
-            position: fixed;            padding: 0;    <title>EverSpace - Where Conversations Come Alive</title>    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        nav {            padding: 0;            box-sizing: border-box;
 
-            top: 0;
+            position: fixed;
 
-            width: 100%;            box-sizing: border-box;
+            top: 0;            box-sizing: border-box;        }
 
-            background: rgba(13, 17, 23, 0.8);
+            width: 100%;
 
-            backdrop-filter: blur(20px);        }    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+            background: rgba(13, 17, 23, 0.8);        }
 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);        :root {
 
             z-index: 1000;
 
-            padding: 1rem 0;
-
-        }        body {    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    <style>
-
-
-
-        .nav-container {            font-family: 'Inter', sans-serif;
-
-            max-width: 1200px;
-
-            margin: 0 auto;            background: #0d1117;    <style>        * {
-
-            padding: 0 2rem;
-
-            display: flex;            color: #c9d1d9;
-
-            justify-content: space-between;
-
-            align-items: center;            overflow-x: hidden;        * {            margin: 0;
-
-        }
-
-        }
-
-        .logo {
-
-            font-size: 1.5rem;            margin: 0;            padding: 0;
-
-            font-weight: 800;
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);        /* Navigation */
-
-            -webkit-background-clip: text;
-
-            -webkit-text-fill-color: transparent;        nav {            padding: 0;            box-sizing: border-box;
-
-            background-clip: text;
-
-        }            position: fixed;
-
-
-
-        .nav-links {            top: 0;            box-sizing: border-box;        }
-
-            display: flex;
-
-            gap: 2rem;            width: 100%;
-
-            align-items: center;
-
-        }            background: rgba(13, 17, 23, 0.8);        }
-
-
-
-        .nav-links a {            backdrop-filter: blur(20px);
-
-            color: #c9d1d9;
-
-            text-decoration: none;            border-bottom: 1px solid rgba(255, 255, 255, 0.1);        :root {
-
-            font-weight: 500;
-
-            transition: color 0.3s;            z-index: 1000;
-
-        }
-
             padding: 1rem 0;        body {            /* Modern Ocean & Sunset Theme */
-
-        .nav-links a:hover {
-
-            color: #4ecdc4;        }
 
         }
 
             font-family: 'Inter', sans-serif;            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
 
-        .btn {
+        .nav-container {
 
-            padding: 0.75rem 1.5rem;        .nav-container {
+            max-width: 1200px;            background: #0d1117;            --secondary-gradient: linear-gradient(135deg, #96CEB4 0%, #FECA57 100%);
 
-            border-radius: 8px;
+            margin: 0 auto;
 
-            font-weight: 600;            max-width: 1200px;            background: #0d1117;            --secondary-gradient: linear-gradient(135deg, #96CEB4 0%, #FECA57 100%);
+            padding: 0 2rem;            color: #c9d1d9;            --success-gradient: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
 
-            text-decoration: none;
+            display: flex;
 
-            transition: all 0.3s;            margin: 0 auto;
-
-            display: inline-block;
-
-        }            padding: 0 2rem;            color: #c9d1d9;            --success-gradient: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
-
-
-
-        .btn-primary {            display: flex;
-
-            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
-
-            color: white;            justify-content: space-between;            overflow-x: hidden;            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
-
-            border: none;
-
-        }            align-items: center;
-
-
-
-        .btn-primary:hover {        }        }            --warning-gradient: linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%);
-
-            transform: translateY(-2px);
-
-            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-
-        }
-
-        .logo {            --glass-bg: rgba(20, 25, 40, 0.3);
-
-        .btn-secondary {
-
-            background: transparent;            font-size: 1.5rem;
-
-            color: white;
-
-            border: 2px solid rgba(255, 255, 255, 0.2);            font-weight: 800;        /* Navigation */            --glass-border: rgba(255, 255, 255, 0.15);
-
-        }
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-
-        .btn-secondary:hover {
-
-            border-color: #4ecdc4;            -webkit-background-clip: text;        nav {            --dark-bg: #0F1419;
-
-            color: #4ecdc4;
-
-        }            -webkit-text-fill-color: transparent;
-
-
-
-        .hero {            background-clip: text;            position: fixed;            --dark-card: #1A202C;
-
-            min-height: 100vh;
-
-            display: flex;        }
+            justify-content: space-between;            overflow-x: hidden;            --danger-gradient: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
 
             align-items: center;
 
-            justify-content: center;            top: 0;            --darker-card: #2D3748;
-
-            position: relative;
-
-            padding: 6rem 2rem 2rem;        .nav-links {
-
-            overflow: hidden;
-
-        }            display: flex;            width: 100%;            --text-primary: #F7FAFC;
+        }        }            --warning-gradient: linear-gradient(135deg, #FDBB2D 0%, #22C1C3 100%);
 
 
 
-        .hero::before {            gap: 2rem;
+        .logo {            --glass-bg: rgba(20, 25, 40, 0.3);
 
-            content: '';
+            font-size: 1.5rem;
 
-            position: absolute;            align-items: center;            background: rgba(13, 17, 23, 0.8);            --text-secondary: #A0AEC0;
+            font-weight: 800;        /* Navigation */            --glass-border: rgba(255, 255, 255, 0.15);
 
-            width: 150%;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
 
-            height: 150%;        }
-
-            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-
-            animation: pulse 8s ease-in-out infinite;            backdrop-filter: blur(20px);            --text-muted: #718096;
-
-        }
-
-        .nav-links a {
-
-        @keyframes pulse {
-
-            0%, 100% { transform: scale(1); opacity: 0.5; }            color: #c9d1d9;            border-bottom: 1px solid rgba(255, 255, 255, 0.1);            --accent-coral: #FF6B6B;
-
-            50% { transform: scale(1.2); opacity: 0.8; }
-
-        }            text-decoration: none;
-
-
-
-        .hero-content {            font-weight: 500;            z-index: 1000;            --accent-teal: #4ECDC4;
-
-            max-width: 1200px;
-
-            text-align: center;            transition: color 0.3s;
-
-            position: relative;
-
-            z-index: 1;        }            padding: 1rem 0;            --accent-blue: #45B7D1;
-
-        }
-
-
-
-        h1 {
-
-            font-size: 4rem;        .nav-links a:hover {        }            --accent-mint: #96CEB4;
-
-            font-weight: 900;
-
-            margin-bottom: 1.5rem;            color: #4ecdc4;
-
-            line-height: 1.1;
-
-        }        }            --accent-yellow: #FECA57;
-
-
-
-        .gradient-text {
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
-
-            -webkit-background-clip: text;        .btn {        .nav-container {            --border-radius-lg: 24px;
+            -webkit-background-clip: text;        nav {            --dark-bg: #0F1419;
 
             -webkit-text-fill-color: transparent;
 
-            background-clip: text;            padding: 0.75rem 1.5rem;
-
-            animation: gradientShift 3s ease infinite;
-
-            background-size: 200% 200%;            border-radius: 8px;            max-width: 1200px;            --border-radius-md: 16px;
+            background-clip: text;            position: fixed;            --dark-card: #1A202C;
 
         }
 
-            font-weight: 600;
+            top: 0;            --darker-card: #2D3748;
 
-        @keyframes gradientShift {
+        .nav-links {
 
-            0%, 100% { background-position: 0% 50%; }            text-decoration: none;            margin: 0 auto;            --border-radius-sm: 12px;
-
-            50% { background-position: 100% 50%; }
-
-        }            transition: all 0.3s;
-
-
-
-        .subtitle {            display: inline-block;            padding: 0 2rem;            --shadow-glass: 0 8px 32px rgba(15, 20, 25, 0.4);
-
-            font-size: 1.5rem;
-
-            color: #8b949e;        }
-
-            margin-bottom: 3rem;
-
-            max-width: 800px;            display: flex;            --shadow-elevated: 0 20px 40px rgba(15, 20, 25, 0.6);
-
-            margin-left: auto;
-
-            margin-right: auto;        .btn-primary {
-
-        }
-
-            background: linear-gradient(135deg, #4ecdc4, #45b7d1);            justify-content: space-between;        }
-
-        .cta-buttons {
-
-            display: flex;            color: white;
-
-            gap: 1.5rem;
-
-            justify-content: center;            border: none;            align-items: center;
-
-            flex-wrap: wrap;
-
-        }        }
-
-
-
-        .cta-buttons .btn {        }        body {
-
-            font-size: 1.1rem;
-
-            padding: 1rem 2rem;        .btn-primary:hover {
-
-        }
-
-            transform: translateY(-2px);            font-family: 'Inter', sans-serif;
-
-        .features {
-
-            padding: 6rem 2rem;            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-
-            background: linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-
-        }        }        .logo {            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
-
-
-
-        .section-title {
-
-            text-align: center;
-
-            font-size: 3rem;        .btn-secondary {            font-size: 1.5rem;            background-attachment: fixed;
-
-            font-weight: 800;
-
-            margin-bottom: 4rem;            background: transparent;
-
-        }
-
-            color: white;            font-weight: 800;            color: var(--text-primary);
-
-        .features-grid {
-
-            max-width: 1200px;            border: 2px solid rgba(255, 255, 255, 0.2);
-
-            margin: 0 auto;
-
-            display: grid;        }            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            overflow-x: hidden;
-
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            display: flex;            width: 100%;            --text-primary: #F7FAFC;
 
             gap: 2rem;
 
-        }
-
-        .btn-secondary:hover {            -webkit-background-clip: text;            line-height: 1.6;
-
-        .feature-card {
-
-            background: rgba(22, 27, 34, 0.8);            border-color: #4ecdc4;
-
-            border: 1px solid rgba(255, 255, 255, 0.1);
-
-            border-radius: 16px;            color: #4ecdc4;            -webkit-text-fill-color: transparent;        }
-
-            padding: 2rem;
-
-            transition: all 0.3s;        }
-
-            backdrop-filter: blur(10px);
-
-        }            background-clip: text;
-
-
-
-        .feature-card:hover {        /* Hero Section */
-
-            transform: translateY(-5px);
-
-            border-color: #4ecdc4;        .hero {        }        /* Animated Background */
-
-            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.2);
-
-        }            min-height: 100vh;
-
-
-
-        .feature-icon {            display: flex;        .bg-animation {
-
-            width: 64px;
-
-            height: 64px;            align-items: center;
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-
-            border-radius: 12px;            justify-content: center;        .nav-links {            position: fixed;
-
-            display: flex;
-
-            align-items: center;            position: relative;
-
-            justify-content: center;
-
-            font-size: 2rem;            padding: 6rem 2rem 2rem;            display: flex;            top: 0;
-
-            margin-bottom: 1.5rem;
-
-        }            overflow: hidden;
-
-
-
-        .feature-card h3 {        }            gap: 2rem;            left: 0;
-
-            font-size: 1.5rem;
-
-            font-weight: 700;
-
-            margin-bottom: 1rem;
-
-        }        .hero::before {            align-items: center;            width: 100%;
-
-
-
-        .feature-card p {            content: '';
-
-            color: #8b949e;
-
-            line-height: 1.6;            position: absolute;        }            height: 100%;
+            align-items: center;            background: rgba(13, 17, 23, 0.8);            --text-secondary: #A0AEC0;
 
         }
 
-            width: 150%;
+            backdrop-filter: blur(20px);            --text-muted: #718096;
 
-        .stats {
+        .nav-links a {
 
-            padding: 6rem 2rem;            height: 150%;            z-index: -1;
-
-            background: #0d1117;
-
-        }            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-
-
-
-        .stats-grid {            animation: pulse 8s ease-in-out infinite;        .nav-links a {            background: linear-gradient(-45deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
-
-            max-width: 1200px;
-
-            margin: 0 auto;        }
-
-            display: grid;
-
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));            color: #c9d1d9;            background-size: 400% 400%;
-
-            gap: 3rem;
-
-            text-align: center;        @keyframes pulse {
-
-        }
-
-            0%, 100% { transform: scale(1); opacity: 0.5; }            text-decoration: none;            animation: gradientShift 15s ease infinite;
-
-        .stat-item {
-
-            padding: 2rem;            50% { transform: scale(1.2); opacity: 0.8; }
-
-        }
-
-        }            font-weight: 500;            opacity: 0.1;
-
-        .stat-number {
-
-            font-size: 3.5rem;
-
-            font-weight: 900;
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);        .hero-content {            transition: color 0.3s;        }
-
-            -webkit-background-clip: text;
-
-            -webkit-text-fill-color: transparent;            max-width: 1200px;
-
-            background-clip: text;
-
-            margin-bottom: 0.5rem;            text-align: center;        }
-
-        }
-
-            position: relative;
-
-        .stat-label {
-
-            font-size: 1.1rem;            z-index: 1;        @keyframes gradientShift {
-
-            color: #8b949e;
-
-        }        }
-
-
-
-        .testimonials {        .nav-links a:hover {            0% { background-position: 0% 50%; }
-
-            padding: 6rem 2rem;
-
-            background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);        h1 {
-
-        }
-
-            font-size: 4rem;            color: #4ecdc4;            50% { background-position: 100% 50%; }
-
-        .testimonials-grid {
-
-            max-width: 1200px;            font-weight: 900;
-
-            margin: 0 auto;
-
-            display: grid;            margin-bottom: 1.5rem;        }            100% { background-position: 0% 50%; }
-
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-
-            gap: 2rem;            line-height: 1.1;
-
-        }
-
-        }        }
-
-        .testimonial-card {
-
-            background: rgba(22, 27, 34, 0.8);
-
-            border: 1px solid rgba(255, 255, 255, 0.1);
-
-            border-radius: 16px;        .gradient-text {        .btn {
-
-            padding: 2rem;
-
-            backdrop-filter: blur(10px);            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
-
-        }
-
-            -webkit-background-clip: text;            padding: 0.75rem 1.5rem;        /* Floating Particles */
-
-        .testimonial-text {
-
-            font-size: 1.1rem;            -webkit-text-fill-color: transparent;
-
-            line-height: 1.8;
-
-            margin-bottom: 1.5rem;            background-clip: text;            border-radius: 8px;        .particles {
-
-            color: #c9d1d9;
-
-        }            animation: gradientShift 3s ease infinite;
-
-
-
-        .testimonial-author {            background-size: 200% 200%;            font-weight: 600;            position: fixed;
-
-            display: flex;
-
-            align-items: center;        }
-
-            gap: 1rem;
-
-        }            text-decoration: none;            top: 0;
-
-
-
-        .author-avatar {        @keyframes gradientShift {
-
-            width: 50px;
-
-            height: 50px;            0%, 100% { background-position: 0% 50%; }            transition: all 0.3s;            left: 0;
-
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-
-            border-radius: 50%;            50% { background-position: 100% 50%; }
-
-            display: flex;
-
-            align-items: center;        }            display: inline-block;            width: 100%;
-
-            justify-content: center;
-
-            font-weight: 700;
-
-            font-size: 1.2rem;
-
-        }        .subtitle {        }            height: 100%;
-
-
-
-        .author-info h4 {            font-size: 1.5rem;
-
-            font-size: 1rem;
-
-            font-weight: 600;            color: #8b949e;            pointer-events: none;
-
-            margin-bottom: 0.25rem;
-
-        }            margin-bottom: 3rem;
-
-
-
-        .author-info p {            max-width: 800px;        .btn-primary {            z-index: -1;
-
-            font-size: 0.9rem;
-
-            color: #8b949e;            margin-left: auto;
-
-        }
-
-            margin-right: auto;            background: linear-gradient(135deg, #4ecdc4, #45b7d1);        }
-
-        footer {
-
-            padding: 4rem 2rem;        }
-
-            background: #0d1117;
-
-            border-top: 1px solid rgba(255, 255, 255, 0.1);            color: white;
-
-        }
-
-        .cta-buttons {
-
-        .footer-content {
-
-            max-width: 1200px;            display: flex;            border: none;        .particle {
-
-            margin: 0 auto;
-
-            text-align: center;            gap: 1.5rem;
-
-        }
-
-            justify-content: center;        }            position: absolute;
-
-        .footer-logo {
-
-            font-size: 2rem;            flex-wrap: wrap;
-
-            font-weight: 800;
-
-            margin-bottom: 1rem;        }            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
-
-        }
-
-
-
-        .footer-links {
-
-            display: flex;        .cta-buttons .btn {        .btn-primary:hover {            border-radius: 50%;
-
-            gap: 2rem;
-
-            justify-content: center;            font-size: 1.1rem;
-
-            margin: 2rem 0;
-
-            flex-wrap: wrap;            padding: 1rem 2rem;            transform: translateY(-2px);            animation: float 20s infinite linear;
-
-        }
-
-        }
-
-        .footer-links a {
-
-            color: #8b949e;            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+            color: #c9d1d9;            border-bottom: 1px solid rgba(255, 255, 255, 0.1);            --accent-coral: #FF6B6B;
 
             text-decoration: none;
 
-            transition: color 0.3s;        /* Features Section */
+            font-weight: 500;            z-index: 1000;            --accent-teal: #4ECDC4;
+
+            transition: color 0.3s;
+
+        }            padding: 1rem 0;            --accent-blue: #45B7D1;
+
+
+
+        .nav-links a:hover {        }            --accent-mint: #96CEB4;
+
+            color: #4ecdc4;
+
+        }            --accent-yellow: #FECA57;
+
+
+
+        .btn {        .nav-container {            --border-radius-lg: 24px;
+
+            padding: 0.75rem 1.5rem;
+
+            border-radius: 8px;            max-width: 1200px;            --border-radius-md: 16px;
+
+            font-weight: 600;
+
+            text-decoration: none;            margin: 0 auto;            --border-radius-sm: 12px;
+
+            transition: all 0.3s;
+
+            display: inline-block;            padding: 0 2rem;            --shadow-glass: 0 8px 32px rgba(15, 20, 25, 0.4);
 
         }
 
-        .features {        }        }
+            display: flex;            --shadow-elevated: 0 20px 40px rgba(15, 20, 25, 0.6);
 
-        .footer-links a:hover {
+        .btn-primary {
 
-            color: #4ecdc4;            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);            justify-content: space-between;        }
 
-        }
+            color: white;
 
-            background: linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-
-        .copyright {
-
-            color: #8b949e;        }
-
-            margin-top: 2rem;
-
-        }        .btn-secondary {        @keyframes float {
-
-
-
-        @media (max-width: 768px) {        .section-title {
-
-            h1 {
-
-                font-size: 2.5rem;            text-align: center;            background: transparent;            0% {
-
-            }
-
-            font-size: 3rem;
-
-            .subtitle {
-
-                font-size: 1.2rem;            font-weight: 800;            color: white;                transform: translateY(100vh) rotate(0deg);
-
-            }
-
-            margin-bottom: 4rem;
-
-            .section-title {
-
-                font-size: 2rem;        }            border: 2px solid rgba(255, 255, 255, 0.2);                opacity: 0;
-
-            }
-
-
-
-            .features-grid,
-
-            .testimonials-grid {        .features-grid {        }            }
-
-                grid-template-columns: 1fr;
-
-            }            max-width: 1200px;
-
-
-
-            .nav-links {            margin: 0 auto;            10% {
-
-                display: none;
-
-            }            display: grid;
+            border: none;            align-items: center;
 
         }
 
-    </style>            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));        .btn-secondary:hover {                opacity: 1;
+        }        body {
 
-</head>
+        .btn-primary:hover {
 
-<body>            gap: 2rem;
+            transform: translateY(-2px);            font-family: 'Inter', sans-serif;
 
-    <nav>
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
 
-        <div class="nav-container">        }            border-color: #4ecdc4;            }
+        }        .logo {            background: linear-gradient(135deg, #0F1419 0%, #1A202C 30%, #2D3748 70%, #4A5568 100%);
 
-            <div class="logo">🚀 EverSpace</div>
 
-            <div class="nav-links">
 
-                <a href="{% url 'chat:landing' %}">Home</a>
+        .btn-secondary {            font-size: 1.5rem;            background-attachment: fixed;
 
-                <a href="{% url 'chat:about' %}">About</a>        .feature-card {            color: #4ecdc4;            90% {
+            background: transparent;
 
-                <a href="#features">Features</a>
+            color: white;            font-weight: 800;            color: var(--text-primary);
 
-                <a href="#stats">Stats</a>            background: rgba(22, 27, 34, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.2);
 
-                <a href="#testimonials">Testimonials</a>
+        }            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            overflow-x: hidden;
 
-                {% if user.is_authenticated %}            border: 1px solid rgba(255, 255, 255, 0.1);        }                opacity: 1;
 
-                    <a href="{% url 'chat:chat_index' %}" class="btn btn-primary">Go to Chat</a>
 
-                {% else %}            border-radius: 16px;
+        .btn-secondary:hover {            -webkit-background-clip: text;            line-height: 1.6;
 
-                    <a href="{% url 'auth_login' %}" class="btn btn-secondary">Login</a>
+            border-color: #4ecdc4;
 
-                    <a href="{% url 'auth_register' %}" class="btn btn-primary">Get Started</a>            padding: 2rem;            }
+            color: #4ecdc4;            -webkit-text-fill-color: transparent;        }
 
-                {% endif %}
+        }
 
-            </div>            transition: all 0.3s;
+            background-clip: text;
 
-        </div>
+        /* Hero Section */
 
-    </nav>            backdrop-filter: blur(10px);        /* Hero Section */            100% {
+        .hero {        }        /* Animated Background */
 
+            min-height: 100vh;
 
+            display: flex;        .bg-animation {
 
-    <section class="hero">        }
+            align-items: center;
 
-        <div class="hero-content">
+            justify-content: center;        .nav-links {            position: fixed;
 
-            <h1><span class="gradient-text">EverSpace</span></h1>        .hero {                transform: translateY(-100px) rotate(360deg);
+            position: relative;
 
-            <p class="subtitle">Where Conversations Come Alive</p>
+            padding: 6rem 2rem 2rem;            display: flex;            top: 0;
 
-            <p style="font-size: 1.2rem; color: #8b949e; margin-bottom: 3rem; max-width: 900px; margin-left: auto; margin-right: auto;">        .feature-card:hover {
+            overflow: hidden;
 
-                Experience the next generation of secure, real-time communication. With military-grade security, lightning-fast messaging, and stunning visual design, EverSpace transforms how you connect with others.
+        }            gap: 2rem;            left: 0;
 
-            </p>            transform: translateY(-5px);            min-height: 100vh;                opacity: 0;
 
-            <div class="cta-buttons">
 
-                {% if user.is_authenticated %}            border-color: #4ecdc4;
+        .hero::before {            align-items: center;            width: 100%;
 
-                    <a href="{% url 'chat:chat_index' %}" class="btn btn-primary">
+            content: '';
 
-                        <i class="fas fa-rocket"></i> Launch Into Chat            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.2);            display: flex;            }
+            position: absolute;        }            height: 100%;
 
-                    </a>
+            width: 150%;
 
-                {% else %}        }
+            height: 150%;            z-index: -1;
 
-                    <a href="{% url 'auth_register' %}" class="btn btn-primary">
+            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
 
-                        <i class="fas fa-rocket"></i> Get Started            align-items: center;        }
+            animation: pulse 8s ease-in-out infinite;        .nav-links a {            background: linear-gradient(-45deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
 
-                    </a>
+        }
 
-                {% endif %}        .feature-icon {
+            color: #c9d1d9;            background-size: 400% 400%;
 
-                <a href="#features" class="btn btn-secondary">
+        @keyframes pulse {
 
-                    <i class="fas fa-compass"></i> Explore Features            width: 64px;            justify-content: center;
+            0%, 100% { transform: scale(1); opacity: 0.5; }            text-decoration: none;            animation: gradientShift 15s ease infinite;
 
-                </a>
+            50% { transform: scale(1.2); opacity: 0.8; }
 
-            </div>            height: 64px;
+        }            font-weight: 500;            opacity: 0.1;
 
-        </div>
 
-    </section>            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            position: relative;        /* Header */
 
-
-
-    <section class="features" id="features">            border-radius: 12px;
-
-        <h2 class="section-title">Revolutionary Features</h2>
-
-        <div class="features-grid">            display: flex;            padding: 6rem 2rem 2rem;        .header {
-
-            <div class="feature-card">
-
-                <div class="feature-icon">            align-items: center;
-
-                    <i class="fas fa-shield-halved"></i>
-
-                </div>            justify-content: center;            overflow: hidden;            position: fixed;
-
-                <h3>Military-Grade Security</h3>
-
-                <p>Multi-factor authentication, end-to-end encryption, and advanced threat protection keep your conversations absolutely secure.</p>            font-size: 2rem;
-
-            </div>
-
-            margin-bottom: 1.5rem;        }            top: 0;
-
-            <div class="feature-card">
-
-                <div class="feature-icon">        }
-
-                    <i class="fas fa-bolt"></i>
-
-                </div>            left: 0;
-
-                <h3>Lightning Fast</h3>
-
-                <p>Real-time messaging with WebSocket technology ensures your messages arrive instantly with zero lag.</p>        .feature-card h3 {
-
-            </div>
-
-            font-size: 1.5rem;        .hero::before {            right: 0;
-
-            <div class="feature-card">
-
-                <div class="feature-icon">            font-weight: 700;
-
-                    <i class="fas fa-sparkles"></i>
-
-                </div>            margin-bottom: 1rem;            content: '';            z-index: 1000;
-
-                <h3>Immersive Experience</h3>
-
-                <p>Beautiful animations, smooth transitions, and a modern interface that makes chatting a delightful experience.</p>        }
-
-            </div>
-
-            position: absolute;            padding: 1rem 2rem;
-
-            <div class="feature-card">
-
-                <div class="feature-icon">        .feature-card p {
-
-                    <i class="fas fa-layer-group"></i>
-
-                </div>            color: #8b949e;            width: 150%;            background: var(--dark-card);
-
-                <h3>Multiple Rooms</h3>
-
-                <p>Create or join unlimited chat rooms. Organize conversations by topics, teams, or interests.</p>            line-height: 1.6;
-
-            </div>
-
-        }            height: 150%;            backdrop-filter: blur(20px);
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-
-                    <i class="fas fa-mobile-screen"></i>
-
-                </div>        /* Stats Section */            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);            border-bottom: 1px solid var(--accent-teal);
-
-                <h3>Cross-Platform</h3>
-
-                <p>Fully responsive design works seamlessly on desktop, tablet, and mobile devices. Chat anywhere, anytime.</p>        .stats {
-
-            </div>
-
-            padding: 6rem 2rem;            animation: pulse 8s ease-in-out infinite;            box-shadow: var(--shadow-glass);
-
-            <div class="feature-card">
-
-                <div class="feature-icon">            background: #0d1117;
-
-                    <i class="fas fa-code"></i>
-
-                </div>        }        }            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
-                <h3>Modern Technology</h3>
-
-                <p>Built with cutting-edge web technologies including Django Channels, WebSockets, and modern JavaScript.</p>
-
-            </div>
-
-        </div>        .stats-grid {            transition: all 0.3s ease;
-
-    </section>
+        .hero-content {            transition: color 0.3s;        }
 
             max-width: 1200px;
 
-    <section class="stats" id="stats">
+            text-align: center;        }
 
-        <div class="stats-grid">            margin: 0 auto;        @keyframes pulse {        }
+            position: relative;
 
-            <div class="stat-item">
+            z-index: 1;        @keyframes gradientShift {
 
-                <div class="stat-number">100<small style="font-size: 0.6em;">%</small></div>            display: grid;
+        }
 
-                <div class="stat-label">Uptime</div>
+        .nav-links a:hover {            0% { background-position: 0% 50%; }
 
-            </div>            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));            0%, 100% { transform: scale(1); opacity: 0.5; }
+        h1 {
 
-            <div class="stat-item">
+            font-size: 4rem;            color: #4ecdc4;            50% { background-position: 100% 50%; }
 
-                <div class="stat-number">256</div>            gap: 3rem;
+            font-weight: 900;
 
-                <div class="stat-label">Bit Encryption</div>
+            margin-bottom: 1.5rem;        }            100% { background-position: 0% 50%; }
 
-            </div>            text-align: center;            50% { transform: scale(1.2); opacity: 0.8; }        .nav {
+            line-height: 1.1;
 
-            <div class="stat-item">
-
-                <div class="stat-number">0.001<small style="font-size: 0.6em;">s</small></div>        }
-
-                <div class="stat-label">Latency</div>
-
-            </div>        }            display: flex;
-
-            <div class="stat-item">
-
-                <div class="stat-number">24<small style="font-size: 0.6em;">/7</small></div>        .stat-item {
-
-                <div class="stat-label">Support</div>
-
-            </div>            padding: 2rem;            justify-content: space-between;
-
-        </div>
-
-    </section>        }
+        }        }
 
 
 
-    <section class="testimonials" id="testimonials">        .hero-content {            align-items: center;
+        .gradient-text {        .btn {
 
-        <h2 class="section-title">What Our Users Say</h2>
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
 
-        <div class="testimonials-grid">        .stat-number {
+            -webkit-background-clip: text;            padding: 0.75rem 1.5rem;        /* Floating Particles */
 
-            <div class="testimonial-card">
+            -webkit-text-fill-color: transparent;
 
-                <p class="testimonial-text">"EverSpace has revolutionized how our team communicates. The security features give us peace of mind, and the interface is absolutely beautiful!"</p>            font-size: 3.5rem;            max-width: 1200px;            max-width: 1200px;
+            background-clip: text;            border-radius: 8px;        .particles {
 
-                <div class="testimonial-author">
+            animation: gradientShift 3s ease infinite;
 
-                    <div class="author-avatar">SJ</div>            font-weight: 900;
+            background-size: 200% 200%;            font-weight: 600;            position: fixed;
 
-                    <div class="author-info">
+        }
 
-                        <h4>Sarah Johnson</h4>            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            text-align: center;            margin: 0 auto;
+            text-decoration: none;            top: 0;
 
-                        <p>Tech Lead, InnovateCorp</p>
+        @keyframes gradientShift {
 
-                    </div>            -webkit-background-clip: text;
+            0%, 100% { background-position: 0% 50%; }            transition: all 0.3s;            left: 0;
 
-                </div>
+            50% { background-position: 100% 50%; }
 
-            </div>            -webkit-text-fill-color: transparent;            position: relative;        }
+        }            display: inline-block;            width: 100%;
 
 
 
-            <div class="testimonial-card">            background-clip: text;
+        .subtitle {        }            height: 100%;
 
-                <p class="testimonial-text">"The real-time messaging is incredibly fast, and I love the modern design. It makes chatting feel like a premium experience."</p>
+            font-size: 1.5rem;
 
-                <div class="testimonial-author">            margin-bottom: 0.5rem;            z-index: 1;
+            color: #8b949e;            pointer-events: none;
 
-                    <div class="author-avatar">AC</div>
+            margin-bottom: 3rem;
 
-                    <div class="author-info">        }
+            max-width: 800px;        .btn-primary {            z-index: -1;
 
-                        <h4>Alex Chen</h4>
+            margin-left: auto;
 
-                        <p>Software Engineer</p>        }        .logo {
+            margin-right: auto;            background: linear-gradient(135deg, #4ecdc4, #45b7d1);        }
 
-                    </div>
+        }
 
-                </div>        .stat-label {
+            color: white;
 
-            </div>
+        .cta-buttons {
+
+            display: flex;            border: none;        .particle {
+
+            gap: 1.5rem;
+
+            justify-content: center;        }            position: absolute;
+
+            flex-wrap: wrap;
+
+        }            background: linear-gradient(45deg, var(--accent-coral), var(--accent-teal));
+
+
+
+        .cta-buttons .btn {        .btn-primary:hover {            border-radius: 50%;
+
+            font-size: 1.1rem;
+
+            padding: 1rem 2rem;            transform: translateY(-2px);            animation: float 20s infinite linear;
+
+        }
+
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+
+        /* Features Section */
+
+        .features {        }        }
+
+            padding: 6rem 2rem;
+
+            background: linear-gradient(180deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+
+        }
+
+        .btn-secondary {        @keyframes float {
+
+        .section-title {
+
+            text-align: center;            background: transparent;            0% {
+
+            font-size: 3rem;
+
+            font-weight: 800;            color: white;                transform: translateY(100vh) rotate(0deg);
+
+            margin-bottom: 4rem;
+
+        }            border: 2px solid rgba(255, 255, 255, 0.2);                opacity: 0;
+
+
+
+        .features-grid {        }            }
+
+            max-width: 1200px;
+
+            margin: 0 auto;            10% {
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));        .btn-secondary:hover {                opacity: 1;
+
+            gap: 2rem;
+
+        }            border-color: #4ecdc4;            }
+
+
+
+        .feature-card {            color: #4ecdc4;            90% {
+
+            background: rgba(22, 27, 34, 0.8);
+
+            border: 1px solid rgba(255, 255, 255, 0.1);        }                opacity: 1;
+
+            border-radius: 16px;
+
+            padding: 2rem;            }
+
+            transition: all 0.3s;
+
+            backdrop-filter: blur(10px);        /* Hero Section */            100% {
+
+        }
+
+        .hero {                transform: translateY(-100px) rotate(360deg);
+
+        .feature-card:hover {
+
+            transform: translateY(-5px);            min-height: 100vh;                opacity: 0;
+
+            border-color: #4ecdc4;
+
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.2);            display: flex;            }
+
+        }
+
+            align-items: center;        }
+
+        .feature-icon {
+
+            width: 64px;            justify-content: center;
+
+            height: 64px;
+
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            position: relative;        /* Header */
+
+            border-radius: 12px;
+
+            display: flex;            padding: 6rem 2rem 2rem;        .header {
+
+            align-items: center;
+
+            justify-content: center;            overflow: hidden;            position: fixed;
+
+            font-size: 2rem;
+
+            margin-bottom: 1.5rem;        }            top: 0;
+
+        }
+
+            left: 0;
+
+        .feature-card h3 {
+
+            font-size: 1.5rem;        .hero::before {            right: 0;
+
+            font-weight: 700;
+
+            margin-bottom: 1rem;            content: '';            z-index: 1000;
+
+        }
+
+            position: absolute;            padding: 1rem 2rem;
+
+        .feature-card p {
+
+            color: #8b949e;            width: 150%;            background: var(--dark-card);
+
+            line-height: 1.6;
+
+        }            height: 150%;            backdrop-filter: blur(20px);
+
+
+
+        /* Stats Section */            background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);            border-bottom: 1px solid var(--accent-teal);
+
+        .stats {
+
+            padding: 6rem 2rem;            animation: pulse 8s ease-in-out infinite;            box-shadow: var(--shadow-glass);
+
+            background: #0d1117;
+
+        }        }            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+
+
+        .stats-grid {            transition: all 0.3s ease;
+
+            max-width: 1200px;
+
+            margin: 0 auto;        @keyframes pulse {        }
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));            0%, 100% { transform: scale(1); opacity: 0.5; }
+
+            gap: 3rem;
+
+            text-align: center;            50% { transform: scale(1.2); opacity: 0.8; }        .nav {
+
+        }
+
+        }            display: flex;
+
+        .stat-item {
+
+            padding: 2rem;            justify-content: space-between;
+
+        }
+
+        .hero-content {            align-items: center;
+
+        .stat-number {
+
+            font-size: 3.5rem;            max-width: 1200px;            max-width: 1200px;
+
+            font-weight: 900;
+
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);            text-align: center;            margin: 0 auto;
+
+            -webkit-background-clip: text;
+
+            -webkit-text-fill-color: transparent;            position: relative;        }
+
+            background-clip: text;
+
+            margin-bottom: 0.5rem;            z-index: 1;
+
+        }
+
+        }        .logo {
+
+        .stat-label {
 
             font-size: 1.1rem;            font-size: 1.8rem;
 
-            <div class="testimonial-card">
+            color: #8b949e;
 
-                <p class="testimonial-text">"Multi-factor authentication and room management features are exactly what we needed for our organization. Highly recommended!"</p>            color: #8b949e;
-
-                <div class="testimonial-author">
-
-                    <div class="author-avatar">MP</div>        }        h1 {            font-weight: 800;
-
-                    <div class="author-info">
-
-                        <h4>Michael Park</h4>
-
-                        <p>Operations Manager</p>
-
-                    </div>        /* Testimonials */            font-size: 4rem;            background: var(--primary-gradient);
-
-                </div>
-
-            </div>        .testimonials {
-
-        </div>
-
-    </section>            padding: 6rem 2rem;            font-weight: 900;            -webkit-background-clip: text;
+        }        h1 {            font-weight: 800;
 
 
 
-    <footer>            background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+        /* Testimonials */            font-size: 4rem;            background: var(--primary-gradient);
 
-        <div class="footer-content">
+        .testimonials {
 
-            <div class="footer-logo gradient-text">🚀 EverSpace</div>        }            margin-bottom: 1.5rem;            -webkit-text-fill-color: transparent;
+            padding: 6rem 2rem;            font-weight: 900;            -webkit-background-clip: text;
 
-            <div class="footer-links">
+            background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
 
-                <a href="{% url 'chat:landing' %}">Home</a>
+        }            margin-bottom: 1.5rem;            -webkit-text-fill-color: transparent;
 
-                <a href="{% url 'chat:about' %}">About</a>
 
-                <a href="#features">Features</a>        .testimonials-grid {            line-height: 1.1;            background-clip: text;
 
-                <a href="#stats">Stats</a>
+        .testimonials-grid {            line-height: 1.1;            background-clip: text;
 
-                <a href="#testimonials">Testimonials</a>            max-width: 1200px;
+            max-width: 1200px;
 
-                {% if not user.is_authenticated %}
+            margin: 0 auto;        }            animation: logoGlow 3s ease-in-out infinite alternate;
 
-                    <a href="{% url 'auth_login' %}">Login</a>            margin: 0 auto;        }            animation: logoGlow 3s ease-in-out infinite alternate;
+            display: grid;
 
-                    <a href="{% url 'auth_register' %}">Register</a>
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));        }
 
-                {% endif %}            display: grid;
+            gap: 2rem;
 
-            </div>
-
-            <p class="copyright">© 2025 EverSpace. Created by Ryan Lai. All rights reserved.</p>            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));        }
-
-        </div>
-
-    </footer>            gap: 2rem;
-
-</body>
-
-</html>        }        .gradient-text {
-
+        }        .gradient-text {
 
 
 

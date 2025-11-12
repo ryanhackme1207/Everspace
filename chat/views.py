@@ -1048,9 +1048,116 @@ def transfer_ownership(request):
         })
 
 
+def get_intimacy_level(intimacy_points):
+    """
+    Calculate intimacy level based on points
+    Returns: (level, title, next_level_points, current_level_points, privileges)
+    """
+    levels = [
+        {
+            'level': 0,
+            'title': 'Stranger',
+            'min_points': 0,
+            'max_points': 99,
+            'color': '#95A5A6',
+            'icon': '👤',
+            'privileges': ['Basic Chat']
+        },
+        {
+            'level': 1,
+            'title': 'Acquaintance',
+            'min_points': 100,
+            'max_points': 499,
+            'color': '#3498DB',
+            'icon': '👋',
+            'privileges': ['Custom Nickname', 'Emoji Packs']
+        },
+        {
+            'level': 2,
+            'title': 'Friend',
+            'min_points': 500,
+            'max_points': 999,
+            'color': '#9B59B6',
+            'icon': '🤝',
+            'privileges': ['Voice Messages', 'File Sharing']
+        },
+        {
+            'level': 3,
+            'title': 'Close Friend',
+            'min_points': 1000,
+            'max_points': 2499,
+            'color': '#E67E22',
+            'icon': '💙',
+            'privileges': ['Custom Themes', 'Special Badges']
+        },
+        {
+            'level': 4,
+            'title': 'Best Friend',
+            'min_points': 2500,
+            'max_points': 4999,
+            'color': '#F39C12',
+            'icon': '⭐',
+            'privileges': ['Shared Evercoin', 'Co-op Games']
+        },
+        {
+            'level': 5,
+            'title': 'Soulmate',
+            'min_points': 5000,
+            'max_points': float('inf'),
+            'color': '#E74C3C',
+            'icon': '💖',
+            'privileges': ['VIP Gifts', 'Exclusive Animations', 'Priority Support']
+        }
+    ]
+    
+    for i, level_data in enumerate(levels):
+        if level_data['min_points'] <= intimacy_points <= level_data['max_points']:
+            # Calculate progress to next level
+            if i < len(levels) - 1:
+                next_level = levels[i + 1]
+                current_progress = intimacy_points - level_data['min_points']
+                total_needed = level_data['max_points'] - level_data['min_points'] + 1
+                progress_percentage = (current_progress / total_needed) * 100
+                points_to_next = next_level['min_points'] - intimacy_points
+            else:
+                # Max level
+                progress_percentage = 100
+                points_to_next = 0
+                next_level = None
+            
+            return {
+                'level': level_data['level'],
+                'title': level_data['title'],
+                'color': level_data['color'],
+                'icon': level_data['icon'],
+                'privileges': level_data['privileges'],
+                'current_points': intimacy_points,
+                'min_points': level_data['min_points'],
+                'max_points': level_data['max_points'],
+                'progress_percentage': progress_percentage,
+                'points_to_next': points_to_next,
+                'next_level': next_level
+            }
+    
+    # Default to level 0
+    return {
+        'level': 0,
+        'title': 'Stranger',
+        'color': '#95A5A6',
+        'icon': '👤',
+        'privileges': ['Basic Chat'],
+        'current_points': 0,
+        'min_points': 0,
+        'max_points': 99,
+        'progress_percentage': 0,
+        'points_to_next': 100,
+        'next_level': levels[1]
+    }
+
+
 @login_required
 def friends_list(request):
-    """Display user's friends list"""
+    """Display user's friends list with intimacy levels"""
     # Get accepted friendships
     friends = []
     friendships = Friendship.objects.filter(
@@ -1060,22 +1167,40 @@ def friends_list(request):
     
     for friendship in friendships:
         friend = friendship.receiver if friendship.sender == request.user else friendship.sender
+        
+        # Get intimacy points from friendship
+        intimacy_points = friendship.intimacy_points if hasattr(friendship, 'intimacy_points') else 0
+        
+        # Calculate intimacy level
+        level_info = get_intimacy_level(intimacy_points)
+        
         friends.append({
             'user': friend,
             'is_online': False,  # TODO: Implement online status tracking
             'unread_count': PrivateMessage.objects.filter(
                 sender=friend, receiver=request.user, is_read=False
-            ).count()
+            ).count(),
+            'intimacy_points': intimacy_points,
+            'intimacy_level': level_info
         })
     
-    # Get pending friend requests
-    pending_requests = Friendship.objects.filter(
+    # Sort friends by intimacy level (highest first)
+    friends.sort(key=lambda x: x['intimacy_points'], reverse=True)
+    
+    # Get incoming friend requests
+    incoming_requests = Friendship.objects.filter(
         receiver=request.user, status='pending'
+    )
+    
+    # Get outgoing friend requests
+    outgoing_requests = Friendship.objects.filter(
+        sender=request.user, status='pending'
     )
     
     return render(request, 'chat/friends_list.html', {
         'friends': friends,
-        'pending_requests': pending_requests,
+        'incoming_requests': incoming_requests,
+        'outgoing_requests': outgoing_requests,
     })
 
 
@@ -1088,6 +1213,16 @@ def private_chat(request, username):
     if not Friendship.are_friends(request.user, friend):
         messages.error(request, f'You are not friends with {username}.')
         return redirect('chat:friends_list')
+    
+    # Get friendship to retrieve intimacy points
+    friendship = Friendship.objects.filter(
+        models.Q(sender=request.user, receiver=friend) |
+        models.Q(sender=friend, receiver=request.user),
+        status='accepted'
+    ).first()
+    
+    intimacy_points = friendship.intimacy_points if friendship and hasattr(friendship, 'intimacy_points') else 0
+    intimacy_level = get_intimacy_level(intimacy_points)
     
     # Get conversation messages
     messages_list = PrivateMessage.objects.filter(
@@ -1103,6 +1238,8 @@ def private_chat(request, username):
     return render(request, 'chat/private_chat.html', {
         'friend': friend,
         'messages': messages_list,
+        'intimacy_points': intimacy_points,
+        'intimacy_level': intimacy_level,
     })
 
 

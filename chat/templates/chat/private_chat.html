@@ -561,14 +561,28 @@
                     {{ friend.username|slice:":1"|upper }}
                 </div>
                 <div class="friend-info">
-                    <h4 id="displayName">{{ friend.username }}</h4>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h4 id="displayName" style="margin: 0;">{{ friend.username }}</h4>
+                        <span style="display: inline-flex; align-items: center; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; color: white; background: {{ intimacy_level.color }}; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                            {{ intimacy_level.icon }} Lv.{{ intimacy_level.level }}
+                        </span>
+                    </div>
                     <div class="friend-status">
                         <span class="status-dot"></span>
                         Online
                     </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                        <div style="flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden;">
+                            <div style="width: {{ intimacy_level.progress_percentage }}%; height: 100%; background: {{ intimacy_level.color }}; transition: width 0.5s;"></div>
+                        </div>
+                        <small style="color: {{ intimacy_level.color }}; font-weight: 600; font-size: 0.7rem;">{{ intimacy_points }}</small>
+                    </div>
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn-header" onclick="showIntimacyInfo()" style="background: linear-gradient(135deg, {{ intimacy_level.color }}22, {{ intimacy_level.color }}44); color: {{ intimacy_level.color }};">
+                    <i class="fas fa-heart me-1"></i>{{ intimacy_level.title }}
+                </button>
                 <button class="btn-header" data-bs-toggle="modal" data-bs-target="#settingsModal">
                     <i class="fas fa-cog me-2"></i>Settings
                 </button>
@@ -1311,6 +1325,29 @@
             }
         `;
         document.head.appendChild(style);
+
+        // Intimacy Info Function
+        function showIntimacyInfo() {
+            const intimacyPoints = {{ intimacy_points }};
+            const level = {{ intimacy_level.level }};
+            const title = "{{ intimacy_level.title }}";
+            const titleEn = "{{ intimacy_level.title_en }}";
+            const color = "{{ intimacy_level.color }}";
+            const icon = "{{ intimacy_level.icon }}";
+            const progress = {{ intimacy_level.progress_percentage }};
+            const pointsToNext = {{ intimacy_level.points_to_next }};
+            
+            alert(`🎉 Intimacy Level Information\n\n` +
+                  `Level: ${icon} Lv.${level} - ${title}\n` +
+                  `Current Intimacy: ${intimacyPoints} points\n` +
+                  `Progress: ${progress.toFixed(1)}%\n` +
+                  `${pointsToNext > 0 ? pointsToNext + ' points to next level' : 'Maximum level reached!'}\n\n` +
+                  `💡 How to Increase:\n` +
+                  `• Daily chat +5 points\n` +
+                  `• Send gifts +10-50 points\n` +
+                  `• Play games together +15 points\n` +
+                  `• Complete achievements +100 points`);
+        }
     </script>
 </body>
 </html>

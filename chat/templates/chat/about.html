@@ -349,9 +349,9 @@
                 <a href="{% url 'chat:landing' %}">Home</a>
                 <a href="{% url 'chat:about' %}">About</a>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'chat:index' %}" class="btn btn-primary">Go to Chat</a>
+                    <a href="{% url 'chat:chat_index' %}" class="btn btn-primary">Go to Chat</a>
                 {% else %}
-                    <a href="{% url 'authentication:login' %}" class="btn btn-primary">Get Started</a>
+                    <a href="{% url 'auth_login' %}" class="btn btn-primary">Get Started</a>
                 {% endif %}
             </div>
         </div>
@@ -442,10 +442,10 @@
                 <a href="{% url 'chat:landing' %}">Home</a>
                 <a href="{% url 'chat:about' %}">About</a>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'chat:index' %}">Chat</a>
+                    <a href="{% url 'chat:chat_index' %}">Chat</a>
                 {% else %}
-                    <a href="{% url 'authentication:login' %}">Login</a>
-                    <a href="{% url 'authentication:register' %}">Register</a>
+                    <a href="{% url 'auth_login' %}">Login</a>
+                    <a href="{% url 'auth_register' %}">Register</a>
                 {% endif %}
             </div>
             <p class="copyright">© 2025 EverSpace. Created by Ryan Lai. All rights reserved.</p>

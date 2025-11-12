@@ -218,6 +218,139 @@
             z-index: 1055;
         }
 
+        /* Intimacy System Styles */
+        .intimacy-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .intimacy-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.25rem 0;
+        }
+
+        .intimacy-progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-info {
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+            color: white;
+        }
+
+        /* Intimacy Modal Styles */
+        .intimacy-modal {
+            display: none;
+            position: fixed;
+            z-index: 1060;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .intimacy-modal-content {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .intimacy-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-coral);
+        }
+
+        .intimacy-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--coral);
+        }
+
+        .close-modal {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--coral);
+        }
+
+        .level-display {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--light-blue), var(--light-mint));
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .level-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+
+        .privileges-list {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .privilege-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .privilege-item i {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            color: var(--teal);
+        }
+
         @media (max-width: 768px) {
             .friend-item {
                 flex-direction: column;
@@ -339,13 +472,40 @@
                             {{ friend.user.username|slice:":1"|upper }}
                         </div>
                         <div class="friend-details">
-                            <h6>{{ friend.user.username }}</h6>
-                            <p class="friend-status">
-                                <i class="fas fa-circle text-success me-1"></i>Online
-                            </p>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                <h6 style="margin: 0;">{{ friend.user.username }}</h6>
+                                <span class="intimacy-badge" style="background: {{ friend.intimacy_level.color }};">
+                                    {{ friend.intimacy_level.icon }} Lv.{{ friend.intimacy_level.level }}
+                                </span>
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <small style="color: {{ friend.intimacy_level.color }}; font-weight: 600;">
+                                    {{ friend.intimacy_level.title }}
+                                </small>
+                            </div>
+                            <div class="intimacy-progress">
+                                <div class="intimacy-progress-bar" style="width: {{ friend.intimacy_level.progress_percentage }}%; background: {{ friend.intimacy_level.color }};"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                                <small style="color: var(--text-secondary);">
+                                    {{ friend.intimacy_points }} / {{ friend.intimacy_level.max_points }} Intimacy
+                                </small>
+                                {% if friend.intimacy_level.points_to_next > 0 %}
+                                <small style="color: {{ friend.intimacy_level.color }}; font-weight: 600;">
+                                    {{ friend.intimacy_level.points_to_next }} to next
+                                </small>
+                                {% else %}
+                                <small style="color: {{ friend.intimacy_level.color }}; font-weight: 600;">
+                                    ⭐ MAX
+                                </small>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     <div class="friend-actions">
+                        <button class="btn btn-info" onclick="showIntimacyDetails({{ friend.intimacy_points }}, '{{ friend.user.username }}', {{ friend.intimacy_level.level }})" style="background: linear-gradient(135deg, #9B59B6, #8E44AD); padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-heart me-1"></i>Details
+                        </button>
                         <a href="{% url 'chat:private_chat' friend.user.username %}" class="btn btn-chat">
                             <i class="fas fa-comment me-1"></i>Chat
                         </a>
@@ -362,6 +522,22 @@
                     <p>Start making friends by joining chat rooms and sending friend requests!</p>
                 </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Intimacy Details Modal -->
+    <div id="intimacyModal" class="intimacy-modal">
+        <div class="intimacy-modal-content">
+            <div class="intimacy-modal-header">
+                <h3 class="intimacy-modal-title">
+                    <i class="fas fa-heart"></i> Intimacy Details
+                </h3>
+                <span class="close-modal" onclick="closeIntimacyModal()">&times;</span>
+            </div>
+            
+            <div id="intimacyModalBody">
+                <!-- Dynamic content will be loaded here -->
+            </div>
         </div>
     </div>
 
@@ -502,6 +678,125 @@
                 }
             }
             return cookieValue;
+        }
+
+        // Intimacy System Functions
+        function showIntimacyDetails(intimacyPoints, username, currentLevel) {
+            const levels = [
+                {
+                    level: 0, title: 'Stranger', 
+                    min: 0, max: 99, color: '#95A5A6', icon: '👤',
+                    privileges: ['Basic Chat']
+                },
+                {
+                    level: 1, title: 'Acquaintance',
+                    min: 100, max: 499, color: '#3498DB', icon: '👋',
+                    privileges: ['Custom Nickname', 'Emoji Packs']
+                },
+                {
+                    level: 2, title: 'Friend',
+                    min: 500, max: 999, color: '#9B59B6', icon: '🤝',
+                    privileges: ['Voice Messages', 'File Sharing']
+                },
+                {
+                    level: 3, title: 'Close Friend',
+                    min: 1000, max: 2499, color: '#E67E22', icon: '💙',
+                    privileges: ['Custom Themes', 'Special Badges']
+                },
+                {
+                    level: 4, title: 'Best Friend',
+                    min: 2500, max: 4999, color: '#F39C12', icon: '⭐',
+                    privileges: ['Shared Evercoin', 'Co-op Games']
+                },
+                {
+                    level: 5, title: 'Soulmate',
+                    min: 5000, max: Infinity, color: '#E74C3C', icon: '💖',
+                    privileges: ['VIP Gifts', 'Exclusive Animations', 'Priority Support']
+                }
+            ];
+
+            const level = levels[currentLevel];
+            const nextLevel = currentLevel < 5 ? levels[currentLevel + 1] : null;
+            const progress = level.max === Infinity ? 100 : ((intimacyPoints - level.min) / (level.max - level.min + 1)) * 100;
+            const pointsToNext = nextLevel ? nextLevel.min - intimacyPoints : 0;
+
+            let modalHTML = `
+                <div class="level-display" style="background: linear-gradient(135deg, ${level.color}22, ${level.color}44);">
+                    <div class="level-icon">${level.icon}</div>
+                    <h3 class="level-title" style="color: ${level.color};">${level.title}</h3>
+                    <div style="margin-top: 1rem;">
+                        <h2 style="color: ${level.color}; margin: 0;">${intimacyPoints}</h2>
+                        <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0;">Intimacy Points</p>
+                    </div>
+                </div>
+
+                <div class="intimacy-progress" style="height: 12px; margin: 1rem 0;">
+                    <div class="intimacy-progress-bar" style="width: ${progress}%; background: ${level.color};"></div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    ${nextLevel ? `
+                        <p style="color: ${level.color}; font-weight: 600; font-size: 1.1rem;">
+                            ${pointsToNext} points to ${nextLevel.icon} ${nextLevel.title}
+                        </p>
+                    ` : `
+                        <p style="color: ${level.color}; font-weight: 700; font-size: 1.2rem;">
+                            🎉 Maximum Level Reached!
+                        </p>
+                    `}
+                </div>
+
+                <div class="privileges-list">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">
+                        <i class="fas fa-star" style="color: ${level.color};"></i> Unlocked Privileges
+                    </h4>
+                    ${level.privileges.map((priv, idx) => `
+                        <div class="privilege-item">
+                            <i class="fas fa-check-circle" style="color: ${level.color};"></i>
+                            <span>${priv}</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${nextLevel ? `
+                    <div class="privileges-list" style="opacity: 0.6;">
+                        <h4 style="margin-bottom: 1rem; color: var(--text-secondary);">
+                            <i class="fas fa-lock"></i> Next Level Privileges
+                        </h4>
+                        ${nextLevel.privileges.map((priv, idx) => `
+                            <div class="privilege-item" style="background: rgba(255,255,255,0.5);">
+                                <i class="fas fa-lock" style="color: var(--text-secondary);"></i>
+                                <span>${priv}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                <div style="background: linear-gradient(135deg, #4ECDC4, #45B7D1); padding: 1.5rem; border-radius: 12px; text-align: center; margin-top: 1.5rem;">
+                    <h5 style="color: white; margin-bottom: 0.5rem;">💡 How to Increase Intimacy?</h5>
+                    <ul style="list-style: none; padding: 0; margin: 0; color: white;">
+                        <li>💬 Daily chat +5 points</li>
+                        <li>🎁 Send gifts +10-50 points</li>
+                        <li>🎮 Play games together +15 points</li>
+                        <li>🏆 Complete achievements +100 points</li>
+                    </ul>
+                </div>
+            `;
+
+            document.getElementById('intimacyModalBody').innerHTML = modalHTML;
+            document.getElementById('intimacyModal').style.display = 'block';
+        }
+
+        function closeIntimacyModal() {
+            document.getElementById('intimacyModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('intimacyModal');
+            if (event.target === modal) {
+                closeIntimacyModal();
+            }
         }
     </script>
 </body>
